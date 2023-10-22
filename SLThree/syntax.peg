@@ -1,0 +1,103 @@
+﻿@namespace SLThree
+@classname Parser
+@using System.Globalization;
+@using SLThree.Extensions;
+
+file <BaseStatement> 
+    = _ v:statement_list _ EOF { v }
+
+statement_list <BaseStatement>
+    = st:statement_ws* comment? { new StatementListStatement(st, state) }
+    / st:statement comment? { new StatementListStatement(new BaseStatement[1] {st}, state) }
+
+statement_ws <BaseStatement>
+    = _ st:statement _ ";" { st }
+    / _ st:while_statement _ { st }
+    / _ st:condition_statement _ { st }
+    / _ st:block_statement _ { st }
+    / _ ";"+ _ { new StatementListStatement(new BaseStatement[0], state) }
+
+statement <BaseStatement>
+    = _ st:condition_statement _ { st }
+    / _ st:while_statement _  { st }
+    / _ st:block_statement _ { st }
+    / _ st:expr_statement _ { st }
+
+block_statement <BaseStatement>
+    = "{" _ st:statement_list _ "}" { st }
+
+while_statement <BaseStatement>
+    = "while" _ "(" cond:lexem ")" _ body:block_statement { new WhileCycleStatement(cond, body, state) }
+
+condition_statement <BaseStatement>
+    = "if" _ "(" cond:lexem ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
+    / "if" _ "(" cond:lexem ")" _ t:block_statement { new ConditionStatement(cond, t, null, state) }
+
+expr_statement <BaseStatement> 
+    = value:lexem { new ExpressionStatement(value, state) }
+
+lexem <BaseLexem>
+    = binary_4
+
+binary_4 <BaseLexem> -memoize
+    = left:binary_3 _ "=" _ right:binary_4 { new ExpressionBinaryAssign(left, right, state) }
+    / left:binary_3 _ "+=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
+    / left:binary_3 _ "-=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
+    / left:binary_3 _ "*=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
+    / left:binary_3 _ "/=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryDivide(left, right, state), state) }
+    / left:binary_3 _ "%=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMod(left, right, state), state) }
+    / left:binary_3 { left }
+
+binary_3 <BaseLexem> -memoize
+    = left:binary_3 _ "==" _ right:binary_2 { new ExpressionBinaryEquals(left, right, state) }
+    / left:binary_3 _ "!=" _ right:binary_2 { new ExpressionBinaryUnequals(left, right, state) }
+    / left:binary_3 _ ">=" _ right:binary_2 { new ExpressionBinaryGreaterThanEquals(left, right, state) }
+    / left:binary_3 _ "<=" _ right:binary_2 { new ExpressionBinaryLessThanEquals(left, right, state) }
+    / left:binary_3 _ ">" _ right:binary_2 { new ExpressionBinaryGreaterThan(left, right, state) }
+    / left:binary_3 _ "<" _ right:binary_2 { new ExpressionBinaryLessThan(left, right, state) }
+    / left:binary_2 { left }
+
+binary_2 <BaseLexem> -memoize
+    = left:binary_2 _ "+" _ right:binary_1 { new ExpressionBinaryAdd(left, right, state) }
+    / left:binary_2 _ "-" _ right:binary_1 { new ExpressionBinaryRem(left, right, state) }
+    / left:binary_1 { left }
+
+binary_1 <BaseLexem> -memoize
+    = left:binary_1 _ "*" _ right:binary_0 { new ExpressionBinaryMultiply(left, right, state) }
+    / left:binary_1 _ "/" _ right:binary_0 { new ExpressionBinaryDivide(left, right, state) }
+    / left:binary_1 _ "%" _ right:binary_0 { new ExpressionBinaryMod(left, right, state) }
+    / left:binary_0 { left }
+
+binary_0 <BaseLexem>
+    = left:binary_min { left }
+
+binary_min <BaseLexem>
+    = "(" _ bin:binary_4 _ ")" { bin }
+    / unary
+
+unary <BaseLexem>
+    = "+" _ left:lexem { new ExpressionUnaryAdd(left, state) }
+    / "-" _ left:lexem { new ExpressionUnaryRem(left, state) }
+    / "~" _ left:lexem { new ExpressionUnaryBitNot(left, state) }
+    / "!" _ left:lexem { new ExpressionUnaryNot(left, state) }
+    / primary
+
+primary <BaseLexem>
+    = num_literal
+    / name
+
+num_literal <BaseLexem>
+    = f32:([0-9]+ ("." [0-9]+)? ("f32")) { new FloatLiteral(float.Parse(f32.Replace("f32", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9]+ ("." [0-9]+) ("f64")?) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9]+ ("f64")) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }
+    / u64:([0-9]+ ("u64")) { new ULongLiteral(ulong.Parse(u64.Replace("u64", ""), CultureInfo.InvariantCulture), state) }
+    / i64:([0-9]+ ("i64")?) { new LongLiteral(long.Parse(i64.Replace("i64", ""), CultureInfo.InvariantCulture), state) }
+
+name <NameLexem>
+    = value:([a-zA-Z] [a-zA-Z0-9]*)+ { new NameLexem(value.JoinIntoString(""), state) }
+
+comment = _ "//" [^\r\n]*
+
+_ = [ \t\r\n]*
+
+EOF = !. / c:. #ERROR{ "Unexpected '" + c + "'" }

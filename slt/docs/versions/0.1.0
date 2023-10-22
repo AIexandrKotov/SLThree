@@ -1,0 +1,8 @@
+﻿------ 0.1.0 Lovely 64 bits ------ [22.10.23]
+New:
+	Local variables
+	Supporting types: long, ulong, double
+	Unary operators: +, -, ~, !
+	Binary operators: +, -, *, /, %, ==, !=, >=, <=, >, <, =
+	ExtendedAssigns: +=, -=, *=, /=, %=
+	Statements: Condition, WhileCycle

@@ -1,0 +1,32 @@
+﻿using Pegasus.Common;
+using SLThree.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SLThree
+{
+    public class WhileCycleStatement : BaseStatement
+    {
+        public BaseLexem Condition { get; set; }
+        public BaseStatement CycleBody { get; set; }
+
+        public WhileCycleStatement(BaseLexem condition, BaseStatement cycleBody, Cursor cursor) : base(cursor)
+        {
+            Condition = condition;
+            CycleBody = cycleBody;
+        }
+
+        public override string ToString() => $"while ({Condition}) {{{CycleBody}}}";
+
+        public override object GetValue(ExecutionContext context)
+        {
+            var ret = default(object);
+            while (Condition.GetValue(context).CastToMax().Cast<long>() != 0)
+                ret = CycleBody.GetValue(context);
+            return ret;
+        }
+    }
+}

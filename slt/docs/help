@@ -1,0 +1,5 @@
+﻿without keys        - runs interpreter
+-s --specification  - outs SLT specification
+-v --version <v>    - outs info of version
+-a --allversions    - outs info of all versions
+-h --help"          - outs this text
