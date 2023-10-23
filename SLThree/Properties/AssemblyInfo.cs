@@ -42,9 +42,9 @@ using System.Linq;
 public static class SLTVersion {
     public const string Major = "0"; //vh
     public const string Minor = "1"; //vh
-    public const string Build = "0"; //vh
-    public const string Revision = "164"; //vh
-    public const long LastUpdate = 638336046204566503; //vh
+    public const string Build = "1"; //vh
+    public const string Revision = "168"; //vh
+    public const long LastUpdate = 638336881507973753; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
@@ -52,7 +52,8 @@ public static class SLTVersion {
     public const string Name = "SLThree";
     public const string Author = "Alexandr Kotov";
     public const string Copyright = Author + " 2023";
-    public static string Edition { get; } = null;
+
+    public static string Edition { get; } = "Lovely 64 bits";
 
     public static string GetTitle()
     {

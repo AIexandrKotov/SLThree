@@ -1,5 +1,7 @@
-﻿without keys        - runs interpreter
--s --specification  - outs SLT specification
--v --version <v>    - outs info of version
--a --allversions    - outs info of all versions
--h --help"          - outs this text
+﻿without keys            - runs interpreter
+-s --specification      - outs SLT specification
+-v --version            - outs info of current version
+-v --version <V>        - outs difference of version V
+-d --difference <INT>   - outs diffs of INT last versions
+-d --difference <STR>   - outs diffs by STR
+-h --help               - outs this text

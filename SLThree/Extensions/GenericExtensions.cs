@@ -20,6 +20,13 @@ namespace SLThree.Extensions
             return sb.ToString();
         }
 
+        public static string ReplaceAll(this string str, IDictionary<string, string> replacer)
+        {
+            foreach (var x in replacer)
+                str = str.Replace(x.Key, x.Value);
+            return str;
+        }
+
         public static T ToEnum<T>(this string s) where T : Enum => (T)Enum.Parse(typeof(T), s);
 
         public static TOut Cast<TIn, TOut>(this TIn o) where TOut: TIn => (TOut)o;

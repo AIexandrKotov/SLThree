@@ -52,6 +52,7 @@
     <EmbeddedResource Include="docs\help" />
     <EmbeddedResource Include="docs\specification" />
     <EmbeddedResource Include="docs\versions\0.1.0" />
+    <EmbeddedResource Include="docs\versions\0.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">
