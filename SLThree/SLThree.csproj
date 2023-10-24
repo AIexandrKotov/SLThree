@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Pegasus.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=28c69b6c6d100f4a, processorArchitecture=MSIL">
       <HintPath>..\packages\Pegasus.4.1.0\lib\net45\Pegasus.Common.dll</HintPath>
@@ -76,6 +79,7 @@
     <Compile Include="Lexems\Literals\DoubleLiteral.cs" />
     <Compile Include="Lexems\BaseLexem.cs" />
     <Compile Include="Lexems\Literals\ULongLiteral.cs" />
+    <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
@@ -89,6 +93,9 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="docs\versions\0.1.1" />
+    <EmbeddedResource Include="docs\versions\0.1.0" />
+    <EmbeddedResource Include="docs\specification" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>
@@ -102,5 +109,9 @@
   </Target>
   <PropertyGroup>
     <PreBuildEvent>../building/IncRevision.bat</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

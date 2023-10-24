@@ -4,7 +4,7 @@
 @using SLThree.Extensions;
 
 file <BaseStatement> 
-    = _ v:statement_list _ EOF { v }
+    = "#SLT#" _ v:statement_list _ EOF { v }
 
 statement_list <BaseStatement>
     = st:statement_ws* comment? { new StatementListStatement(st, state) }

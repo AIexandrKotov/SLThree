@@ -1,0 +1,22 @@
+﻿--=== SLT SPECIFICATION ===--
+Lexems:
+    --- LITERALS ---
+    long:   common num value, suffix i64
+    ulong:  suffix u64
+    double: common real value, suffix f64
+    float:  suffix f32
+
+    --- OPERATORS --- //BY PRIORITY
+    1) +, -, ~, !  (unary)
+    2) *, /, %
+    3) +, -
+    4) ==, !=, >=, <=, >, <
+    5) =, +=, -=, *=, /=, %=
+
+Statements:
+    --- CONDITION ---
+    if (<value>) { <statement>;* } [else { <statement>;* }]
+    --- WHILE CYCLE ---
+    while (<value>) { <statement>;* }
+
+--=== END SPECIFICATON ===--
