@@ -1,0 +1,1 @@
+"../building/vh.exe" "../slt/Properties/AssemblyInfo.cs" "build++"

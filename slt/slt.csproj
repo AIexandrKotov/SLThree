@@ -61,4 +61,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>../building/IncREPLRevision.bat</PreBuildEvent>
+  </PropertyGroup>
 </Project>

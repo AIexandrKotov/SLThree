@@ -81,7 +81,7 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($" {SLTVersion.VersionWithoutRevision} ");
             Console.ForegroundColor = CurrentEditionColor;
-            Console.WriteLine($"{SLTVersion.Edition}");
+            Console.Write($"{SLTVersion.Edition} ");
             Console.ResetColor();
             var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTVersion.LastUpdate), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
@@ -91,6 +91,21 @@ namespace slt
             Console.Write($" by ");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"{time}");
+            Console.ResetColor();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(REPLVersion.Name);
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($" {REPLVersion.VersionWithoutRevision} ");
+            Console.ResetColor();
+            var time2 = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(REPLVersion.LastUpdate), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
+            Console.Write("rev ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($"{REPLVersion.Revision}");
+            Console.ResetColor();
+            Console.Write($" by ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{time2}");
             Console.ResetColor();
         }
 
@@ -169,7 +184,7 @@ namespace slt
 
         public static void StartREPL(ExecutionContext myExecutionContext = null)
         {
-            Console.Title = $"{SLTVersion.Name} REPL";
+            Console.Title = $"{REPLVersion.Name}";
             OutCurrentVersion();
             Console.WriteLine($"Maded by Alexandr Kotov. Pegasus is cool!");
 
