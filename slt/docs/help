@@ -1,4 +1,5 @@
-﻿<filename> [-r]         - runs file and show result
+﻿----- SLT REPL help -----
+<filename> [-r]         - runs file and show result
 -e --encoding <E>       - uses encoding E for reading file
 
 -r --repl or 0 args     - start REPL
@@ -7,4 +8,6 @@
 -v --version <V>        - outs difference of version V
 -d --difference <INT>   - outs diffs of INT last versions
 -d --difference <STR>   - outs diffs by STR
--h --help               - outs this text
+-V --repl-version <V>   - outs difference of version V
+-D --repl-difference <INT>   - outs diffs of INT last REPL versions
+-D --repl-difference <STR>   - outs diffs by STR in REPL versions

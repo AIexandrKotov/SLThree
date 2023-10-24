@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,9 +53,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <EmbeddedResource Include="docs\help" />
-    <EmbeddedResource Include="docs\specification" />
-    <EmbeddedResource Include="docs\versions\0.1.0" />
-    <EmbeddedResource Include="docs\versions\0.1.1" />
+    <EmbeddedResource Include="docs\versions\1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">
@@ -63,5 +64,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>../building/IncREPLRevision.bat</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

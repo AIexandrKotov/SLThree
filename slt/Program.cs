@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using SLThree;
@@ -20,6 +21,8 @@ namespace slt
             { "-h", "--help" },
             { "-r", "--repl" },
             { "-e", "--encoding" },
+            { "-V", "--repl-version" },
+            { "-D", "--repl-difference" },
         };
 
         private static string[] RunArguments;
@@ -77,23 +80,6 @@ namespace slt
         public static void OutCurrentVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(SLTVersion.Name);
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLTVersion.VersionWithoutRevision} ");
-            Console.ForegroundColor = CurrentEditionColor;
-            Console.Write($"{SLTVersion.Edition} ");
-            Console.ResetColor();
-            var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTVersion.LastUpdate), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
-            Console.Write("rev ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLTVersion.Revision}");
-            Console.ResetColor();
-            Console.Write($" by ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{time}");
-            Console.ResetColor();
-
-            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(REPLVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($" {REPLVersion.VersionWithoutRevision} ");
@@ -107,11 +93,56 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"{time2}");
             Console.ResetColor();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(SLTVersion.Name);
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($" {SLTVersionWithoutRevision} ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"{SLTVersion.Edition} ");
+            Console.ResetColor();
+            var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTTime), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
+            Console.Write("rev ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($"{SLTRevision}");
+            Console.ResetColor();
+            Console.Write($" by ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{time}");
+            Console.ResetColor();
+
         }
+
+        public static string SLTVersionWithoutRevision;
+        public static string SLTRevision;
+        public static long SLTTime;
+        static Program()
+        {
+            var ass = Assembly.GetAssembly(typeof(SLTVersion));
+            var ver = ass.GetName().Version;
+            SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
+            SLTRevision = ver.Revision.ToString();
+            var sltver = ass.GetType("SLTVersion");
+            SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
+            SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
+            Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
+        }
+
+        private static SortedDictionary<string, string[]> SLThreeVersions;
+        private static string[] Specification;
 
         public static void OutVersion(string version)
         {
-            if (DocsIntergration.VersionsData.TryGetValue(version.Replace("last", SLTVersion.VersionWithoutRevision), out var data))
+            if (SLThreeVersions.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
+            {
+                Console.WriteLine(data.JoinIntoString("\n"));
+            }
+            else Console.WriteLine($"Version {version} not found");
+        }
+
+        public static void OutREPLVersion(string version)
+        {
+            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
             {
                 Console.WriteLine(data.JoinIntoString("\n"));
             }
@@ -120,10 +151,10 @@ namespace slt
 
         public static void OutDifference(int count)
         {
-            var lv = count >= 0 ? DocsIntergration.VersionsData.Count - count : 0;
+            var lv = count >= 0 ? SLThreeVersions.Count - count : 0;
             if (lv < 0) lv = 0;
-            var i = DocsIntergration.VersionsData.Count - 1;
-            foreach (var entry in DocsIntergration.VersionsData.Reverse())
+            var i = SLThreeVersions.Count - 1;
+            foreach (var entry in SLThreeVersions.Reverse())
             {
                 if (i < lv) break;
                 Console.WriteLine($"==> {entry.Key}");
@@ -134,7 +165,31 @@ namespace slt
 
         public static void OutDifferenceBy(string version)
         {
-            foreach (var entry in DocsIntergration.VersionsData.Reverse())
+            foreach (var entry in SLThreeVersions.Reverse())
+            {
+                if (entry.Key.StartsWith(version)) return;
+                Console.WriteLine($"==> {entry.Key}");
+                Console.WriteLine(entry.Value.JoinIntoString("\n"));
+            }
+        }
+
+        public static void OutREPLDifference(int count)
+        {
+            var lv = count >= 0 ? DocsIntergration.REPLVersionsData.Count - count : 0;
+            if (lv < 0) lv = 0;
+            var i = DocsIntergration.REPLVersionsData.Count - 1;
+            foreach (var entry in DocsIntergration.REPLVersionsData.Reverse())
+            {
+                if (i < lv) break;
+                Console.WriteLine($"==> {entry.Key}");
+                Console.WriteLine(entry.Value.JoinIntoString("\n"));
+                i--;
+            }
+        }
+
+        public static void OutREPLDifferenceBy(string version)
+        {
+            foreach (var entry in DocsIntergration.REPLVersionsData.Reverse())
             {
                 if (entry.Key.StartsWith(version)) return;
                 Console.WriteLine($"==> {entry.Key}");
@@ -144,7 +199,7 @@ namespace slt
 
         public static void OutSpecification()
         {
-            Console.WriteLine(DocsIntergration.Specification.JoinIntoString("\n"));
+            Console.WriteLine(Specification.JoinIntoString("\n"));
         }
 
         public static void OutHelp()
@@ -170,8 +225,10 @@ namespace slt
             var executionContext = new ExecutionContext();
             try
             {
-                var st = parser.Parse(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
-                Console.WriteLine(st.GetValue(executionContext) ?? "null");
+                var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
+                var o = st.GetValue(executionContext) ?? "null";
+                if (o is string) o = $"\"{o}\"";
+                if (show_result) Console.WriteLine(o);
             }
             catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { Console.WriteLine($"\"{filename}\" is directory. For now REPL does not support directories!"); }
             catch (FileNotFoundException) { Console.WriteLine($"File \"{filename}\" not found."); }
@@ -182,11 +239,16 @@ namespace slt
             return executionContext;
         }
 
-        public static void StartREPL(ExecutionContext myExecutionContext = null)
+        public static void OutREPLInfo()
         {
             Console.Title = $"{REPLVersion.Name}";
             OutCurrentVersion();
             Console.WriteLine($"Maded by Alexandr Kotov. Pegasus is cool!");
+        }
+
+        public static void StartREPL(ExecutionContext myExecutionContext = null)
+        {
+            OutREPLInfo();
 
             var parser = new SLThree.Parser();
             var executionContext = myExecutionContext ?? new ExecutionContext();
@@ -194,10 +256,21 @@ namespace slt
             {
                 Console.Write(">>> ");
                 var code = Console.ReadLine();
-                if (code == "quit()") return;
+                if (code == "quit();") return;
+                if (code == "clear();")
+                {
+                    Console.Clear();
+                    OutREPLInfo();
+                    continue;
+                }
+                if (code == "reset();")
+                {
+                    executionContext = new ExecutionContext();
+                    continue;
+                }
                 try
                 {
-                    var st = parser.Parse(code);
+                    var st = parser.ParseScript(code);
                     Console.WriteLine(st.GetValue(executionContext) ?? "null");
                 }
                 catch (Exception e)
@@ -206,8 +279,6 @@ namespace slt
                 }
             }
         }
-
-        public static ConsoleColor CurrentEditionColor = ConsoleColor.Yellow;
 
         public static void Main(string[] args)
         {
@@ -227,10 +298,16 @@ namespace slt
             if (HasArgument("-r") || args.Length == 0) StartREPL();
             if (TryGetArgument("-v", out var version)) OutVersion(version);
             else if (HasArgument("-v")) OutCurrentVersion();
+            if (TryGetArgument("-V", out var repl_version)) OutREPLVersion(repl_version);
             if (TryGetArgument("-d", out var last_versions, () => int.MaxValue.ToString()))
             {
                 if (int.TryParse(last_versions, out var lasts)) OutDifference(lasts);
                 else OutDifferenceBy(last_versions);
+            }
+            if (TryGetArgument("-D", out var last_repl_versions, () => int.MaxValue.ToString()))
+            {
+                if (int.TryParse(last_repl_versions, out var lasts)) OutREPLDifference(lasts);
+                else OutREPLDifferenceBy(last_repl_versions);
             }
             if (HasArgument("-s")) OutSpecification();
             if (HasArgument("-h")) OutHelp();
