@@ -77,6 +77,7 @@
     <Compile Include="Lexems\BaseLexem.cs" />
     <Compile Include="Lexems\Literals\ULongLiteral.cs" />
     <Compile Include="SourceContext.cs" />
+    <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
     <Compile Include="Statements\ExpressionStatement.cs" />
     <Compile Include="Statements\StatementListStatement.cs" />
