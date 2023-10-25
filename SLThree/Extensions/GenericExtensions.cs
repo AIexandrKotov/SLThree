@@ -20,6 +20,13 @@ namespace SLThree.Extensions
             return sb.ToString();
         }
 
+        public static IList<T> AddAndRet<T>(this IList<T> list, T item)
+        {
+            var ret = new List<T>(list);
+            ret.Insert(0, item);
+            return ret;
+        }
+
         public static string ReplaceAll(this string str, IDictionary<string, string> replacer)
         {
             foreach (var x in replacer)

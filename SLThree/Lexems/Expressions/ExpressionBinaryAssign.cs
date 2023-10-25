@@ -10,7 +10,12 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var right = Right.GetValue(context);
-            if (Left is NameLexem nl)
+            if (Left is MemberAccess memberAccess)
+            {
+                memberAccess.SetValue(context, right);
+                return right;
+            }
+            else if (Left is NameLexem nl)
             {
                 context.LocalVariables[nl.Name] = right;
                 return right;

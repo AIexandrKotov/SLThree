@@ -50,7 +50,9 @@
     <Compile Include="Exceptions\UnsupportedTypesInBinaryExpression.cs" />
     <Compile Include="Exceptions\UnsupportedTypesInUnaryExpression.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Lexems\CastLexem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
+    <Compile Include="Lexems\Expressions\MemberAccess.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryEquals.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryGreaterThan.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryGreaterThanEquals.cs" />
@@ -72,21 +74,38 @@
     <Compile Include="Lexems\Expressions\ExpressionBinary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryRem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionUnary.cs" />
+    <Compile Include="Lexems\InvokeLexem.cs" />
+    <Compile Include="Lexems\LambdaLexem.cs" />
+    <Compile Include="Lexems\Literals\BoolLiteral.cs" />
+    <Compile Include="Lexems\Literals\ByteLiteral.cs" />
     <Compile Include="Lexems\Literals\FloatLiteral.cs" />
+    <Compile Include="Lexems\Literals\IntLiteral.cs" />
     <Compile Include="Lexems\Literals\LongLiteral.cs" />
     <Compile Include="Lexems\Literals\Literal.cs" />
+    <Compile Include="Lexems\Literals\NullLiteral.cs" />
+    <Compile Include="Lexems\Literals\SByteLiteral.cs" />
+    <Compile Include="Lexems\Literals\SelfLiteral.cs" />
+    <Compile Include="Lexems\Literals\ShortLiteral.cs" />
+    <Compile Include="Lexems\Literals\StringLiteral.cs" />
+    <Compile Include="Lexems\Literals\UIntLiteral.cs" />
+    <Compile Include="Lexems\Literals\UShortLiteral.cs" />
+    <Compile Include="Lexems\NewLexem.cs" />
+    <Compile Include="Method.cs" />
     <Compile Include="Lexems\NameLexem.cs" />
     <Compile Include="Lexems\Literals\DoubleLiteral.cs" />
     <Compile Include="Lexems\BaseLexem.cs" />
     <Compile Include="Lexems\Literals\ULongLiteral.cs" />
+    <Compile Include="Lexems\TypeofLexem.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
+    <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
     <Compile Include="Statements\ExpressionStatement.cs" />
     <Compile Include="Statements\StatementListStatement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\BaseStatement.cs" />
+    <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileCycleStatement.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +115,7 @@
     <EmbeddedResource Include="docs\versions\0.1.1" />
     <EmbeddedResource Include="docs\versions\0.1.0" />
     <EmbeddedResource Include="docs\specification" />
+    <None Include="docs\versions\0.2.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>
