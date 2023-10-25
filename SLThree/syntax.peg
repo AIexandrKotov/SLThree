@@ -4,14 +4,15 @@
 @using SLThree.Extensions;
 
 file <BaseStatement> 
-    = _ v:statement_list _ EOF { v }
+    = "#SLT#" _ v:statement_list _ EOF { v }
 
 statement_list <BaseStatement>
     = st:statement_ws* comment? { new StatementListStatement(st, state) }
     / st:statement comment? { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
 statement_ws <BaseStatement>
-    = _ st:statement _ ";" { st }
+    = _ st:switch_statement _ { st }
+    / _ st:statement _ ";" { st }
     / _ st:while_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:block_statement _ { st }
@@ -19,9 +20,21 @@ statement_ws <BaseStatement>
 
 statement <BaseStatement>
     = _ st:condition_statement _ { st }
+    / _ st:switch_statement _  { st }
     / _ st:while_statement _  { st }
     / _ st:block_statement _ { st }
     / _ st:expr_statement _ { st }
+
+switch_statement <BaseStatement>
+    = "switch" _ "(" _ lex:lexem _ ")" _ "{" _ st:case_node_list _ "}" { new SwitchStatement(lex, st, state) }
+
+case_node_list <IList<SwitchStatement.Node>>
+    = case_node*
+
+case_node <SwitchStatement.Node>
+    = _ "case" _ lex:lexem _ ":" _ st:block_statement _ { new SwitchStatement.Node(lex, st, false) }
+    / _ "case" _ lex:lexem _ ":" _ st:statement _ ";" _ { new SwitchStatement.Node(lex, st, false) }
+    / _ "case" _ lex:lexem _ ":" _ { new SwitchStatement.Node(lex, null, true) }
 
 block_statement <BaseStatement>
     = "{" _ st:statement_list _ "}" { st }

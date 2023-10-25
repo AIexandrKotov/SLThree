@@ -42,9 +42,9 @@ using System.Linq;
 public static class SLTVersion {
     public const string Major = "0"; //vh
     public const string Minor = "1"; //vh
-    public const string Build = "1"; //vh
-    public const string Revision = "168"; //vh
-    public const long LastUpdate = 638336881507973753; //vh
+    public const string Build = "2"; //vh
+    public const string Revision = "231"; //vh
+    public const long LastUpdate = 638337402285929160; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
@@ -52,6 +52,31 @@ public static class SLTVersion {
     public const string Name = "SLThree";
     public const string Author = "Alexandr Kotov";
     public const string Copyright = Author + " 2023";
+
+    internal static string[] ReadStrings(Stream stream)
+    {
+        using (var sr = new StreamReader(stream))
+        {
+            return sr.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.None);
+        }
+    }
+    public static SortedDictionary<string, string[]> VersionsData { get; private set; }
+    public static string[] Specification { get; private set; }
+    static SLTVersion()
+    {
+        var ass = Assembly.GetExecutingAssembly();
+        VersionsData = new SortedDictionary<string, string[]>(ass
+            .GetManifestResourceNames()
+            .Where(x => x.StartsWith("SLThree.docs.versions."))
+            .ToDictionary(
+                x => Path.GetFileName(x).Replace("SLThree.docs.versions.", ""),
+                x => { using (var stream = ass.GetManifestResourceStream(x)) return ReadStrings(stream); }
+            ));
+        using (var stream = ass.GetManifestResourceStream("SLThree.docs.specification"))
+        {
+            Specification = ReadStrings(stream);
+        }
+    }
 
     public static string Edition { get; } = "Lovely 64 bits";
 
