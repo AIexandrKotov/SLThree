@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
+using Pegasus.Common;
 using SLThree;
 using SLThree.Extensions;
 
@@ -246,7 +249,12 @@ namespace slt
         #endregion
 
         #region Universal outs
-        private static bool out_extended_exceptions = false;
+        private static bool out_extended_exceptions
+#if DEBUG
+            = true;
+#else
+            = false;
+#endif
         public static void OutException(Exception e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -279,17 +287,18 @@ namespace slt
 
         public static void OutAsOutput(object value)
         {
+            if (value is null) return;
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(GetOutput(value) ?? "null");
+            Console.WriteLine(GetOutput(value));
             Console.ResetColor();
         }
-        #endregion
+#endregion
 
-        #region Compiler and Interpreter
+#region Compiler and Interpreter
         public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
-            var executionContext = new ExecutionContext();
+            var executionContext = GetNewREPLContext();
             try
             {
                 var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
@@ -304,16 +313,106 @@ namespace slt
             }
             return executionContext;
         }
-        #endregion
+#endregion
 
-        #region REPL
+#region REPL
 
-        #region REPL Commands
+#region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
+        public static void OutUsingClasses(int table = -1, bool typed = false)
+        {
+            var local_usings = REPLContext.LocalVariables
+                .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
+                .ToDictionary(x => x.Key, x => x.Value?.Cast<MemberAccess.ClassAccess>().Name.FullName ?? "undefined");
+            OutAsWarning($"--- {local_usings.Count} CLASSES ---");
+            var max_variable_name = table;
+            if (table < 0) max_variable_name = 0;
+            if (local_usings.Count > 0 && table != -1)
+            {
+                max_variable_name = Math.Max(max_variable_name, local_usings.Max(x => x.Value.Length));
+            }
+            foreach (var x in local_usings)
+            {
+                Console.Write("    ");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write(x.Value.PadLeft(max_variable_name));
+                Console.ResetColor();
+                Console.Write(" as ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                var output = x.Key.Trim().GetTypeString();
+                Console.Write(output);
+                Console.ResetColor();
+                Console.WriteLine();
+            }
+        }
+
+        public static void OutLocalMethods(int table = -1, bool typed = false)
+        {
+            Dictionary<string, (string, string[], bool)> local_methods = REPLContext.LocalVariables
+                .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
+                .ToDictionary(x => x.Key, x =>
+                {
+                    if (x.Value is Method method)
+                    {
+                        return (string.Empty, method.ParamNames, true);
+                    }
+                    else if (x.Value is MethodInfo info)
+                    {
+                        return (info.ReturnType == typeof(void) ? "void" : info.ReturnType.GetTypeString(), info.GetParameters().Select(y => y.ParameterType.GetTypeString()).ToArray(), false);
+                    }
+                    return default;
+                });
+            OutAsWarning($"--- {local_methods.Count} METHODS ---");
+            var max_ret_type = table;
+            var max_method_name = table;
+            //var max_method_args = table;
+            if (table < 0)
+            {
+                max_ret_type = 0;
+                max_method_name = 0;
+                //max_method_args = 0;
+            }
+            if (local_methods.Count > 0 && table != -1)
+            {
+                max_ret_type = Math.Max(max_ret_type, local_methods.Max(x => x.Value.Item1?.Length ?? 0));
+                max_method_name = Math.Max(max_method_name, local_methods.Max(x => x.Key.Length));
+                //max_method_args = Math.Max(max_method_args, local_methods.Max(x => x.Value.Item2.Sum(m => m.Length) + 2 * (x.Value.Item2.Length - 1)));
+            }
+            foreach (var x in local_methods)
+            {
+                Console.Write("    ");
+                if (x.Value.Item3)
+                {
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write("SLT".PadLeft(max_ret_type));
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(x.Value.Item1.PadLeft(max_ret_type));
+                    Console.ResetColor();
+                }
+                Console.Write(" ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(x.Key.PadRight(max_method_name));
+                Console.ResetColor();
+                Console.Write("(");
+                Console.ForegroundColor = x.Value.Item3 ? ConsoleColor.Magenta : ConsoleColor.Cyan;
+                Console.Write(x.Value.Item2.JoinIntoString(", "));
+                Console.ResetColor();
+                Console.Write(") ");
+                Console.WriteLine();
+            }
+        }
+
         public static void OutLocalVariables(int table = -1, bool typed = false)
         {
-            OutAsWarning($"Local variables[{REPLContext.LocalVariables.Count}]");
+            var local_variables = REPLContext.LocalVariables
+                .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
+                .ToDictionary(x => x.Key, x => x.Value);
+            OutAsWarning($"--- {local_variables.Count} VARIABLES ---");
             var max_variable_name = table;
             var max_variable_type = table;
             if (table < 0)
@@ -324,17 +423,17 @@ namespace slt
             var types = default(IDictionary<string, Type>);
             if (typed)
             {
-                types = REPLContext.LocalVariables.ToDictionary(x => x.Key, x => x.Value?.GetType());
+                types = local_variables.ToDictionary(x => x.Key, x => x.Value?.GetType());
             }
-            if (REPLContext.LocalVariables.Count > 0 && table != -1)
+            if (local_variables.Count > 0 && table != -1)
             {
                 if (typed)
                 {
                     max_variable_type = Math.Max(max_variable_type, types.Max(x => x.Value?.Name.Length ?? 1));
                 }
-                max_variable_name = Math.Max(max_variable_name, REPLContext.LocalVariables.Keys.Max(x => x.Length));
+                max_variable_name = Math.Max(max_variable_name, local_variables.Keys.Max(x => x.Length));
             }
-            foreach (var x in REPLContext.LocalVariables)
+            foreach (var x in local_variables)
             {
                 Console.Write("    ");
                 Console.ForegroundColor = ConsoleColor.White;
@@ -349,7 +448,7 @@ namespace slt
                     else
                     {
                         Console.Write(": ");
-                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.Cyan;
                         Console.Write((types[x.Key]?.Name ?? "").PadRight(max_variable_type));
                         Console.ResetColor();
                     }
@@ -361,6 +460,13 @@ namespace slt
                 Console.ResetColor();
                 Console.WriteLine();
             }
+        }
+
+        public static void OutLocals(int table = -1, bool typed = false)
+        {
+            OutUsingClasses(table, typed);
+            OutLocalMethods(table, typed);
+            OutLocalVariables(table, typed);
         }
 
         public static Dictionary<string, string> ShortREPLCommands = new Dictionary<string, string>()
@@ -378,6 +484,8 @@ namespace slt
             { "-r", "--reset" },
             { "-H", "--conhelp" },
             { "-l", "--locals" },
+            { "-p", "--perfomance" },
+            { "-e", "--exex" },
         };
         public static Dictionary<string, Action> REPLCommands = new Dictionary<string, Action>()
         {
@@ -386,6 +494,14 @@ namespace slt
             { "--help", () => OutREPLHelp() },
             { "--conhelp", () => OutHelp() },
         };
+        public static ExecutionContext GetNewREPLContext()
+        {
+            var context = new ExecutionContext();
+            context.LocalVariables["println"] = Method.Create<object>(Console.WriteLine);
+            context.LocalVariables["print"] = Method.Create<object>(Console.Write);
+            context.LocalVariables["readln"] = Method.Create(Console.ReadLine);
+            return context;
+        }
         public static bool ExtendedCommands(string command)
         {
             var wrds = command.Split(new char[] { '\n', '\r', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
@@ -398,17 +514,24 @@ namespace slt
                 var typed = wrds.HasArgument("--typed");
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
-                    OutLocalVariables(table, typed);
+                    OutLocals(table, typed);
                 }
                 else
                 {
-                    OutLocalVariables(-1, typed);
+                    OutLocals(-1, typed);
                 }
                 any_executed = true;
             }
-            if (wrds.TryGetArgument("--/EE", out var outEEstr) && bool.TryParse(outEEstr, out var outEE))
+            if (wrds.HasArgument("-p", ShortREPLCommands))
             {
-                out_extended_exceptions = outEE;
+                REPLPerfomance = !REPLPerfomance;
+                OutAsWarning($"Counting perfomance is {REPLPerfomance}");
+                any_executed = true;
+            }
+            if (wrds.HasArgument("-e", ShortREPLCommands))
+            {
+                out_extended_exceptions = !out_extended_exceptions;
+                OutAsWarning($"Showing extended exceptions is {out_extended_exceptions}");
                 any_executed = true;
             }
             if (wrds.HasArgument("-r", ShortREPLCommands))
@@ -424,7 +547,7 @@ namespace slt
                 }
                 else
                 {
-                    REPLContext = new ExecutionContext();
+                    REPLContext = GetNewREPLContext();
                     OutAsWarning("Context cleared");
                 }
                 any_executed = true;
@@ -480,7 +603,7 @@ namespace slt
                 OutAsWarning("Your request does nothing do");
             }
         }
-        #endregion
+#endregion
 
         public static void REPLShortVersion()
         {
@@ -519,13 +642,15 @@ namespace slt
         private static Parser REPLParser;
         private static bool REPLLoop;
         private static ExecutionContext REPLContext;
+        private static bool REPLPerfomance = false;
+        private static Stopwatch ParsingStopwatch;
+        private static Stopwatch ExecutinStopwatch;
         public static void StartREPL(ExecutionContext myExecutionContext = null)
         {
             OutREPLInfo();
 
-
             REPLParser = new SLThree.Parser();
-            REPLContext = myExecutionContext ?? new ExecutionContext();
+            REPLContext = myExecutionContext ?? GetNewREPLContext();
             REPLLoop = true;
 
             bool cancelationToken = false;
@@ -542,8 +667,10 @@ namespace slt
             Console.CancelKeyPress += cancelKeyPress;
             while (REPLLoop)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(">>> ");
                 var code = Console.ReadLine();
+                Console.ResetColor();
                 if (string.IsNullOrWhiteSpace(code)) continue;
                 if (code.StartsWith(">"))
                 {
@@ -553,10 +680,23 @@ namespace slt
                 {
                     try
                     {
+                        if (REPLPerfomance) ParsingStopwatch = Stopwatch.StartNew();
                         var st = REPLParser.ParseScript(code);
+                        if (REPLPerfomance) ParsingStopwatch.Stop();
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        if (REPLPerfomance) ExecutinStopwatch = Stopwatch.StartNew();
                         var value = st.GetValue(REPLContext.PrepareToInvoke());
+                        if (REPLPerfomance) ExecutinStopwatch.Stop();
                         cancelationToken = false;
+                        Console.ResetColor();
                         OutAsOutput(value);
+                        if (REPLPerfomance)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.WriteLine($"Computed in {(ExecutinStopwatch.Elapsed + ParsingStopwatch.Elapsed).TotalMilliseconds} ms " +
+                                $"(Parse: {ParsingStopwatch.Elapsed.TotalMilliseconds} ms, Exec: {ExecutinStopwatch.Elapsed.TotalMilliseconds} ms)");
+                            Console.ResetColor();
+                        }
                     }
                     catch (Exception e)
                     {
@@ -566,7 +706,7 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-        #endregion
+#endregion
 
         public static void Main(string[] args)
         {
