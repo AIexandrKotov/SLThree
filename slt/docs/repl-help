@@ -1,3 +1,13 @@
-﻿q quit    - Quit REPL
-r reset   - Reset context
-c clear   - Clear console
+﻿To put in REPL Commands begin with >
+    -q --quit              - Quit REPL
+    -l --locals            - Outs local variables
+         --typed               - with types
+         --table [width]       - as table with minimum column width
+    -r --reset             - Clear context
+         --onlynull            - clear only null-value variables
+       --/EE <bool>        - Set extended out exceptions
+
+    -c --clear     - Clear console
+    -h --help      - Outs this text
+    -H --conhelp   - Outs same text of console args
+    allows -s -d -D -v -V of console arguments
