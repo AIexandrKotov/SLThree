@@ -1,7 +1,13 @@
-﻿without keys            - runs interpreter
--s --specification      - outs SLT specification
--v --version            - outs info of current version
--v --version <V>        - outs difference of version V
--d --difference <INT>   - outs diffs of INT last versions
--d --difference <STR>   - outs diffs by STR
--h --help               - outs this text
+﻿----- slt.exe exec arguments -----
+    <filename> [-r]        - runs file and show result
+    -e --encoding <E>      - uses encoding E for reading file
+
+    -r --repl or 0 args    - start REPL
+    -s --specification     - outs SLT specification
+    -v --version           - outs info of current version
+    -v --version <V>       - outs difference of version V
+    -d --diff <INT>        - outs diffs of INT last versions
+    -d --diff <STR>        - outs diffs by STR
+    -V --repl-version <V>  - outs difference of version V
+    -D --repl-diff <INT>   - outs diffs of INT last REPL versions
+    -D --repl-diff <STR>   - outs diffs by STR in REPL versions

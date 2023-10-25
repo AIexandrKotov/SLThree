@@ -10,9 +10,9 @@ namespace slt
 {
     public class DocsIntergration
     {
-        public static Dictionary<string, string[]> VersionsData { get; private set; }
-        public static string[] Specification { get; private set; }
+        public static SortedDictionary<string, string[]> REPLVersionsData { get; private set; }
         public static string[] Help { get; private set; }
+        public static string[] REPLHelp { get; private set; }
 
         internal static string[] ReadStrings(Stream stream)
         {
@@ -25,20 +25,20 @@ namespace slt
         static DocsIntergration()
         {
             var SLTAssembly = Assembly.GetExecutingAssembly();
-            VersionsData = SLTAssembly
+            REPLVersionsData = new SortedDictionary<string, string[]>(SLTAssembly
                 .GetManifestResourceNames()
                 .Where(x => x.StartsWith("slt.docs.versions."))
                 .ToDictionary(
                     x => Path.GetFileName(x).Replace("slt.docs.versions.", ""),
                     x => { using (var stream = SLTAssembly.GetManifestResourceStream(x)) return ReadStrings(stream); }
-                );
-            using (var stream = SLTAssembly.GetManifestResourceStream("slt.docs.specification"))
-            {
-                Specification = ReadStrings(stream);
-            }
+                ));
             using (var stream = SLTAssembly.GetManifestResourceStream("slt.docs.help"))
             {
                 Help = ReadStrings(stream);
+            }
+            using (var stream = SLTAssembly.GetManifestResourceStream("slt.docs.repl-help"))
+            {
+                REPLHelp = ReadStrings(stream);
             }
         }
     }
