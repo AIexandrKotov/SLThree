@@ -15,6 +15,11 @@ namespace SLThree
         {
             Name = name;
         }
+        public NameLexem(string name, string next, Cursor cursor) : base(cursor)
+        {
+            Name = name;
+            if (next.Length != 0) Name += $".{next}";
+        }
 
         public override string ToString() => Name;
 
