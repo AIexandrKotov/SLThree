@@ -13,6 +13,9 @@ namespace SLThree
             object GetValue(ExecutionContext context);
         }
 
+        public void Return() { }
+        public ExecutionContext PrepareToInvoke() { return this; }
+
         public Dictionary<string, object> LocalVariables { get; set; } = new Dictionary<string, object>();
     }
 }
