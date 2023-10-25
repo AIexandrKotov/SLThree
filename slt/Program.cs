@@ -12,6 +12,11 @@ namespace slt
 {
     internal class Program
     {
+        static Program()
+        {
+            InitSLThreeAssemblyInfo();
+        }
+
         #region Arguments
         private static readonly Dictionary<string, string> ShortCommands = new Dictionary<string, string>()
         {
@@ -24,8 +29,19 @@ namespace slt
             { "-V", "--repl-version" },
             { "-D", "--repl-difference" },
         };
-
         private static string[] RunArguments;
+        private static Dictionary<string, Encoding> EncodingAliases = new Dictionary<string, Encoding>()
+        {
+            { "utf-8", Encoding.UTF8 },
+            { "utf-16", Encoding.Unicode },
+            { "unicode", Encoding.Unicode },
+            { "ansi", Encoding.GetEncoding(1250) },
+        };
+        private static string SLTVersionWithoutRevision;
+        private static string SLTRevision;
+        private static long SLTTime;
+        private static SortedDictionary<string, string[]> SLThreeVersions;
+        private static string[] Specification;
         private static bool HasArgument(string arg) => RunArguments.Contains(arg.ReplaceAll(ShortCommands));
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
         {
@@ -50,11 +66,10 @@ namespace slt
             }
         }
         private static string GetArgument(string arg) => TryGetArgument(arg, out var value) ? value : null;
-
         public static Encoding GetEncoding(string str)
         {
             if (str == null) return Encoding.UTF8;
-            else if (PublicEncodings.TryGetValue(str, out var encoding)) return encoding;
+            else if (EncodingAliases.TryGetValue(str, out var encoding)) return encoding;
             else
             {
                 try
@@ -69,14 +84,19 @@ namespace slt
                 }
             }
         }
-        private static Dictionary<string, Encoding> PublicEncodings = new Dictionary<string, Encoding>()
+        private static void InitSLThreeAssemblyInfo()
         {
-            { "utf-8", Encoding.UTF8 },
-            { "utf-16", Encoding.Unicode },
-            { "unicode", Encoding.Unicode },
-            { "ansi", Encoding.GetEncoding(1250) },
-        };
+            var ass = Assembly.GetAssembly(typeof(SLTVersion));
+            var ver = ass.GetName().Version;
+            SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
+            SLTRevision = ver.Revision.ToString();
+            var sltver = ass.GetType("SLTVersion");
+            SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
+            SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
+            Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
+        }
 
+        #region Outs
         public static void OutCurrentVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -112,24 +132,6 @@ namespace slt
             Console.ResetColor();
 
         }
-
-        public static string SLTVersionWithoutRevision;
-        public static string SLTRevision;
-        public static long SLTTime;
-        static Program()
-        {
-            var ass = Assembly.GetAssembly(typeof(SLTVersion));
-            var ver = ass.GetName().Version;
-            SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
-            SLTRevision = ver.Revision.ToString();
-            var sltver = ass.GetType("SLTVersion");
-            SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
-            SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
-            Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
-        }
-
-        private static SortedDictionary<string, string[]> SLThreeVersions;
-        private static string[] Specification;
 
         public static void OutVersion(string version)
         {
@@ -202,12 +204,20 @@ namespace slt
             Console.WriteLine(Specification.JoinIntoString("\n"));
         }
 
+        public static void OutREPLHelp()
+        {
+            Console.WriteLine(DocsIntergration.REPLHelp.JoinIntoString("\n"));
+        }
+
         public static void OutHelp()
         {
             Console.WriteLine(DocsIntergration.Help.JoinIntoString("\n"));
         }
         #endregion
-        
+
+        #endregion
+
+        #region Universal outs
         public static void OutException(Exception e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -219,6 +229,23 @@ namespace slt
             Console.ResetColor();
         }
 
+        public static void OutAsException(string s)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(s);
+            Console.ResetColor();
+        }
+
+        public static void OutAsOutput(object value)
+        {
+            if (value is string) value = $"\"{value}\"";
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(value ?? "null");
+            Console.ResetColor();
+        }
+        #endregion
+
+        #region Compiler and Interpreter
         public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
@@ -226,59 +253,100 @@ namespace slt
             try
             {
                 var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
-                var o = st.GetValue(executionContext) ?? "null";
-                if (o is string) o = $"\"{o}\"";
-                if (show_result) Console.WriteLine(o);
+                if (show_result) OutAsOutput(st.GetValue(executionContext));
             }
-            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { Console.WriteLine($"\"{filename}\" is directory. For now REPL does not support directories!"); }
-            catch (FileNotFoundException) { Console.WriteLine($"File \"{filename}\" not found."); }
+            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
+            catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
             catch (Exception e)
             {
                 OutException(e);
             }
             return executionContext;
         }
+        #endregion
+
+        #region REPL
+
+        #region REPL Commands
+
+        public static Dictionary<string, string> ShortREPLCommands = new Dictionary<string, string>()
+        {
+            { "h", "help" },
+            { "q", "quit" },
+            { "c", "clear" },
+            { "r", "reset" },
+        };
+        public static Dictionary<string, Action<string>> REPLCommands = new Dictionary<string, Action<string>>()
+        {
+            { "help", s => OutREPLHelp() },
+            { "quit", s => REPLLoop = false },
+            { "clear", s => { Console.Clear(); OutREPLInfo(); } },
+            { "reset", s => REPLContext = new ExecutionContext() },
+        };
+        public static string REPLApplyShort(string command)
+        {
+            foreach (var x in ShortCommands)
+                if (command == x.Key) return x.Value;
+            return command;
+        }
+        public static void REPLCommand(string command)
+        {
+            command = REPLApplyShort(command.Substring(1));
+            var found = REPLCommands.ContainsKey(command);
+            if (found)
+            {
+                REPLCommands[command].Invoke(command);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(command)) OutAsException("Empty REPL Command");
+                else OutAsException($"REPL Command \"{command}\" not found. Please, check list of commands with >help.");
+            }
+        }
+        #endregion
 
         public static void OutREPLInfo()
         {
             Console.Title = $"{REPLVersion.Name}";
             OutCurrentVersion();
             Console.WriteLine($"Maded by Alexandr Kotov. Pegasus is cool!");
+            Console.WriteLine($"get REPL comands - >h");
         }
 
+        private static Parser REPLParser;
+        private static bool REPLLoop;
+        private static ExecutionContext REPLContext;
         public static void StartREPL(ExecutionContext myExecutionContext = null)
         {
             OutREPLInfo();
 
-            var parser = new SLThree.Parser();
-            var executionContext = myExecutionContext ?? new ExecutionContext();
-            while (true)
+            REPLParser = new SLThree.Parser();
+            REPLContext = myExecutionContext ?? new ExecutionContext();
+            REPLLoop = true;
+            while (REPLLoop)
             {
                 Console.Write(">>> ");
                 var code = Console.ReadLine();
-                if (code == "quit();") return;
-                if (code == "clear();")
+                if (code.StartsWith(">"))
                 {
-                    Console.Clear();
-                    OutREPLInfo();
-                    continue;
+                    REPLCommand(code);
                 }
-                if (code == "reset();")
+                else
                 {
-                    executionContext = new ExecutionContext();
-                    continue;
-                }
-                try
-                {
-                    var st = parser.ParseScript(code);
-                    Console.WriteLine(st.GetValue(executionContext) ?? "null");
-                }
-                catch (Exception e)
-                {
-                    OutException(e);
+                    try
+                    {
+                        var st = REPLParser.ParseScript(code);
+                        var value = st.GetValue(REPLContext);
+                        OutAsOutput(value);
+                    }
+                    catch (Exception e)
+                    {
+                        OutException(e);
+                    }
                 }
             }
         }
+        #endregion
 
         public static void Main(string[] args)
         {

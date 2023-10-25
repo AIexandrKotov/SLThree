@@ -12,6 +12,7 @@ namespace slt
     {
         public static SortedDictionary<string, string[]> REPLVersionsData { get; private set; }
         public static string[] Help { get; private set; }
+        public static string[] REPLHelp { get; private set; }
 
         internal static string[] ReadStrings(Stream stream)
         {
@@ -34,6 +35,10 @@ namespace slt
             using (var stream = SLTAssembly.GetManifestResourceStream("slt.docs.help"))
             {
                 Help = ReadStrings(stream);
+            }
+            using (var stream = SLTAssembly.GetManifestResourceStream("slt.docs.repl-help"))
+            {
+                REPLHelp = ReadStrings(stream);
             }
         }
     }

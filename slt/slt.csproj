@@ -61,6 +61,9 @@
       <Name>SLThree</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\repl-help" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>../building/IncREPLRevision.bat</PreBuildEvent>

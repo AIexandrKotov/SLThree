@@ -1,0 +1,3 @@
+﻿q quit    - Quit REPL
+r reset   - Reset context
+c clear   - Clear console
