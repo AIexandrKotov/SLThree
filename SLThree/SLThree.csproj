@@ -79,6 +79,7 @@
     <Compile Include="Lexems\Literals\BoolLiteral.cs" />
     <Compile Include="Lexems\Literals\ByteLiteral.cs" />
     <Compile Include="Lexems\Literals\FloatLiteral.cs" />
+    <Compile Include="Lexems\Literals\GlobalLiteral.cs" />
     <Compile Include="Lexems\Literals\IntLiteral.cs" />
     <Compile Include="Lexems\Literals\LongLiteral.cs" />
     <Compile Include="Lexems\Literals\Literal.cs" />

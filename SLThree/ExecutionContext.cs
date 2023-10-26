@@ -19,16 +19,19 @@ namespace SLThree
 
         public object ReturnedValue;
 
-        public class PredWrap
+        public static ContextWrap global = new ContextWrap(new ExecutionContext());
+
+        public class ContextWrap
         {
             public ExecutionContext pred;
-            public PredWrap(ExecutionContext pred)
+            public ContextWrap(ExecutionContext pred)
             {
                 this.pred = pred;
             }
         }
         internal ExecutionContext PreviousContext;
-        public PredWrap pred => new PredWrap(PreviousContext);
+        public ContextWrap pred => new ContextWrap(PreviousContext);
+        public ContextWrap direct => new ContextWrap(this);
 
         public void Return() { Returned = true; ReturnedValue = null; }
         public void Return(object o) { Returned = true; ReturnedValue = o; }

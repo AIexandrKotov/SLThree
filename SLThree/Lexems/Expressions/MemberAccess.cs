@@ -45,7 +45,7 @@ namespace SLThree
 
             if (left != null)
             {
-                if (left is ExecutionContext.PredWrap pred)
+                if (left is ExecutionContext.ContextWrap pred)
                 {
                     if (Right is NameLexem predName)
                     {
@@ -85,6 +85,18 @@ namespace SLThree
 
             if (left != null)
             {
+                if (left is ExecutionContext.ContextWrap wrap)
+                {
+                    context = wrap.pred;
+                    var has_access_2 = left is ClassAccess access_2;
+                    var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
+                    if (Right is NameLexem nameLexem2)
+                    {
+                        var name = Right.ToString().Replace(" ", "");
+                        context.LocalVariables[name] = value;
+                    }
+                    return;
+                }
                 var has_access = left is ClassAccess access;
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null)
