@@ -39,9 +39,17 @@ namespace SLThree
 
             throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), Right?.GetType());
         }
+
+        private bool counted_contextwrapcache;
+        private string variable_name;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
+
+            if (counted_contextwrapcache)
+            {
+                return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+            }
 
             if (left != null)
             {
@@ -49,7 +57,9 @@ namespace SLThree
                 {
                     if (Right is NameLexem predName)
                     {
-                        return pred.pred.LocalVariables[predName.ToString().Replace(" ", "")];
+                        variable_name = predName.ToString().Replace(" ", "");
+                        counted_contextwrapcache = true;
+                        return pred.pred.LocalVariables.GetValue(variable_name).Item1;
                     }
                     else if (Right is InvokeLexem invokeLexem)
                     {
@@ -79,9 +89,18 @@ namespace SLThree
 
             throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), Right?.GetType());
         }
+
+        private bool counted_other_context_assign;
+        private string other_context_name;
         public void SetValue(ExecutionContext context, object value)
         {
             var left = Left.GetValue(context);
+
+            if (counted_other_context_assign)
+            {
+                (left as ExecutionContext.ContextWrap).pred.LocalVariables.SetValue(other_context_name, value);
+                return;
+            }
 
             if (left != null)
             {
@@ -92,8 +111,9 @@ namespace SLThree
                     var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameLexem nameLexem2)
                     {
-                        var name = Right.ToString().Replace(" ", "");
-                        context.LocalVariables[name] = value;
+                        other_context_name = Right.ToString().Replace(" ", "");
+                        counted_other_context_assign = true;
+                        context.LocalVariables.SetValue(other_context_name, value);
                     }
                     return;
                 }

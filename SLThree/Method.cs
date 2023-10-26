@@ -15,7 +15,7 @@ namespace SLThree
             var ret = new ExecutionContext();
             ret.PreviousContext = context;
             for (var i = 0; i < ParamNames.Length; i++)
-                ret.LocalVariables[ParamNames[i]] = arguments[i];
+                ret.LocalVariables.SetValue(ParamNames[i], arguments[i]);
             return ret;
         }
 

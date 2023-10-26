@@ -20,9 +20,15 @@ namespace SLThree
 
         public override string ToString() => $"{Name}({Arguments.JoinIntoString(", ")})";
 
+        private bool get_counted_name;
+        private string get_name;
         public object GetValue(ExecutionContext context, object[] args)
         {
-            var o = context.LocalVariables[Name.ToString().Replace(" ", "")];
+            if (!get_counted_name)
+            {
+                get_name = Name.ToString().Replace(" ", "");
+            }
+            var o = context.LocalVariables.GetValue(get_name).Item1;
 
             if (o is BaseLexem bl) return bl.GetValue(context);
             else if (o is MethodInfo mi)
