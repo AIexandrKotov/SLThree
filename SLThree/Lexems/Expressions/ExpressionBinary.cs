@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public abstract class ExpressionBinary : BaseLexem
+    public abstract class ExpressionBinary : BoxSupportedLexem
     {
-        public BaseLexem Left;
-        public BaseLexem Right;
+        public BoxSupportedLexem Left;
+        public BoxSupportedLexem Right;
+        protected SLTSpeedyObject reference;
 
-        public ExpressionBinary(BaseLexem left, BaseLexem right, Cursor cursor) : base(cursor)
+        public ExpressionBinary(BoxSupportedLexem left, BoxSupportedLexem right, Cursor cursor) : base(cursor)
         {
             Left = left;
             Right = right;

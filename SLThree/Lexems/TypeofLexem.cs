@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class TypeofLexem : BaseLexem
+    public class TypeofLexem : BoxSupportedLexem
     {
         public BaseLexem Typename;
 
@@ -19,10 +19,19 @@ namespace SLThree
 
         public override string ToString() => $"{Typename}";
 
-        public override object GetValue(ExecutionContext context)
+        private Type type;
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            var x = Typename.ToString().Replace(" ", "");
-            return x.ToType();
+            if (type != null)
+            {
+                return ref type.ToSpeedy(ref reference);
+            }
+            else
+            {
+                var x = Typename.ToString().Replace(" ", "");
+                type = x.ToType();
+                return ref type.ToSpeedy(ref reference);
+            }
         }
     }
 }

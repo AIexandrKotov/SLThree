@@ -59,10 +59,10 @@ condition_statement <BaseStatement>
 expr_statement <ExpressionStatement> 
     = value:lexem { new ExpressionStatement(value, state) }
 
-lexem <BaseLexem>
+lexem <BoxSupportedLexem>
     = binary_4
 
-binary_4 <BaseLexem> -memoize
+binary_4 <BoxSupportedLexem> -memoize
     = left:binary_3 _ "=" _ right:binary_4 { new ExpressionBinaryAssign(left, right, state) }
     / left:binary_3 _ "+=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
     / left:binary_3 _ "-=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
@@ -87,7 +87,7 @@ binary_4 <BaseLexem> -memoize
     }
     / left:binary_3 { left }
 
-binary_3 <BaseLexem> -memoize
+binary_3 <BoxSupportedLexem> -memoize
     = left:binary_3 _ "==" _ right:binary_2 { new ExpressionBinaryEquals(left, right, state) }
     / left:binary_3 _ "as" _ right:as_expr_right { new CastLexem(left, right, state) }
     / left:binary_3 _ "!=" _ right:binary_2 { new ExpressionBinaryUnequals(left, right, state) }
@@ -97,25 +97,25 @@ binary_3 <BaseLexem> -memoize
     / left:binary_3 _ "<" _ right:binary_2 { new ExpressionBinaryLessThan(left, right, state) }
     / left:binary_2 { left }
 
-binary_2 <BaseLexem> -memoize
+binary_2 <BoxSupportedLexem> -memoize
     = left:binary_2 _ "+" _ right:binary_1 { new ExpressionBinaryAdd(left, right, state) }
     / left:binary_2 _ "-" _ right:binary_1 { new ExpressionBinaryRem(left, right, state) }
     / left:binary_1 { left }
 
-binary_1 <BaseLexem> -memoize
+binary_1 <BoxSupportedLexem> -memoize
     = left:binary_1 _ "*" _ right:binary_0 { new ExpressionBinaryMultiply(left, right, state) }
     / left:binary_1 _ "/" _ right:binary_0 { new ExpressionBinaryDivide(left, right, state) }
     / left:binary_1 _ "%" _ right:binary_0 { new ExpressionBinaryMod(left, right, state) }
     / left:binary_0 { left }
 
-binary_0 <BaseLexem>
+binary_0 <BoxSupportedLexem>
     = _ left:binary_min _ { left }
 
-binary_min <BaseLexem>
+binary_min <BoxSupportedLexem>
     = "(" _ bin:binary_4 _ ")" { bin }
     / _ u:unary _ { u }
 
-unary <BaseLexem>
+unary <BoxSupportedLexem>
     = "+" _ left:lexem { new ExpressionUnaryAdd(left, state) }
     / i8:("-" _ ([0-9]+ ("i8"))) { new SByteLiteral(sbyte.Parse(i8.Replace("i8", ""), CultureInfo.InvariantCulture), state) }
     / i16:("-" _ ([0-9]+ ("i16"))) { new ShortLiteral(short.Parse(i16.Replace("i16", ""), CultureInfo.InvariantCulture), state) }
@@ -126,11 +126,11 @@ unary <BaseLexem>
     / "!" _ left:lexem { new ExpressionUnaryNot(left, state) }
     / _ p:primary _ { p }
 
-as_expr_right <BaseLexem> -memoize
+as_expr_right <BoxSupportedLexem> -memoize
     = left:as_expr_right _ "." _ right:name { new MemberAccess(left, right, state) }
     / right:name { right }
 
-primary <BaseLexem> -memoize
+primary <BoxSupportedLexem> -memoize
     = left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / "new" _ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
@@ -151,7 +151,7 @@ other_arg <BaseLexem> = ("," _ a:argument _ ) { a }
 
 argument <BaseLexem> = lexem
 
-num_literal <BaseLexem>
+num_literal <BoxSupportedLexem>
     = f32:([0-9]+ ("." [0-9]+)? ("f32")) { new FloatLiteral(float.Parse(f32.Replace("f32", ""), CultureInfo.InvariantCulture), state) }
     / f64:([0-9]+ ("." [0-9]+) ("f64")?) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }
     / f64:([0-9]+ ("f64")) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }

@@ -24,7 +24,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            context.LocalVariables.SetValue(Name, new MemberAccess.ClassAccess(Lexem.ToString().Replace(" ", "").ToType()));
+            context.LocalVariables.SetValue(Name, new MemberAccess.ClassAccess(Lexem.ToString().Replace(" ", "").ToType()).ToSpeedy());
             return null;
         }
     }

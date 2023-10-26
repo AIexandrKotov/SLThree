@@ -6,18 +6,19 @@ namespace SLThree
     public class ExpressionUnaryNot : ExpressionUnary
     {
         public override string Operator => "!";
-        public ExpressionUnaryNot(BaseLexem left, Cursor cursor) : base(left, cursor) { }
+        public ExpressionUnaryNot(BoxSupportedLexem left, Cursor cursor) : base(left, cursor) { }
         public ExpressionUnaryNot() : base() { }
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
-            switch (left)
+            var left = Left.GetBoxValue(context);
+
+            if (left.Type == SLTSpeedyObject.BoolType)
             {
-                case long v: return v == 0 ? 1 : 0;
-                case ulong v: return v == 0 ? 1 : 0;
-                case double v: return v == 0 ? 1 : 0;
+                reference.AsBool = !left.AsBool;
+                return ref reference;
             }
-            throw new UnsupportedTypesInUnaryExpression(this, left?.GetType());
+
+            throw new UnsupportedTypesInUnaryExpression(this, left.Boxed()?.GetType());
         }
     }
 }

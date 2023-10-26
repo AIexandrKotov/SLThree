@@ -6,18 +6,25 @@ namespace SLThree
     public class ExpressionUnaryAdd : ExpressionUnary
     {
         public override string Operator => "+";
-        public ExpressionUnaryAdd(BaseLexem left, Cursor cursor) : base(left, cursor) { }
+        public ExpressionUnaryAdd(BoxSupportedLexem left, Cursor cursor) : base(left, cursor) { }
         public ExpressionUnaryAdd() : base() { }
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
-            switch (left)
+            var left = Left.GetBoxValue(context);
+            
+            if (left.Type == SLTSpeedyObject.DoubleType)
             {
-                case long v: return +v;
-                case ulong v: return +v;
-                case double v: return +v;
+                reference.AsDouble = +left.AsDouble;
+                return ref reference;
             }
-            throw new UnsupportedTypesInUnaryExpression(this, left?.GetType());
+
+            if (left.Type == SLTSpeedyObject.LongType)
+            {
+                reference.AsLong = +left.AsLong;
+                return ref reference;
+            }
+
+            throw new UnsupportedTypesInUnaryExpression(this, left.Boxed()?.GetType());
         }
     }
 }

@@ -6,29 +6,58 @@ namespace SLThree
     public class ExpressionBinaryGreaterThan : ExpressionBinary
     {
         public override string Operator => ">";
-        public ExpressionBinaryGreaterThan(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryGreaterThan(BoxSupportedLexem left, BoxSupportedLexem right, Cursor cursor) : base(left, right, cursor) { }
         public ExpressionBinaryGreaterThan() : base() { }
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
-            var right = Right.GetValue(context).CastToMax();
-            if (left is long i1)
+            var left = Left.GetBoxValue(context);
+            var right = Right.GetBoxValue(context);
+            if (left.Type == SLTSpeedyObject.DoubleType)
             {
-                if (right is double d2) return i1 > d2;
-                if (right is long i2) return i1 > i2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsDouble > right.AsDouble);
+                    return ref reference;
+                }
+                if (right.Type == SLTSpeedyObject.ULongType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsDouble > right.AsULong);
+                    return ref reference;
+                }
+                if (right.Type == SLTSpeedyObject.LongType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsDouble > right.AsLong);
+                    return ref reference;
+                }
             }
-            else if (left is double d1)
+            if (left.Type == SLTSpeedyObject.ULongType)
             {
-                if (right is double d2) return d1 > d2;
-                if (right is long i2) return d1 > i2;
-                if (right is ulong u2) return d1 > u2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsULong > right.AsDouble);
+                    return ref reference;
+                }
+                if (right.Type == SLTSpeedyObject.ULongType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsULong > right.AsULong);
+                    return ref reference;
+                }
             }
-            else if (left is ulong u1)
+            if (left.Type == SLTSpeedyObject.LongType)
             {
-                if (right is double d2) return u1 > d2;
-                if (right is ulong u2) return u1 > u2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsLong > right.AsDouble);
+                    return ref reference;
+                }
+                if (right.Type == SLTSpeedyObject.LongType)
+                {
+                    reference = SLTSpeedyObject.GetBool(left.AsLong > right.AsLong);
+                    return ref reference;
+                }
             }
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), right?.GetType());
+
+            throw new UnsupportedTypesInBinaryExpression(this, left.Boxed()?.GetType(), right.Boxed()?.GetType());
         }
     }
 }

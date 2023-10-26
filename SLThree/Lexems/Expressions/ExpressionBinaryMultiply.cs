@@ -7,29 +7,69 @@ namespace SLThree
     public class ExpressionBinaryMultiply : ExpressionBinary
     {
         public override string Operator => "*";
-        public ExpressionBinaryMultiply(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryMultiply(BoxSupportedLexem left, BoxSupportedLexem right, Cursor cursor) : base(left, right, cursor) { }
         public ExpressionBinaryMultiply() : base() { }
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
-            var right = Right.GetValue(context).CastToMax();
-            if (left is long i1)
+            var left = Left.GetBoxValue(context);
+            var right = Right.GetBoxValue(context);
+            if (left.Type == SLTSpeedyObject.DoubleType)
             {
-                if (right is double d2) return i1 * d2;
-                if (right is long i2) return i1 * i2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = left;
+                    reference.AsDouble *= right.AsDouble;
+                    return ref reference;
+                }
+                else if (right.Type == SLTSpeedyObject.LongType)
+                {
+                    reference = left;
+                    reference.AsDouble *= right.AsLong;
+                    return ref reference;
+                }
+                else if (right.Type == SLTSpeedyObject.ULongType)
+                {
+                    reference = left;
+                    reference.AsDouble *= right.AsULong;
+                    return ref reference;
+                }
             }
-            else if (left is double d1)
+            else if (left.Type == SLTSpeedyObject.LongType)
             {
-                if (right is double d2) return d1 * d2;
-                if (right is long i2) return d1 * i2;
-                if (right is ulong u2) return d1 * u2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = left;
+                    reference.Type = SLTSpeedyObject.DoubleType;
+                    reference.AsDouble = reference.AsLong;
+                    reference.AsDouble *= right.AsDouble;
+                    return ref reference;
+                }
+                else if (right.Type == SLTSpeedyObject.LongType)
+                {
+                    reference = left;
+                    reference.AsLong *= right.AsLong;
+                    return ref reference;
+                }
             }
-            else if (left is ulong u1)
+            else if (left.Type == SLTSpeedyObject.ULongType)
             {
-                if (right is double d2) return u1 * d2;
-                if (right is ulong u2) return u1 * u2;
+                if (right.Type == SLTSpeedyObject.DoubleType)
+                {
+                    reference = left;
+                    reference.Type = SLTSpeedyObject.DoubleType;
+                    reference.AsDouble = reference.AsULong;
+                    reference.AsDouble *= right.AsDouble;
+                    return ref reference;
+                }
+                else if (right.Type == SLTSpeedyObject.ULongType)
+                {
+                    reference = left;
+                    reference.AsULong *= right.AsULong;
+                    return ref reference;
+                }
             }
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), right?.GetType());
+
+            throw new UnsupportedTypesInBinaryExpression(this, left.Boxed()?.GetType(), right.Boxed()?.GetType());
         }
     }
 }

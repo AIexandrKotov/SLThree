@@ -2,12 +2,17 @@
 
 namespace SLThree
 {
-    public class GlobalLiteral : BaseLexem
+    public class GlobalLiteral : BoxSupportedLexem
     {
         public GlobalLiteral(Cursor cursor) : base(cursor) { }
 
         public override string ToString() => "global";
 
-        public override object GetValue(ExecutionContext context) => ExecutionContext.global;
+        private SLTSpeedyObject reference;
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
+        {
+            reference = SLTSpeedyObject.GetAny(ExecutionContext.global);
+            return ref reference;
+        }
     }
 }

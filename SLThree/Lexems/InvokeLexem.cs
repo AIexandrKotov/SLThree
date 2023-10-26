@@ -3,11 +3,12 @@ using SLThree.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.InteropServices;
 
 namespace SLThree
 {
-    public class InvokeLexem : BaseLexem
+    public class InvokeLexem : BoxSupportedLexem
     {
         public BaseLexem Name;
         public IList<BaseLexem> Arguments;
@@ -27,8 +28,9 @@ namespace SLThree
             if (!get_counted_name)
             {
                 get_name = Name.ToString().Replace(" ", "");
+                get_counted_name = true;
             }
-            var o = context.LocalVariables.GetValue(get_name).Item1;
+            var o = context.LocalVariables.GetValue(get_name).Item1.Boxed();
 
             if (o is BaseLexem bl) return bl.GetValue(context);
             else if (o is MethodInfo mi)
@@ -38,7 +40,7 @@ namespace SLThree
             }
             else if (o is Method method)
             {
-                return method.GetValue(context, Arguments.Select(x => x.GetValue(context)).ToArray());
+                return method.GetValue(context, Arguments.Select(x => x.Cast<BoxSupportedLexem>().GetBoxValue(context)).ToArray());
             }
             else
             {
@@ -51,9 +53,10 @@ namespace SLThree
             return null;
         }
 
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            return GetValue(context, Arguments.Select(x => x.GetValue(context)).ToArray());
+            return ref GetValue(context, Arguments.Select(x => x.GetValue(context).Boxed()).ToArray()).ToSpeedy(ref reference);
+            throw new System.NotImplementedException();
         }
 
         public object GetValue(ExecutionContext context, object obj)
@@ -64,13 +67,13 @@ namespace SLThree
             {
                 return ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Count)
-                    .Invoke(null, Arguments.Select(x => x.GetValue(context)).ToArray());
+                    .Invoke(null, Arguments.Select(x => x.GetValue(context).Boxed()).ToArray());
             }
             else if (obj != null)
             {
                 return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Count)
-                    .Invoke(obj, Arguments.Select(x => x.GetValue(context)).ToArray());
+                    .Invoke(obj, Arguments.Select(x => x.GetValue(context).Boxed()).ToArray());
             }
 
             return null;

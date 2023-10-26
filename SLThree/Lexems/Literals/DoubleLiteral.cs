@@ -7,9 +7,15 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class DoubleLiteral : Literal<double>
+    public class DoubleLiteral : BoxLiteral<double>
     {
         public DoubleLiteral(double value, Cursor cursor) : base(value, cursor) { }
         public DoubleLiteral() : base() { }
+        private SLTSpeedyObject reference;
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
+        {
+            reference = SLTSpeedyObject.GetDouble(Value);
+            return ref reference;
+        }
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public partial class NameLexem : BaseLexem
+    public partial class NameLexem : BoxSupportedLexem
     {
         public string Name;
         public NameLexem(string name, Cursor cursor) : base(cursor)
@@ -25,18 +25,20 @@ namespace SLThree
 
         private ExecutionContext counted;
         private int variable_index;
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
             if (counted == context)
             {
-                return context.LocalVariables.GetValue(variable_index);
+                reference = context.LocalVariables.GetValue(variable_index);
+                return ref reference;
             }
             else
             {
                 var (value, ind) = context.LocalVariables.GetValue(Name);
                 counted = context;
                 variable_index = ind;
-                return value;
+                reference = value;
+                return ref reference;
             }
         }
     }

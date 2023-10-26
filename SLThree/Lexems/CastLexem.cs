@@ -9,17 +9,24 @@ namespace SLThree
 {
     public class CastLexem : ExpressionBinary
     {
-        public CastLexem(BaseLexem castingLexem, BaseLexem castingType, Cursor cursor) : base(castingLexem, castingType, cursor) { }
+        public CastLexem(BoxSupportedLexem castingLexem, BoxSupportedLexem castingType, Cursor cursor) : base(castingLexem, castingType, cursor) { }
 
         public override string ToString() => $"{Left} as {Right}";
 
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
             var right = Right.ToString().Replace(" ", "");
-            if (right == "is") return Left;
+            if (right == "is")
+            {
+                reference = SLTSpeedyObject.GetAny(Left);
+                return ref reference;
+            }
             var type = right.ToType();
             if (type == null) throw new RuntimeError($"Type {right} not found", Right.SourceContext);
-            return Left.GetValue(context).CastToType(type);
+            {
+                reference = SLTSpeedyObject.GetAny(Left.GetValue(context).CastToType(type));
+                return ref reference;
+            }
         }
 
         public override string Operator => "as";

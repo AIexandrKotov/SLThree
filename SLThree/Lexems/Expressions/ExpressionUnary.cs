@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public abstract class ExpressionUnary : BaseLexem
+    public abstract class ExpressionUnary : BoxSupportedLexem
     {
-        public BaseLexem Left;
-        public ExpressionUnary(BaseLexem left, Cursor cursor) : base(cursor)
+        public BoxSupportedLexem Left;
+        protected SLTSpeedyObject reference;
+        public ExpressionUnary(BoxSupportedLexem left, Cursor cursor) : base(cursor)
         {
             Left = left;
         }

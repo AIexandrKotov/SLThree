@@ -2,12 +2,17 @@
 
 namespace SLThree
 {
-    public class NullLiteral : BaseLexem
+    public class NullLiteral : BoxSupportedLexem
     {
         public NullLiteral(Cursor cursor) : base(cursor) { }
 
         public override string ToString() => "null";
 
-        public override object GetValue(ExecutionContext context) => null;
+        private SLTSpeedyObject reference;
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
+        {
+            reference = SLTSpeedyObject.GetAny(null);
+            return ref reference;
+        }
     }
 }

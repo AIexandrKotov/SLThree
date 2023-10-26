@@ -39,7 +39,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            var value = Value.GetValue(context);
+            var value = Value.GetValue(context).Boxed();
             for (var i = 0; i < Cases.Count; i++)
             {
                 var found = (value as IComparable)?.CompareTo(Cases[i].Value.GetValue(context)) == 0;

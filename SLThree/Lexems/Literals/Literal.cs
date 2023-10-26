@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace SLThree
 {
-    public partial class Literal<T> : BaseLexem
+    public abstract class Literal<T> : BaseLexem
     {
         public T Value;
         public Literal() : this(default, default) { }
@@ -13,6 +13,18 @@ namespace SLThree
         }
 
         public override string ToString() => Value.ToString();
-        public override object GetValue(ExecutionContext context) => Value;
+        //public abstract SLTSpeedyObject GetValue(ExecutionContext context);
+    }
+
+    public abstract class BoxLiteral<T> : BoxSupportedLexem
+    {
+        public T Value;
+        public BoxLiteral() : this(default, default) { }
+        public BoxLiteral(T value, Cursor cursor) : base(cursor)
+        {
+            Value = value;
+        }
+
+        public override string ToString() => Value.ToString();
     }
 }

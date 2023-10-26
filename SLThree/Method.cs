@@ -13,7 +13,7 @@ namespace SLThree
         public string[] ParamNames;
         public StatementListStatement Statements;
 
-        public ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
+        private ExecutionContext GetExecutionContext(SLTSpeedyObject[] arguments, ExecutionContext context = null)
         {
             if (cached_method_contextes.TryGetValue(this, out var cntx))
             {
@@ -31,9 +31,9 @@ namespace SLThree
             }
         }
 
-        public virtual object GetValue(object[] args) => GetValue(null, args);
+        public virtual object GetValue(SLTSpeedyObject[] args) => GetValue(null, args);
 
-        public virtual object GetValue(ExecutionContext old_context, object[] args)
+        public virtual object GetValue(ExecutionContext old_context, SLTSpeedyObject[] args)
         {
             var context = GetExecutionContext(args, old_context);
             for (var i = 0; i < Statements.Statements.Count; i++)

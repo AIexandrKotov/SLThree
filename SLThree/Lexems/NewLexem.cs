@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class NewLexem : BaseLexem
+    public class NewLexem : BoxSupportedLexem
     {
         public InvokeLexem InvokeLexem;
         public MemberAccess MemberAccess;
@@ -24,9 +24,9 @@ namespace SLThree
 
         private bool counted_name;
         private string invk_name;
-        public override object GetValue(ExecutionContext context)
+        public override ref SLTSpeedyObject GetBoxValue(ExecutionContext context)
         {
-            if (MemberAccess != null) return MemberAccess.Create(context);
+            if (MemberAccess != null) return ref MemberAccess.Create(context).ToSpeedy(ref reference);
             else
             {
                 if (!counted_name)
@@ -34,9 +34,9 @@ namespace SLThree
                     invk_name = InvokeLexem.Name.ToString();
                     counted_name = true;
                 }
-                return Activator.CreateInstance(
+                return ref Activator.CreateInstance(
                 context.LocalVariables.GetValue(invk_name).Item1.Cast<MemberAccess.ClassAccess>().Name,
-                InvokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
+                InvokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray()).ToSpeedy(ref reference);
             }
         }
     }

@@ -24,8 +24,12 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var ret = default(object);
-            while (Condition.GetValue(context).CastToMax().Cast<long>() != 0)
+            var cond = Condition.GetValue(context);
+            while (cond.Type == SLTSpeedyObject.BoolType && cond.AsBool)
+            {
                 ret = CycleBody.GetValue(context);
+                cond = Condition.GetValue(context);
+            }
             return ret;
         }
     }

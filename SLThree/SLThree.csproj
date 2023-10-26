@@ -51,6 +51,7 @@
     <Compile Include="Exceptions\UnsupportedTypesInUnaryExpression.cs" />
     <Compile Include="ExecutionContext.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
+    <Compile Include="Lexems\Expressions\BoxSupportedLexem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
     <Compile Include="Lexems\Expressions\MemberAccess.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryEquals.cs" />

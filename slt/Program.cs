@@ -502,9 +502,9 @@ namespace slt
         }
         public static void UpdateGlobalContext()
         {
-            ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
-            ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
-            ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
+            ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine).ToSpeedy());
+            ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write).ToSpeedy());
+            ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine).ToSpeedy());
         }
         public static bool ExtendedCommands(string command)
         {

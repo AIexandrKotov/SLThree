@@ -25,6 +25,15 @@ namespace SLThree.Extensions
             return o;
         }
 
+        public static SLTSpeedyObject ToSpeedy(this object o)
+        {
+            return SLTSpeedyObject.GetAny(o);
+        }
+        public static ref SLTSpeedyObject ToSpeedy(this object o, ref SLTSpeedyObject reference)
+        {
+            reference = SLTSpeedyObject.GetAny(o);
+            return ref reference;
+        }
         public static string GetTypeString(this Type t)
         {
             if (t == type_object) return "object";
