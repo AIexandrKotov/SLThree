@@ -322,7 +322,7 @@ namespace slt
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
         public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
         {
-            var local_usings = context.LocalVariables
+            var local_usings = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value?.Cast<MemberAccess.ClassAccess>().Name.FullName ?? "undefined");
             OutAsWarning($"--- {local_usings.Count} CLASSES ---");
@@ -349,7 +349,7 @@ namespace slt
 
         public static void OutLocalMethods(ExecutionContext context, int table = -1, bool typed = false)
         {
-            Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables
+            Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
                 .ToDictionary(x => x.Key, x =>
                 {
@@ -409,7 +409,7 @@ namespace slt
 
         public static void OutLocalVariables(ExecutionContext context, int table = -1, bool typed = false)
         {
-            var local_variables = context.LocalVariables
+            var local_variables = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
             OutAsWarning($"--- {local_variables.Count} VARIABLES ---");
@@ -502,9 +502,9 @@ namespace slt
         }
         public static void UpdateGlobalContext()
         {
-            ExecutionContext.global.pred.LocalVariables["println"] = Method.Create<object>(Console.WriteLine);
-            ExecutionContext.global.pred.LocalVariables["print"] = Method.Create<object>(Console.Write);
-            ExecutionContext.global.pred.LocalVariables["readln"] = Method.Create(Console.ReadLine);
+            ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
+            ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
+            ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
         }
         public static bool ExtendedCommands(string command)
         {
@@ -545,9 +545,9 @@ namespace slt
 
                 if (onlynull)
                 {
-                    var old = REPLContext.LocalVariables.Count;
-                    REPLContext.LocalVariables = REPLContext.LocalVariables.Where(x => x.Value != null).ToDictionary(x => x.Key, x => x.Value);
-                    var @new = REPLContext.LocalVariables.Count;
+                    var old = REPLContext.LocalVariables.NamedIdenificators.Count;
+                    REPLContext.LocalVariables.ClearNulls();
+                    var @new = REPLContext.LocalVariables.NamedIdenificators.Count;
                     OutAsWarning($"{old - @new} nulls deleted from context");
                 }
                 else
