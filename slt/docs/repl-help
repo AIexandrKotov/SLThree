@@ -1,11 +1,13 @@
 ﻿To put in REPL Commands begin with >
     -q --quit              - Quit REPL
     -l --locals            - Outs local variables
+         --global              - for global context
          --typed               - with types
          --table [width]       - as table with minimum column width
     -r --reset             - Clear context
          --onlynull            - clear only null-value variables
-       --/EE <bool>        - Set extended out exceptions
+    -e --exex              - Turn on/off extended exceptions
+    -p --perfomance        - Turn on/off measure perfomance
 
     -c --clear     - Clear console
     -h --help      - Outs this text
