@@ -28,6 +28,15 @@ namespace SLThree
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void FillArguments(Method method, object[] args)
+        {
+            if (Variables.Length <= args.Length) Variables = new object[8 + args.Length + Variables.Length];
+            args.CopyTo(Variables, 0);
+            for (var i = 0; i < args.Length; i++)
+                NamedIdenificators[method.ParamNames[i]] = i;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SetValue(string name, object value)
         {
             if (NamedIdenificators.TryGetValue(name, out var id))
@@ -101,6 +110,7 @@ namespace SLThree
         public void Return(object o) { Returned = true; ReturnedValue = o; }
         public void Break() { Broken = true; }
         public void Continue() { Continued = true; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ExecutionContext PrepareToInvoke() { Returned = Broken = Continued = false; return this; }
         public void DefaultEnvironment()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 
@@ -6,17 +7,28 @@ namespace SLThree
 {
     public class Method
     {
+        private static Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
+        
         public string Name;
         public string[] ParamNames;
         public StatementListStatement Statements;
 
         public ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
         {
-            var ret = new ExecutionContext();
-            ret.PreviousContext = context;
-            for (var i = 0; i < ParamNames.Length; i++)
-                ret.LocalVariables.SetValue(ParamNames[i], arguments[i]);
-            return ret;
+            if (cached_method_contextes.TryGetValue(this, out var cntx))
+            {
+                cntx.PrepareToInvoke();
+                cntx.PreviousContext = context;
+                cntx.LocalVariables.FillArguments(this, arguments);
+                return cntx;
+            }
+            else
+            {
+                var ret = new ExecutionContext();
+                ret.LocalVariables.FillArguments(this, arguments);
+                cached_method_contextes[this] = ret;
+                return ret;
+            }
         }
 
         public virtual object GetValue(object[] args) => GetValue(null, args);

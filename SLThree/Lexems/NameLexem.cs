@@ -23,19 +23,19 @@ namespace SLThree
 
         public override string ToString() => Name;
 
-        private bool counted;
+        private ExecutionContext counted;
         private int variable_index;
         public override object GetValue(ExecutionContext context)
         {
-            if (counted)
+            if (counted == context)
             {
                 return context.LocalVariables.GetValue(variable_index);
             }
             else
             {
-                var value = default(object);
-                (value, variable_index) = context.LocalVariables.GetValue(Name);
-                counted = true;
+                var (value, ind) = context.LocalVariables.GetValue(Name);
+                counted = context;
+                variable_index = ind;
                 return value;
             }
         }
