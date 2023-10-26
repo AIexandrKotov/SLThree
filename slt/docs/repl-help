@@ -1,6 +1,7 @@
 ﻿To put in REPL Commands begin with >
     -q --quit              - Quit REPL
     -l --locals            - Outs local variables
+         --global              - for global context
          --typed               - with types
          --table [width]       - as table with minimum column width
     -r --reset             - Clear context

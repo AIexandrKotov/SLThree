@@ -320,9 +320,9 @@ namespace slt
 #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
-        public static void OutUsingClasses(int table = -1, bool typed = false)
+        public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
         {
-            var local_usings = REPLContext.LocalVariables
+            var local_usings = context.LocalVariables
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value?.Cast<MemberAccess.ClassAccess>().Name.FullName ?? "undefined");
             OutAsWarning($"--- {local_usings.Count} CLASSES ---");
@@ -335,11 +335,11 @@ namespace slt
             foreach (var x in local_usings)
             {
                 Console.Write("    ");
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write(x.Value.PadLeft(max_variable_name));
                 Console.ResetColor();
                 Console.Write(" as ");
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.ForegroundColor = ConsoleColor.White;
                 var output = x.Key.Trim().GetTypeString();
                 Console.Write(output);
                 Console.ResetColor();
@@ -347,9 +347,9 @@ namespace slt
             }
         }
 
-        public static void OutLocalMethods(int table = -1, bool typed = false)
+        public static void OutLocalMethods(ExecutionContext context, int table = -1, bool typed = false)
         {
-            Dictionary<string, (string, string[], bool)> local_methods = REPLContext.LocalVariables
+            Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables
                 .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
                 .ToDictionary(x => x.Key, x =>
                 {
@@ -407,9 +407,9 @@ namespace slt
             }
         }
 
-        public static void OutLocalVariables(int table = -1, bool typed = false)
+        public static void OutLocalVariables(ExecutionContext context, int table = -1, bool typed = false)
         {
-            var local_variables = REPLContext.LocalVariables
+            var local_variables = context.LocalVariables
                 .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
             OutAsWarning($"--- {local_variables.Count} VARIABLES ---");
@@ -420,16 +420,16 @@ namespace slt
                 max_variable_name = 0;
                 max_variable_type = 0;
             }
-            var types = default(IDictionary<string, Type>);
+            var types = default(IDictionary<string, string>);
             if (typed)
             {
-                types = local_variables.ToDictionary(x => x.Key, x => x.Value?.GetType());
+                types = local_variables.ToDictionary(x => x.Key, x => x.Value?.GetType().GetTypeString());
             }
             if (local_variables.Count > 0 && table != -1)
             {
                 if (typed)
                 {
-                    max_variable_type = Math.Max(max_variable_type, types.Max(x => x.Value?.Name.Length ?? 1));
+                    max_variable_type = Math.Max(max_variable_type, types.Max(x => x.Value?.Length ?? 0));
                 }
                 max_variable_name = Math.Max(max_variable_name, local_variables.Keys.Max(x => x.Length));
             }
@@ -449,12 +449,12 @@ namespace slt
                     {
                         Console.Write(": ");
                         Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write((types[x.Key]?.Name ?? "").PadRight(max_variable_type));
+                        Console.Write((types[x.Key] ?? "").PadRight(max_variable_type));
                         Console.ResetColor();
                     }
                 }
                 Console.Write(" = ");
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.ResetColor();
                 var output = GetOutput(x.Value)?.ToString() ?? "null";
                 Console.Write(output);
                 Console.ResetColor();
@@ -462,11 +462,11 @@ namespace slt
             }
         }
 
-        public static void OutLocals(int table = -1, bool typed = false)
+        public static void OutLocals(ExecutionContext context, int table = -1, bool typed = false)
         {
-            OutUsingClasses(table, typed);
-            OutLocalMethods(table, typed);
-            OutLocalVariables(table, typed);
+            OutUsingClasses(context, table, typed);
+            OutLocalMethods(context, table, typed);
+            OutLocalVariables(context, table, typed);
         }
 
         public static Dictionary<string, string> ShortREPLCommands = new Dictionary<string, string>()
@@ -494,13 +494,17 @@ namespace slt
             { "--help", () => OutREPLHelp() },
             { "--conhelp", () => OutHelp() },
         };
-        public static ExecutionContext GetNewREPLContext()
+        public static ExecutionContext GetNewREPLContext(bool update_global = true)
         {
             var context = new ExecutionContext();
-            context.LocalVariables["println"] = Method.Create<object>(Console.WriteLine);
-            context.LocalVariables["print"] = Method.Create<object>(Console.Write);
-            context.LocalVariables["readln"] = Method.Create(Console.ReadLine);
+            if (update_global) UpdateGlobalContext();
             return context;
+        }
+        public static void UpdateGlobalContext()
+        {
+            ExecutionContext.global.pred.LocalVariables["println"] = Method.Create<object>(Console.WriteLine);
+            ExecutionContext.global.pred.LocalVariables["print"] = Method.Create<object>(Console.Write);
+            ExecutionContext.global.pred.LocalVariables["readln"] = Method.Create(Console.ReadLine);
         }
         public static bool ExtendedCommands(string command)
         {
@@ -512,13 +516,14 @@ namespace slt
             if (wrds.HasArgument("-l", ShortREPLCommands))
             {
                 var typed = wrds.HasArgument("--typed");
+                var context = wrds.HasArgument("--global") ? ExecutionContext.global.pred : REPLContext;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
-                    OutLocals(table, typed);
+                    OutLocals(context, table, typed);
                 }
                 else
                 {
-                    OutLocals(-1, typed);
+                    OutLocals(context, - 1, typed);
                 }
                 any_executed = true;
             }
