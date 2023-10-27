@@ -19,10 +19,11 @@ namespace SLThree
 
         public override string ToString() => $"{Typename}";
 
+        private Type type;
         public override object GetValue(ExecutionContext context)
         {
-            var x = Typename.ToString().Replace(" ", "");
-            return x.ToType();
+            if (type == null) type = Typename.ToString().Replace(" ", "").ToType();
+            return type;
         }
     }
 }

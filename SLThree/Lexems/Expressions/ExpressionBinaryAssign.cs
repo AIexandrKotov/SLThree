@@ -33,7 +33,7 @@ namespace SLThree
                     return right;
                 }
             }
-            throw new UnsupportedTypesInBinaryExpression(this, Left?.GetType(), right?.GetType());
+            throw new OperatorError(this, Left?.GetType(), right?.GetType());
         }
     }
 }

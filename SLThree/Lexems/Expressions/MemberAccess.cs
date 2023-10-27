@@ -37,7 +37,7 @@ namespace SLThree
                 }
             }
 
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), Right?.GetType());
+            throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
         private bool counted_contextwrapcache;
@@ -80,6 +80,7 @@ namespace SLThree
                     if (prop != null) return prop.GetValue(left);
                     nest_type = type.GetNestedType(nameLexem.Name);
                     if (nest_type != null) return new ClassAccess(nest_type);
+                    throw new RuntimeError($"Name {nameLexem.Name} not found in {type.Name.GetTypeString()}", SourceContext);
                 }
                 else if (Right is InvokeLexem invokeLexem)
                 {
@@ -87,7 +88,8 @@ namespace SLThree
                 }
             }
 
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), Right?.GetType());
+            
+            throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
         private bool counted_other_context_assign;
@@ -143,10 +145,11 @@ namespace SLThree
                         prop.SetValue(left, value);
                         return;
                     }
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.Name.GetTypeString()}\"", SourceContext);
                 }
             }
 
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), Right?.GetType());
+            throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
     }
 }

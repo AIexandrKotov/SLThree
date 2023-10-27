@@ -46,9 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Embedding\EmbeddingExtensions.cs" />
     <Compile Include="Exceptions\SLTException.cs" />
-    <Compile Include="Exceptions\UnsupportedTypesInBinaryExpression.cs" />
-    <Compile Include="Exceptions\UnsupportedTypesInUnaryExpression.cs" />
+    <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="ExecutionContext.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
@@ -66,7 +66,6 @@
     <Compile Include="Lexems\Expressions\ExpressionUnaryRem.cs" />
     <Compile Include="Extensions\GenericExtensions.cs" />
     <Compile Include="Extensions\SLTHelpers.cs" />
-    <Compile Include="Extensions\PegasusExtensions.cs" />
     <Compile Include="Keyword.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryDivide.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryMultiply.cs" />
@@ -74,10 +73,12 @@
     <Compile Include="Lexems\Expressions\ExpressionBinary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryRem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionUnary.cs" />
+    <Compile Include="Lexems\InterpolatedString.cs" />
     <Compile Include="Lexems\InvokeLexem.cs" />
     <Compile Include="Lexems\LambdaLexem.cs" />
     <Compile Include="Lexems\Literals\BoolLiteral.cs" />
     <Compile Include="Lexems\Literals\ByteLiteral.cs" />
+    <Compile Include="Lexems\Literals\CharLiteral.cs" />
     <Compile Include="Lexems\Literals\FloatLiteral.cs" />
     <Compile Include="Lexems\Literals\GlobalLiteral.cs" />
     <Compile Include="Lexems\Literals\IntLiteral.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Lexems\Literals\UIntLiteral.cs" />
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
+    <Compile Include="LocalVariablesContainer.cs" />
     <Compile Include="Method.cs" />
     <Compile Include="Lexems\NameLexem.cs" />
     <Compile Include="Lexems\Literals\DoubleLiteral.cs" />
@@ -99,6 +101,8 @@
     <Compile Include="Lexems\TypeofLexem.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
+    <Compile Include="Statements\BreakStatement.cs" />
+    <Compile Include="Statements\ContinueStatement.cs" />
     <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
@@ -108,6 +112,7 @@
     <Compile Include="Statements\BaseStatement.cs" />
     <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileCycleStatement.cs" />
+    <Compile Include="Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
@@ -116,7 +121,7 @@
     <EmbeddedResource Include="docs\versions\0.1.1" />
     <EmbeddedResource Include="docs\versions\0.1.0" />
     <EmbeddedResource Include="docs\specification" />
-    <None Include="docs\versions\0.2.0" />
+    <EmbeddedResource Include="docs\versions\0.2.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>

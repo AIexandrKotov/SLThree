@@ -20,6 +20,9 @@ namespace SLThree.Extensions
             return sb.ToString();
         }
 
+        public static TOut[] ConvertAll<TIn, TOut>(this TIn[] array, Converter<TIn, TOut> func)
+            => Array.ConvertAll(array, func);
+
         public static IList<T> AddAndRet<T>(this IList<T> list, T item)
         {
             var ret = new List<T>(list);

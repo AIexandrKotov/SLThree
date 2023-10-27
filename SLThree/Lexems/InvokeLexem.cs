@@ -10,9 +10,9 @@ namespace SLThree
     public class InvokeLexem : BaseLexem
     {
         public BaseLexem Name;
-        public IList<BaseLexem> Arguments;
+        public BaseLexem[] Arguments;
 
-        public InvokeLexem(BaseLexem name, IList<BaseLexem> arguments, Cursor cursor) : base(cursor)
+        public InvokeLexem(BaseLexem name, BaseLexem[] arguments, Cursor cursor) : base(cursor)
         {
             Name = name;
             Arguments = arguments;
@@ -27,8 +27,11 @@ namespace SLThree
             if (!get_counted_name)
             {
                 get_name = Name.ToString().Replace(" ", "");
+                get_counted_name = true;
             }
             var o = context.LocalVariables.GetValue(get_name).Item1;
+
+            if (o == null) throw new RuntimeError($"Method {get_name}(_) not found", SourceContext);
 
             if (o is BaseLexem bl) return bl.GetValue(context);
             else if (o is MethodInfo mi)
@@ -38,13 +41,14 @@ namespace SLThree
             }
             else if (o is Method method)
             {
-                return method.GetValue(context, Arguments.Select(x => x.GetValue(context)).ToArray());
+                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                return method.GetValue(context, args);
             }
             else
             {
                 var type = o.GetType();
                 type.GetMethods()
-                    .FirstOrDefault(x => x.Name == Name.ToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Count)
+                    .FirstOrDefault(x => x.Name == Name.ToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.Invoke(o, args);
             }
 
@@ -53,7 +57,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            return GetValue(context, Arguments.Select(x => x.GetValue(context)).ToArray());
+            return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
         }
 
         public object GetValue(ExecutionContext context, object obj)
@@ -63,14 +67,14 @@ namespace SLThree
             if (obj is MemberAccess.ClassAccess ca)
             {
                 return ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Count)
-                    .Invoke(null, Arguments.Select(x => x.GetValue(context)).ToArray());
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
+                    .Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)
             {
                 return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Count)
-                    .Invoke(obj, Arguments.Select(x => x.GetValue(context)).ToArray());
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
+                    .Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
             }
 
             return null;

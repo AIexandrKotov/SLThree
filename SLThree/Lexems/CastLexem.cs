@@ -13,12 +13,15 @@ namespace SLThree
 
         public override string ToString() => $"{Left} as {Right}";
 
+        private string name;
+        private Type type;
         public override object GetValue(ExecutionContext context)
         {
-            var right = Right.ToString().Replace(" ", "");
-            if (right == "is") return Left;
-            var type = right.ToType();
-            if (type == null) throw new RuntimeError($"Type {right} not found", Right.SourceContext);
+            if (name == null) name = Right.ToString().Replace(" ", "");
+            if (name == "is") return Left;
+            if (type == null) type = name.ToType();
+
+            if (type == null) throw new RuntimeError($"Type \"{name}\" not found", Right.SourceContext);
             return Left.GetValue(context).CastToType(type);
         }
 

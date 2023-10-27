@@ -1,22 +1,17 @@
 ﻿--=== SLT SPECIFICATION ===--
-Lexems:
-    --- LITERALS ---
-    long:   common num value, suffix i64
-    ulong:  suffix u64
-    double: common real value, suffix f64
-    float:  suffix f32
-
-    --- OPERATORS --- //BY PRIORITY
-    1) +, -, ~, !  (unary)
-    2) *, /, %
-    3) +, -
-    4) ==, !=, >=, <=, >, <
-    5) =, +=, -=, *=, /=, %=
-
-Statements:
-    --- CONDITION ---
-    if (<value>) { <statement>;* } [else { <statement>;* }]
-    --- WHILE CYCLE ---
-    while (<value>) { <statement>;* }
-
+Nums (default 64 bit), chars, strings (+interpolated) and bools like in C#
+Suffixes for nums determine type like in Rust (1u32 = uint, 1f32 = float)
+Operators (priority like in C#):
+    Binary: + - * / % == != > >= < <= = += -= *= /= %= => as
+    Unary: + - ! ~
+    Primary: x.y, x(), new x()
+Statements like in C#:
+    - if and while
+    - return, break, continue
+Almost like in C#:
+    - using <Type>; // not namespace
+    - switch (supports non-const in case and break not needed)
+    - [implicit] <lambda definition> - implicit supports more types (slower)
+SLThree features:
+    - getting lexems (<lex> as is) and call it
 --=== END SPECIFICATON ===--

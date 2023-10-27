@@ -23,8 +23,11 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var ret = default(object);
-            foreach (var st in Statements)
-                ret = st.GetValue(context);
+            for (var i = 0; i < Statements.Count; i++)
+            {
+                ret = Statements[i].GetValue(context);
+                if (context.Returned || (context.InCycle() && (context.Broken || context.Continued))) break;
+            }
             return ret;
         }
     }

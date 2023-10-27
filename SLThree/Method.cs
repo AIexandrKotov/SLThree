@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
@@ -13,22 +14,27 @@ namespace SLThree
         public string[] ParamNames;
         public StatementListStatement Statements;
 
+        public bool IsImplicit = false;
+
+        public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
+
         public ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
         {
+            ExecutionContext ret;
             if (cached_method_contextes.TryGetValue(this, out var cntx))
             {
-                cntx.PrepareToInvoke();
-                cntx.PreviousContext = context;
-                cntx.LocalVariables.FillArguments(this, arguments);
-                return cntx;
+                ret = cntx;
+                ret.PrepareToInvoke();
             }
             else
             {
-                var ret = new ExecutionContext();
-                ret.LocalVariables.FillArguments(this, arguments);
-                cached_method_contextes[this] = ret;
-                return ret;
+                ret = new ExecutionContext();
+                cached_method_contextes.Add(this, ret);
             }
+            ret.PreviousContext = context;
+            ret.LocalVariables.FillArguments(this, arguments);
+            ret.ForbidImplicit = !IsImplicit;
+            return ret;
         }
 
         public virtual object GetValue(object[] args) => GetValue(null, args);
