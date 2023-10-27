@@ -1,15 +1,15 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанные с этой сборкой.
-[assembly: AssemblyTitle(SLTVersion.Name)]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle(REPLVersion.FullName)]
+[assembly: AssemblyDescription(REPLVersion.FullName)]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct(SLTVersion.Name)]
+[assembly: AssemblyProduct(REPLVersion.FullName)]
 [assembly: AssemblyCopyright(SLTVersion.Copyright)]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,5 +32,20 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(SLTVersion.Version)]
-[assembly: AssemblyFileVersion(SLTVersion.Version)]
+[assembly: AssemblyVersion(REPLVersion.Version)]
+[assembly: AssemblyFileVersion(REPLVersion.Version)]
+
+public static class REPLVersion
+{
+    public const string Major = "1"; //vh
+    public const string Minor = "0"; //vh
+    public const string Build = "0"; //vh
+    public const string Revision = "183"; //vh
+    public const long LastUpdate = 638340102434683730; //vh
+
+    public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
+    public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
+    public const string VersionRevisionInBrackets = Major + "." + Minor + "." + Build + " (" + Revision + ")";
+    public const string FullName = "SLThree REPL";
+    public const string Name = "slt";
+}

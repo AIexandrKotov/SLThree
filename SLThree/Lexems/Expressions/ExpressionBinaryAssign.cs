@@ -7,15 +7,33 @@ namespace SLThree
         public override string Operator => "=";
         public ExpressionBinaryAssign(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
         public ExpressionBinaryAssign() : base() { }
+        private ExecutionContext counted_invoked;
+        private bool is_namelexem;
+        private int variable_index;
         public override object GetValue(ExecutionContext context)
         {
             var right = Right.GetValue(context);
-            if (Left is NameLexem nl)
+            if (counted_invoked == context && is_namelexem)
             {
-                context.LocalVariables[nl.Name] = right;
+                context.LocalVariables.SetValue(variable_index, right);
                 return right;
             }
-            throw new UnsupportedTypesInBinaryExpression(this, Left?.GetType(), right?.GetType());
+            else
+            {
+                if (Left is MemberAccess memberAccess)
+                {
+                    memberAccess.SetValue(context, right);
+                    return right;
+                }
+                else if (Left is NameLexem nl)
+                {
+                    variable_index = context.LocalVariables.SetValue(nl.Name, right);
+                    is_namelexem = true;
+                    counted_invoked = context;
+                    return right;
+                }
+            }
+            throw new OperatorError(this, Left?.GetType(), right?.GetType());
         }
     }
 }

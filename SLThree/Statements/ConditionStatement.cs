@@ -21,11 +21,11 @@ namespace SLThree
             FalseBlock = falseBlock;
         }
 
-        public override string ToString() => $"if ({Condition}) {{{TrueBlock}}}{(FalseBlock == null ? $"{{{FalseBlock}}}" : "")}";
+        public override string ToString() => $"if ({Condition}) {{{TrueBlock}}}{(FalseBlock)}";
 
         public override object GetValue(ExecutionContext context)
-            => Condition.GetValue(context).CastToMax().Cast<long>() == 0 
-            ? FalseBlock?.GetValue(context) 
-            : TrueBlock.GetValue(context);
+            => Condition.GetValue(context).Cast<bool>()
+            ? TrueBlock.GetValue(context) 
+            : FalseBlock.GetValue(context);
     }
 }

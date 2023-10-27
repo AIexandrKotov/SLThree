@@ -15,12 +15,29 @@ namespace SLThree
         {
             Name = name;
         }
+        public NameLexem(string name, string next, Cursor cursor) : base(cursor)
+        {
+            Name = name;
+            if (next.Length != 0) Name += $".{next}";
+        }
 
         public override string ToString() => Name;
 
+        private ExecutionContext counted;
+        private int variable_index;
         public override object GetValue(ExecutionContext context)
         {
-            return context.LocalVariables.TryGetValue(Name, out var value) ? value : null;
+            if (counted == context)
+            {
+                return context.LocalVariables.GetValue(variable_index);
+            }
+            else
+            {
+                var (value, ind) = context.LocalVariables.GetValue(Name);
+                counted = context;
+                variable_index = ind;
+                return value;
+            }
         }
     }
 }

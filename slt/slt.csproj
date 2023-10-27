@@ -32,7 +32,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Pegasus.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=28c69b6c6d100f4a" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -50,9 +54,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <EmbeddedResource Include="docs\help" />
-    <EmbeddedResource Include="docs\specification" />
-    <EmbeddedResource Include="docs\versions\0.1.0" />
-    <EmbeddedResource Include="docs\versions\0.1.1" />
+    <EmbeddedResource Include="docs\versions\1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">
@@ -60,5 +62,15 @@
       <Name>SLThree</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\repl-help" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>../building/IncREPLRevision.bat</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>
