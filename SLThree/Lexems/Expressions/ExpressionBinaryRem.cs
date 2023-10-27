@@ -16,8 +16,18 @@ namespace SLThree
         public ExpressionBinaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
-            var right = Right.GetValue(context).CastToMax();
+            object left;
+            object right;
+            if (context.ForbidImplicit)
+            {
+                left = Left.GetValue(context);
+                right = Right.GetValue(context);
+            }
+            else
+            {
+                left = Left.GetValue(context).CastToMax();
+                right = Right.GetValue(context).CastToMax();
+            }
             if (left is long i1)
             {
                 if (right is double d2) return i1 - d2;
@@ -34,7 +44,7 @@ namespace SLThree
                 if (right is double d2) return u1 - d2;
                 if (right is ulong u2) return u1 - u2;
             }
-            throw new UnsupportedTypesInBinaryExpression(this, left?.GetType(), right?.GetType());
+            throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
     }
 }

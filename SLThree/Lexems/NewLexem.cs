@@ -22,12 +22,22 @@ namespace SLThree
 
         public override string ToString() => $"new {MemberAccess}";
 
+        private bool counted_name;
+        private string invk_name;
         public override object GetValue(ExecutionContext context)
         {
             if (MemberAccess != null) return MemberAccess.Create(context);
-            else return Activator.CreateInstance(
-                context.LocalVariables[InvokeLexem.Name.ToString()].Cast<MemberAccess.ClassAccess>().Name,
+            else
+            {
+                if (!counted_name)
+                {
+                    invk_name = InvokeLexem.Name.ToString();
+                    counted_name = true;
+                }
+                return Activator.CreateInstance(
+                context.LocalVariables.GetValue(invk_name).Item1.Cast<MemberAccess.ClassAccess>().Name,
                 InvokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
+            }
         }
     }
 }

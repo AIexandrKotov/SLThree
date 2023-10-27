@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 
@@ -6,16 +8,32 @@ namespace SLThree
 {
     public class Method
     {
+        private static Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
+        
         public string Name;
         public string[] ParamNames;
         public StatementListStatement Statements;
 
+        public bool IsImplicit = false;
+
+        public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
+
         public ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
         {
-            var ret = new ExecutionContext();
+            ExecutionContext ret;
+            if (cached_method_contextes.TryGetValue(this, out var cntx))
+            {
+                ret = cntx;
+                ret.PrepareToInvoke();
+            }
+            else
+            {
+                ret = new ExecutionContext();
+                cached_method_contextes.Add(this, ret);
+            }
             ret.PreviousContext = context;
-            for (var i = 0; i < ParamNames.Length; i++)
-                ret.LocalVariables[ParamNames[i]] = arguments[i];
+            ret.LocalVariables.FillArguments(this, arguments);
+            ret.ForbidImplicit = !IsImplicit;
             return ret;
         }
 

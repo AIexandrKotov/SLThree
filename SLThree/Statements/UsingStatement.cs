@@ -21,9 +21,10 @@ namespace SLThree
         }
 
         public override string ToString() => $"using {Lexem} as {Name}";
+
         public override object GetValue(ExecutionContext context)
         {
-            context.LocalVariables[Name] = new MemberAccess.ClassAccess(Lexem.ToString().Replace(" ", "").ToType());
+            context.LocalVariables.SetValue(Name, new MemberAccess.ClassAccess(Lexem.ToString().Replace(" ", "").ToType()));
             return null;
         }
     }

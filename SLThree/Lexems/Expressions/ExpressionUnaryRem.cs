@@ -10,13 +10,21 @@ namespace SLThree
         public ExpressionUnaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context).CastToMax();
+            object left;
+            if (context.ForbidImplicit)
+            {
+                left = Left.GetValue(context);
+            }
+            else
+            {
+                left = Left.GetValue(context).CastToMax();
+            }
             switch (left)
             {
                 case long v: return -v;
                 case double v: return -v;
             }
-            throw new UnsupportedTypesInUnaryExpression(this, left?.GetType());
+            throw new OperatorError(this, left?.GetType());
         }
     }
 }

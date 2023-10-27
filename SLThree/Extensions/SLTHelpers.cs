@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace SLThree.Extensions
         {
             switch (o)
             {
-                case bool v: return v ? 1 : (long)0;
+                case char v: return (long)v;
                 case float v: return (double)v;
                 case sbyte v: return (long)v;
                 case short v: return (long)v;
@@ -168,6 +169,7 @@ namespace SLThree.Extensions
                         {
                             return byte.Parse(b_str);
                         }
+                    case char b: return (byte)b;
                 }
             }
             else if (casting_type == type_sbyte)
@@ -188,6 +190,7 @@ namespace SLThree.Extensions
                         {
                             return sbyte.Parse(b_str);
                         }
+                    case char b: return (sbyte)b;
                 }
             }
             else if (casting_type == type_ushort)
@@ -208,6 +211,7 @@ namespace SLThree.Extensions
                         {
                             return ushort.Parse(b_str);
                         }
+                    case char b: return (ushort)b;
                 }
             }
             else if (casting_type == type_short)
@@ -228,6 +232,7 @@ namespace SLThree.Extensions
                         {
                             return short.Parse(b_str);
                         }
+                    case char b: return (short)b;
                 }
             }
             else if (casting_type == type_uint)
@@ -248,6 +253,7 @@ namespace SLThree.Extensions
                         {
                             return uint.Parse(b_str);
                         }
+                    case char b: return (uint)b;
                 }
             }
             else if (casting_type == type_int)
@@ -268,6 +274,7 @@ namespace SLThree.Extensions
                         {
                             return int.Parse(b_str);
                         }
+                    case char b: return (int)b;
                 }
             }
             else if (casting_type == type_ulong)
@@ -288,6 +295,7 @@ namespace SLThree.Extensions
                         {
                             return ulong.Parse(b_str);
                         }
+                    case char b: return (ulong)b;
                 }
             }
             else if (casting_type == type_long)
@@ -308,6 +316,7 @@ namespace SLThree.Extensions
                         {
                             return long.Parse(b_str);
                         }
+                    case char b: return (long)b;
                 }
             }
             else if (casting_type == type_float)
@@ -328,6 +337,7 @@ namespace SLThree.Extensions
                         {
                             return float.Parse(b_str);
                         }
+                    case char b: return (float)b;
                 }
             }
             else if (casting_type == type_double)
@@ -348,11 +358,10 @@ namespace SLThree.Extensions
                         {
                             return double.Parse(b_str);
                         }
+                    case char b: return (double)b;
                 }
             }
             return o;
         }
-
-        public static long ToLong(this bool b) => b ? 1 : 0;
     }
 }

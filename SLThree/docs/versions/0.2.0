@@ -1,6 +1,15 @@
-﻿------ 0.2.0 Dynamic hentai ------ [26.10.23]
-New:
-    Сompatibility with REPL 1.0.0
-    Lambdas, Calling expressions, Using statements
-    As expression (128 as i8), all-bits num literals
-    Dynamic switch statement
+﻿------ 0.2.0 Unwrap the wrap ------ [27.10.23]
+Language:
+    - Anonymous methods, Calling expressions
+    - Getting instance and static members of any type and object
+    - Using statement, typeof(T) expression, switch statement
+    - Optional implicit type-casting, cast expression, new expression
+    - Return, break, continue statements
+    - Interpolated strings and string literals with escapes
+    - All-bits numeric literals and char literal
+    - self and global keywords for getting context
+Embedding:
+    - Wrapper for cast SLThree in any type
+    - Сompatibility with REPL 1.0.0
+Optimization:
+    - >65% (collatz_conjecture 48 s => 14 s)
