@@ -46,6 +46,7 @@ namespace slt
         private static long SLTTime;
         private static SortedDictionary<string, string[]> SLThreeVersions;
         private static string[] Specification;
+        private static string SLTEdition;
         private static bool HasArgument(string arg) 
             => RunArguments.HasArgument(arg, ShortCommands);
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
@@ -59,6 +60,7 @@ namespace slt
             SLTRevision = ver.Revision.ToString();
             var sltver = ass.GetType("SLTVersion");
             SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
+            SLTEdition = sltver.GetProperty("Edition").GetValue(null).Cast<string>();
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
             Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
         }
@@ -132,7 +134,7 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($" {SLTVersionWithoutRevision} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{SLTVersion.Edition} ");
+            Console.Write($"{SLTEdition} ");
             Console.ResetColor();
             var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTTime), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
@@ -261,7 +263,7 @@ namespace slt
             if (out_extended_exceptions)
                 Console.WriteLine(e.ToString());
             else
-                Console.WriteLine(e.GetType().FullName + ": " + e.Message);
+                Console.WriteLine(e.GetType().Name + ": " + e.Message);
             Console.ResetColor();
         }
 
@@ -324,8 +326,9 @@ namespace slt
         {
             var local_usings = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
-                .ToDictionary(x => x.Key, x => x.Value?.Cast<MemberAccess.ClassAccess>().Name.FullName ?? "undefined");
-            OutAsWarning($"--- {local_usings.Count} CLASSES ---");
+                .ToDictionary(x => x.Key, x => (x.Value as MemberAccess.ClassAccess)?.Name?.FullName ?? "undefined");
+            if (local_usings.Count == 0) return;
+            OutAsWarning($"--- CLASSES ---");
             var max_variable_name = table;
             if (table < 0) max_variable_name = 0;
             if (local_usings.Count > 0 && table != -1)
@@ -363,7 +366,8 @@ namespace slt
                     }
                     return default;
                 });
-            OutAsWarning($"--- {local_methods.Count} METHODS ---");
+            if (local_methods.Count == 0) return;
+            OutAsWarning($"--- METHODS ---");
             var max_ret_type = table;
             var max_method_name = table;
             //var max_method_args = table;
@@ -412,7 +416,8 @@ namespace slt
             var local_variables = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
-            OutAsWarning($"--- {local_variables.Count} VARIABLES ---");
+            if (local_variables.Count == 0) return;
+            OutAsWarning($"--- VARIABLES ---");
             var max_variable_name = table;
             var max_variable_type = table;
             if (table < 0)
@@ -690,7 +695,8 @@ namespace slt
                         if (REPLPerfomance) ParsingStopwatch.Stop();
                         Console.ForegroundColor = ConsoleColor.Cyan;
                         if (REPLPerfomance) ExecutinStopwatch = Stopwatch.StartNew();
-                        var value = st.GetValue(REPLContext.PrepareToInvoke());
+                        REPLContext.PrepareToInvoke();
+                        var value = st.GetValue(REPLContext);
                         if (REPLPerfomance) ExecutinStopwatch.Stop();
                         cancelationToken = false;
                         Console.ResetColor();
