@@ -167,7 +167,7 @@ namespace SLThree
     /// <summary>
     /// Это свойство будет пропущено при разворачивании
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public sealed class WrapperSkipAttribute : Attribute
     {
         public WrapperSkipAttribute() { }
