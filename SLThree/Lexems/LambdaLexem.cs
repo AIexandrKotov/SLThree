@@ -36,7 +36,5 @@ namespace SLThree
             }
             return method;
         }
-
-        public string Operator => "=>";
     }
 }

@@ -50,6 +50,7 @@
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Lexems\ArrayInitializer.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
     <Compile Include="Lexems\Expressions\MemberAccess.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Lexems\Expressions\ExpressionBinary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryRem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionUnary.cs" />
+    <Compile Include="Lexems\IndexLexem.cs" />
     <Compile Include="Lexems\InterpolatedString.cs" />
     <Compile Include="Lexems\InvokeLexem.cs" />
     <Compile Include="Lexems\LambdaLexem.cs" />
@@ -124,6 +126,9 @@
     <EmbeddedResource Include="docs\versions\0.2.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\versions\0.3.0" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pegasus.4.1.0\build\Pegasus.targets" Condition="Exists('..\packages\Pegasus.4.1.0\build\Pegasus.targets')" />

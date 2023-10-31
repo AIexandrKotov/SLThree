@@ -1,0 +1,5 @@
+﻿------ 0.3.0 ------ [~.~.~]
+Language:
+    - Indexator and list initializers like in Python
+Embedding:
+    - Wrapping classes in context, wrapping static members and classes

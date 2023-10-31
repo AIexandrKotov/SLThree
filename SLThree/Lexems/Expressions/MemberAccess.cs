@@ -16,6 +16,7 @@ namespace SLThree
             {
                 Name = name;
             }
+            public override string ToString() => $"access to {Name.GetTypeString()}";
         }
 
         public override string Operator => ".";
@@ -80,7 +81,7 @@ namespace SLThree
                     if (prop != null) return prop.GetValue(left);
                     nest_type = type.GetNestedType(nameLexem.Name);
                     if (nest_type != null) return new ClassAccess(nest_type);
-                    throw new RuntimeError($"Name {nameLexem.Name} not found in {type.Name.GetTypeString()}", SourceContext);
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in {type.GetTypeString()}", SourceContext);
                 }
                 else if (Right is InvokeLexem invokeLexem)
                 {

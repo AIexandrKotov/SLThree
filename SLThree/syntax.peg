@@ -152,10 +152,16 @@ primary <BaseLexem> -memoize
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / "new" _ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
     / "new" _ right:primary { new NewLexem(right as MemberAccess, state) }
+    / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / invoke_lexem
+    / list_creator
     / literal
     / name
+
+list_creator <BaseLexem>
+    = "[" _ args:arguments_list _ "]" { new ArrayInitializer(args.ToArray(), state) }
+    / "[" _ "]" { new ArrayInitializer(new BaseLexem[0], state) }
 
 invoke_lexem <InvokeLexem>
     = left:identifier _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }

@@ -12,7 +12,7 @@ namespace SLThree
             object GetValue(ExecutionContext context);
         }
 
-        public bool ForbidImplicit = true;
+        public bool ForbidImplicit = false;
 
         public bool Returned;
         public bool Broken;
