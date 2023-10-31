@@ -15,6 +15,8 @@ namespace SLThree
             Left = invokeLexem;
             Right = statements;
             Modificators = modificators;
+            var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
+            if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", cursor);
         }
 
         public override string ToString() => $"{Left} => {Right}";

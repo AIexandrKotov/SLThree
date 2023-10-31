@@ -78,40 +78,31 @@ binary_4 <BaseLexem> -memoize
     / left:binary_3 _ "*=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
     / left:binary_3 _ "/=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryDivide(left, right, state), state) }
     / left:binary_3 _ "%=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMod(left, right, state), state) }
-    / mods:method_modificator* _ "(" _ args:names_arguments_list _ ")" _ "=>" _ "{" _ st:statement_list _ "}" {
-        new LambdaLexem(new InvokeLexem(null, args.ToArray(), state), st, mods, state) 
-    }
-    / mods:method_modificator* _ "(" _ args:names_arguments_list _ ")" _ "=>" _ st:expr_statement _ {
-        new LambdaLexem(
-            new InvokeLexem(null, args.ToArray(), state),
-                new StatementListStatement(
-                    new BaseStatement[1] { new ReturnStatement(st.Lexem, state) }
-                , state), mods, state)
-    }
-    / mods:method_modificator* _ a:name _ "=>" _ "{" _ st:statement_list _ "}" {
-        new LambdaLexem(new InvokeLexem(null, new BaseLexem[1] { a }, state), st, mods, state) 
-    }
-    / mods:method_modificator* _ a:name _ "=>" _ st:expr_statement _ {
-        new LambdaLexem(
-            new InvokeLexem(null, new BaseLexem[1] { a }, state),
-                new StatementListStatement(
-                    new BaseStatement[1] { new ReturnStatement(st.Lexem, state) }
-                , state), mods, state)
-    }
-    / mods:method_modificator* _ ("(" _ ")") _ "=>" _ "{" _ st:statement_list _ "}" { 
-        new LambdaLexem(new InvokeLexem(null, new BaseLexem[0], state), st, mods, state)
-    }
-    / mods:method_modificator* _ ("(" _ ")") _ "=>" _ st:expr_statement _ {
-        new LambdaLexem(
-            new InvokeLexem(null, new BaseLexem[0], state),
-                new StatementListStatement(
-                    new BaseStatement[1] { new ReturnStatement(st.Lexem, state) }
-                , state), mods, state)
-    }
+    / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
     / left:binary_3 { left }
 
+lambda_left <ValueTuple<IList<string>, BaseLexem[]>>
+    = mods:method_modificator_list? _ "(" _ ")" { new ValueTuple<IList<string>, BaseLexem[]>(mods.Count == 0 ? new string[0] : mods[0], new BaseLexem[0]) }
+    / mods:method_modificator_list? _ "(" _ args:names_arguments_list _ ")" { new ValueTuple<IList<string>, BaseLexem[]>(mods.Count == 0 ? new string[0] : mods[0], args.ToArray()) }
+    / mods:method_modificator_list _required_ a:name { new ValueTuple<IList<string>, BaseLexem[]>(mods, new BaseLexem[1] { a } ) }
+    / a:name { new ValueTuple<IList<string>, BaseLexem[]>(new string[0], new BaseLexem[1] { a } ) }
+
+lambda_right <StatementListStatement>
+    = st:expr_statement { new StatementListStatement(new BaseStatement[1] { new ReturnStatement(st.Lexem, state) }, state) }
+    / "{" _ st:statement_list _ "}" { st }
+
+method_modificator_list <IList<string>>
+    = m1:method_modificator m2p:other_modificators { m2p.AddAndRet(m1) }
+    / m1:method_modificator { new string[1] { m1 } }
+
+other_modificators <IList<string>>
+    = _required_ m2p:method_modificator+ { m2p }
+
 method_modificator
-    = _ s:"implicit" _ { s }
+    = implicit_keyword
+
+implicit_keyword
+    = s:"implicit" { s }
 
 binary_3 <BaseLexem> -memoize
     = left:binary_3 _ "==" _ right:binary_2 { new ExpressionBinaryEquals(left, right, state) }
@@ -260,6 +251,8 @@ available_name <IList<string>>
     = value:([a-zA-Z_] [a-zA-Z0-9_]*)+ { value }
 
 comment = _ "//" [^\r\n]*
+
+_required_ = [ \t\r\n]+
 
 _ = [ \t\r\n]*
 

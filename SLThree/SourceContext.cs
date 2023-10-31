@@ -20,6 +20,6 @@ namespace SLThree
             Filename = cursor.FileName;
         }
 
-        public override string ToString() => $"{Line}:{Column}{(string.IsNullOrEmpty(Filename) ? "" : $"in {Filename}")}";
+        public override string ToString() => $"{Line}:{Column}{(string.IsNullOrEmpty(Filename) ? "" : $" in {Filename}")}";
     }
 }
