@@ -60,15 +60,20 @@ namespace SLThree
             return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
         }
 
+        private bool cached_1;
+        private MethodInfo founded;
         public object GetValue(ExecutionContext context, object obj)
         {
             var key = Name.ToString().Replace(" ", "");
 
+            if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
+
             if (obj is MemberAccess.ClassAccess ca)
             {
-                return ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
+                founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                cached_1 = true;
+                return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)
             {

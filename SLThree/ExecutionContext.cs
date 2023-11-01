@@ -12,7 +12,10 @@ namespace SLThree
             object GetValue(ExecutionContext context);
         }
 
-        public bool ForbidImplicit = false;
+        /// <summary>
+        /// Запрещает implicit в контексте
+        /// </summary>
+        public bool fimp = false;
 
         public bool Returned;
         public bool Broken;
@@ -20,7 +23,7 @@ namespace SLThree
 
         public object ReturnedValue;
 
-        public static ContextWrap global = new ContextWrap(new ExecutionContext());
+        public static ContextWrap global = new ContextWrap(new ExecutionContext() { fimp = true });
 
         private static bool and(bool a, bool b) => a && b;
         private static bool or(bool a, bool b) => a || b;

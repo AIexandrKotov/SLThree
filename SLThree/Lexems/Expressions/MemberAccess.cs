@@ -43,6 +43,8 @@ namespace SLThree
 
         private bool counted_contextwrapcache;
         private string variable_name;
+
+        private bool counted_contextwrapcache2;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
@@ -50,6 +52,10 @@ namespace SLThree
             if (counted_contextwrapcache)
             {
                 return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+            }
+            else if (counted_contextwrapcache2)
+            {
+                return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.Select(x => x.GetValue(context)).ToArray());
             }
 
             if (left != null)
@@ -64,6 +70,7 @@ namespace SLThree
                     }
                     else if (Right is InvokeLexem invokeLexem)
                     {
+                        counted_contextwrapcache2 = true;
                         return invokeLexem.GetValue(pred.pred, invokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                 }

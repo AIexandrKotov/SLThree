@@ -31,7 +31,7 @@ namespace SLThree
                     Name = "anon_method",
                     ParamNames = Left.Arguments.Select(x => (x as NameLexem).Name).ToArray(),
                     Statements = Right,
-                    IsImplicit = Modificators.Contains("implicit")
+                    imp = Modificators.Contains("implicit")
                 };
             }
             return method;

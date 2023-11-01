@@ -1,5 +1,7 @@
 ﻿------ 0.3.0 ------ [~.~.~]
 Language:
+    - Foreach cycle
+    - linq context (linq.range, linq.max etc.)
     - Indexator and list initializers like in Python
 Embedding:
     - Wrapping classes in context, wrapping static members and classes
