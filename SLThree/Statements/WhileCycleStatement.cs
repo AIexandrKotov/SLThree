@@ -11,9 +11,9 @@ namespace SLThree
     public class WhileCycleStatement : BaseStatement
     {
         public BaseLexem Condition { get; set; }
-        public BaseStatement CycleBody { get; set; }
+        public StatementListStatement CycleBody { get; set; }
 
-        public WhileCycleStatement(BaseLexem condition, BaseStatement cycleBody, Cursor cursor) : base(cursor)
+        public WhileCycleStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
             CycleBody = cycleBody;
@@ -27,9 +27,12 @@ namespace SLThree
             context.StartCycle();
             while (Condition.GetValue(context).Cast<bool>())
             {
-                ret = CycleBody.GetValue(context);
-                if (context.Returned || context.Broken) return ret;
-                if (context.Continued) continue;
+                for (var i = 0; i < CycleBody.Statements.Count; i++)
+                {
+                    ret = CycleBody.Statements[i].GetValue(context);
+                    if (context.Returned || context.Broken) break;
+                    if (context.Continued) continue;
+                }
             }
             context.EndCycle();
             return ret;

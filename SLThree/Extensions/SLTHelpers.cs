@@ -52,7 +52,12 @@ namespace SLThree.Extensions
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == type_list;
         }
+        public static bool IsDictionary(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_dict;
+        }
         private static Type type_list = typeof(List<>);
+        private static Type type_dict = typeof(Dictionary<,>);
 
         public static string GetTypeString(this string t)
         {

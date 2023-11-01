@@ -105,6 +105,7 @@
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\BreakStatement.cs" />
     <Compile Include="Statements\ContinueStatement.cs" />
+    <Compile Include="Statements\ForeachCycleStatement.cs" />
     <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
@@ -115,9 +116,6 @@
     <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileCycleStatement.cs" />
     <Compile Include="Wrapper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="docs\versions\0.1.1" />

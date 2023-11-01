@@ -14,6 +14,7 @@ statement_list <StatementListStatement>
 statement_ws <BaseStatement>
     = _ st:statement _ ";" { st }
     / _ st:switch_statement _ { st }
+    / _ st:foreach_statement _ { st }
     / _ st:while_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:block_statement _ { st }
@@ -26,6 +27,7 @@ statement <BaseStatement>
     / _ st:using_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:switch_statement _  { st }
+    / _ st:foreach_statement _  { st }
     / _ st:while_statement _  { st }
     / _ st:block_statement _ { st }
     / _ st:expr_statement _ { st }
@@ -55,11 +57,14 @@ case_node <SwitchStatement.Node>
     / _ "case" _ lex:lexem _ ":" _ st:statement _ ";" _ { new SwitchStatement.Node(lex, st, false) }
     / _ "case" _ lex:lexem _ ":" _ { new SwitchStatement.Node(lex, null, true) }
 
-block_statement <BaseStatement>
+block_statement <StatementListStatement>
     = "{" _ st:statement_list _ "}" { st }
 
 while_statement <BaseStatement>
-    = "while" _ "(" cond:lexem ")" _ body:block_statement { new WhileCycleStatement(cond, body, state) }
+    = "while" _ "(" _ cond:lexem _ ")" _ body:block_statement { new WhileCycleStatement(cond, body, state) }
+
+foreach_statement <BaseStatement>
+    = "foreach" _ "(" _ n:name _ "in" _ iter:lexem _ ")" _ body:block_statement { new ForeachCycleStatement(n, iter, body, state) }
 
 condition_statement <BaseStatement>
     = "if" _ "(" cond:lexem ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
