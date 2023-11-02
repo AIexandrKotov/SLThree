@@ -11,25 +11,27 @@ namespace SLThree
     public class WhileCycleStatement : BaseStatement
     {
         public BaseLexem Condition { get; set; }
-        public StatementListStatement CycleBody { get; set; }
+        public BaseStatement[] CycleBody { get; set; }
 
         public WhileCycleStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
-            CycleBody = cycleBody;
+            CycleBody = cycleBody.Statements.ToArray();
+            count = CycleBody.Length;
         }
 
         public override string ToString() => $"while ({Condition}) {{{CycleBody}}}";
 
+        private int count;
         public override object GetValue(ExecutionContext context)
         {
             var ret = default(object);
             context.StartCycle();
-            while (Condition.GetValue(context).Cast<bool>())
+            while ((bool)Condition.GetValue(context))
             {
-                for (var i = 0; i < CycleBody.Statements.Count; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    ret = CycleBody.Statements[i].GetValue(context);
+                    ret = CycleBody[i].GetValue(context);
                     if (context.Returned || context.Broken) break;
                     if (context.Continued) continue;
                 }

@@ -94,17 +94,17 @@ ternary_0 <BaseLexem> -memoize
     / binary_7
 
 binary_7 <BaseLexem> -memoize
-    = left:binary_7 _ "||" right:binary_6 { new ExpressionBinaryOr(left, right, state) }
+    = left:binary_7 _ "||" _ right:binary_6 { new ExpressionBinaryOr(left, right, state) }
     / binary_6
 
 binary_6 <BaseLexem> -memoize
-    = left:binary_6 _ "&&" right:binary_5 { new ExpressionBinaryAnd(left, right, state) }
+    = left:binary_6 _ "&&" _ right:binary_5 { new ExpressionBinaryAnd(left, right, state) }
     / binary_5
 
 binary_5 <BaseLexem> -memoize
-    = left:binary_5 _ "&" right:binary_4 { new ExpressionBinaryBitAnd(left, right, state) }
-    / left:binary_5 _ "^" right:binary_4 { new ExpressionBinaryBitXor(left, right, state) }
-    / left:binary_5 _ "|" right:binary_4 { new ExpressionBinaryBitOr(left, right, state) }
+    = left:binary_5 _ "&" _ right:binary_4 { new ExpressionBinaryBitAnd(left, right, state) }
+    / left:binary_5 _ "^" _ right:binary_4 { new ExpressionBinaryBitXor(left, right, state) }
+    / left:binary_5 _ "|" _ right:binary_4 { new ExpressionBinaryBitOr(left, right, state) }
     / binary_4
 
 binary_4 <BaseLexem> -memoize

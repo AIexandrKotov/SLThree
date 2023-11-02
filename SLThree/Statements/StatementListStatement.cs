@@ -12,10 +12,12 @@ namespace SLThree
     public class StatementListStatement : BaseStatement
     {
         public IList<BaseStatement> Statements;
+        private int count;
 
         public StatementListStatement(IList<BaseStatement> statements, Cursor cursor) : base(cursor)
         {
             Statements = statements;
+            count = statements.Count;
         }
 
         public override string ToString() => $"{Statements.Count} statements";
@@ -23,10 +25,10 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var ret = default(object);
-            for (var i = 0; i < Statements.Count; i++)
+            for (var i = 0; i < count; i++)
             {
                 ret = Statements[i].GetValue(context);
-                if (context.Returned || (context.InCycle() && (context.Broken || context.Continued))) break;
+                if (context.Returned || context.Broken || context.Continued) break;
             }
             return ret;
         }

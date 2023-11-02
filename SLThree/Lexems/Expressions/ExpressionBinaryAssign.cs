@@ -33,7 +33,8 @@ namespace SLThree
                     return right;
                 }
             }
-            throw new OperatorError(this, Left?.GetType(), right?.GetType());
+            context.Errors.Add(new OperatorError(this, Left?.GetType(), right?.GetType()));
+            return null;
         }
     }
 }

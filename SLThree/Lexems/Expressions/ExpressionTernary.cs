@@ -19,11 +19,10 @@ namespace SLThree
         public ExpressionTernary() : base(default) { }
         public override object GetValue(ExecutionContext context)
         {
-            object cond = Condition.GetValue(context);
-            object left = Left.GetValue(context);
-            object right = Right.GetValue(context);
-            if (cond is bool b1) return b1 ? left : right;
-            throw new OperatorError(Operator, cond?.GetType(), SourceContext);
+            var cond = Condition.GetValue(context);
+            var left = Left.GetValue(context);
+            var right = Right.GetValue(context);
+            return (bool)cond ? left : right;
         }
 
         public override string ToString() => $"{Condition} ? {Left} : {Right}";

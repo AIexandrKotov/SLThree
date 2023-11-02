@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace SLThree.Extensions
             return sb.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TOut[] ConvertAll<TIn, TOut>(this TIn[] array, Converter<TIn, TOut> func)
             => Array.ConvertAll(array, func);
 

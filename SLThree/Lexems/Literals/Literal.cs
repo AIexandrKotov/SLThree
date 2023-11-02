@@ -5,7 +5,7 @@ namespace SLThree
 {
     public partial class Literal<T> : BaseLexem
     {
-        public T Value;
+        public object Value;
         public Literal() : this(default, default) { }
         public Literal(T value, Cursor cursor) : base(cursor)
         {

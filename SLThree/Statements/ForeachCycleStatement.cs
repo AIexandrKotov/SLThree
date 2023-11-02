@@ -9,17 +9,19 @@ namespace SLThree
     {
         public NameLexem Name { get; set; }
         public BaseLexem Iterator { get; set; }
-        public StatementListStatement CycleBody { get; set; }
+        public BaseStatement[] CycleBody { get; set; }
 
         public ForeachCycleStatement(NameLexem name, BaseLexem iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Name = name;
             Iterator = iterator;
-            CycleBody = cycleBody;
+            CycleBody = cycleBody.Statements.ToArray();
+            count = CycleBody.Length;
         }
 
         private ExecutionContext last_context;
         private int variable_index;
+        private int count;
         public override object GetValue(ExecutionContext context)
         {
             var iterator = Iterator.GetValue(context).Cast<IEnumerable>();
@@ -34,9 +36,9 @@ namespace SLThree
             while (enumerator.MoveNext())
             {
                 context.LocalVariables.SetValue(variable_index, enumerator.Current);
-                for (var i = 0; i < CycleBody.Statements.Count; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    ret = CycleBody.Statements[i].GetValue(context);
+                    ret = CycleBody[i].GetValue(context);
                     if (context.Returned || context.Broken) break;
                     if (context.Continued) continue;
                 }

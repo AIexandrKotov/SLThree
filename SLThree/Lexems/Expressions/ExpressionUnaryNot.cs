@@ -23,7 +23,8 @@ namespace SLThree
             {
                 case bool b: return !b;
             }
-            throw new OperatorError(this, left?.GetType());
+            context.Errors.Add(new OperatorError(this, left?.GetType()));
+            return null;
         }
     }
 }

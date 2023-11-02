@@ -24,7 +24,8 @@ namespace SLThree
                 case long v: return -v;
                 case double v: return -v;
             }
-            throw new OperatorError(this, left?.GetType());
+            context.Errors.Add(new OperatorError(this, left?.GetType()));
+            return null;
         }
     }
 }

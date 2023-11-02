@@ -7,3 +7,5 @@ Language:
     - Ternary operator
 Embedding:
     - Wrapping classes in context, wrapping static members and classes
+Optimization:
+    - >40% (collatz_conjecture 14 s => 8 s)

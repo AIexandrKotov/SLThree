@@ -29,21 +29,22 @@ namespace SLThree
                 get_name = Name.ToString().Replace(" ", "");
                 get_counted_name = true;
             }
+
             var o = context.LocalVariables.GetValue(get_name).Item1;
 
             if (o == null) throw new RuntimeError($"Method {get_name}(_) not found", SourceContext);
 
-            if (o is BaseLexem bl) return bl.GetValue(context);
+            if (o is Method method)
+            {
+                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                return method.GetValue(context, args);
+            }
             else if (o is MethodInfo mi)
             {
                 if (!mi.IsStatic) return mi.Invoke(args[0], args.Skip(1).ToArray());
                 else return mi.Invoke(null, args);
             }
-            else if (o is Method method)
-            {
-                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
-                return method.GetValue(context, args);
-            }
+            else if (o is BaseLexem bl) return bl.GetValue(context);
             else
             {
                 var type = o.GetType();

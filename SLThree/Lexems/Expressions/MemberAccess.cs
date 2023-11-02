@@ -57,7 +57,7 @@ namespace SLThree
             else if (counted_contextwrapcache2)
             {
                 if (is_unwrap) return (left as ExecutionContext.ContextWrap).pred;
-                else return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.Select(x => x.GetValue(context)).ToArray());
+                else return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.ConvertAll(x => x.GetValue(context)));
             }
 
             if (left != null)

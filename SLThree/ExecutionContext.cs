@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,6 +25,8 @@ namespace SLThree
 
         public object ReturnedValue;
 
+        public List<Exception> Errors = new List<Exception>();
+
         public static ContextWrap global = new ContextWrap(new ExecutionContext() { fimp = true });
 
         static ExecutionContext()
@@ -44,6 +48,7 @@ namespace SLThree
 
         private int cycles = 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartCycle()
         {
             cycles += 1;
@@ -52,6 +57,7 @@ namespace SLThree
 
         public bool InCycle() => cycles > 1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndCycle()
         {
             cycles -= 1;
