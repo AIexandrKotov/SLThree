@@ -45,6 +45,7 @@ namespace SLThree
         private string variable_name;
 
         private bool counted_contextwrapcache2;
+        private bool is_unwrap;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
@@ -55,7 +56,8 @@ namespace SLThree
             }
             else if (counted_contextwrapcache2)
             {
-                return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.Select(x => x.GetValue(context)).ToArray());
+                if (is_unwrap) return (left as ExecutionContext.ContextWrap).pred;
+                else return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.Select(x => x.GetValue(context)).ToArray());
             }
 
             if (left != null)
@@ -71,6 +73,11 @@ namespace SLThree
                     else if (Right is InvokeLexem invokeLexem)
                     {
                         counted_contextwrapcache2 = true;
+                        if (invokeLexem.Name?.Cast<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
+                        {
+                            is_unwrap = true;
+                            return pred.pred;
+                        }
                         return invokeLexem.GetValue(pred.pred, invokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                 }

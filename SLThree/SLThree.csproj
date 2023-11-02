@@ -52,7 +52,13 @@
     <Compile Include="ExecutionContext.cs" />
     <Compile Include="Lexems\ArrayInitializer.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitAnd.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitOr.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitXor.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryOr.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionTernary.cs" />
     <Compile Include="Lexems\Expressions\MemberAccess.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryEquals.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryGreaterThan.cs" />

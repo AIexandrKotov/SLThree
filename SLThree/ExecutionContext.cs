@@ -25,14 +25,9 @@ namespace SLThree
 
         public static ContextWrap global = new ContextWrap(new ExecutionContext() { fimp = true });
 
-        private static bool and(bool a, bool b) => a && b;
-        private static bool or(bool a, bool b) => a || b;
-        private static bool xor(bool a, bool b) => a ^ b;
         static ExecutionContext()
         {
-            global.pred.LocalVariables.SetValue("and", Method.Create<bool, bool, bool>(and));
-            global.pred.LocalVariables.SetValue("or", Method.Create<bool, bool, bool>(or));
-            global.pred.LocalVariables.SetValue("xor", Method.Create<bool, bool, bool>(xor));
+
         }
 
         public class ContextWrap
@@ -45,7 +40,7 @@ namespace SLThree
         }
         internal ExecutionContext PreviousContext;
         public ContextWrap pred => new ContextWrap(PreviousContext);
-        public ContextWrap direct => new ContextWrap(this);
+        public ContextWrap wrap => new ContextWrap(this);
 
         private int cycles = 0;
 

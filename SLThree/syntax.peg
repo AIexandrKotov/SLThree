@@ -74,17 +74,43 @@ expr_statement <ExpressionStatement>
     = value:lexem { new ExpressionStatement(value, state) }
 
 lexem <BaseLexem>
-    = binary_4
+    = binary_9
+
+binary_9 <BaseLexem> -memoize
+    = left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
+    / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
+    / left:binary_7 _ "-=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
+    / left:binary_7 _ "*=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
+    / left:binary_7 _ "/=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryDivide(left, right, state), state) }
+    / left:binary_7 _ "%=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryMod(left, right, state), state) }
+    / left:binary_7 _ "&=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitAnd(left, right, state), state) }
+    / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
+    / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
+    / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
+    / left:ternary_0 { left }
+
+ternary_0 <BaseLexem> -memoize
+    = cond:ternary_0 _ "?" _ t:lexem _ ":" _ f:lexem { new ExpressionTernary(cond, t, f, state) }
+    / binary_7
+
+binary_7 <BaseLexem> -memoize
+    = left:binary_7 _ "||" right:binary_6 { new ExpressionBinaryOr(left, right, state) }
+    / binary_6
+
+binary_6 <BaseLexem> -memoize
+    = left:binary_6 _ "&&" right:binary_5 { new ExpressionBinaryAnd(left, right, state) }
+    / binary_5
+
+binary_5 <BaseLexem> -memoize
+    = left:binary_5 _ "&" right:binary_4 { new ExpressionBinaryBitAnd(left, right, state) }
+    / left:binary_5 _ "^" right:binary_4 { new ExpressionBinaryBitXor(left, right, state) }
+    / left:binary_5 _ "|" right:binary_4 { new ExpressionBinaryBitOr(left, right, state) }
+    / binary_4
 
 binary_4 <BaseLexem> -memoize
-    = left:binary_3 _ "=" _ right:binary_4 { new ExpressionBinaryAssign(left, right, state) }
-    / left:binary_3 _ "+=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
-    / left:binary_3 _ "-=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
-    / left:binary_3 _ "*=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
-    / left:binary_3 _ "/=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryDivide(left, right, state), state) }
-    / left:binary_3 _ "%=" _ right:binary_4 { new ExpressionBinaryAssign(left, new ExpressionBinaryMod(left, right, state), state) }
-    / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
-    / left:binary_3 { left }
+    = left:binary_4 _ "==" _ right:binary_3 { new ExpressionBinaryEquals(left, right, state) }
+    / left:binary_4 _ "!=" _ right:binary_3 { new ExpressionBinaryUnequals(left, right, state) }
+    / binary_3
 
 lambda_left <ValueTuple<IList<string>, BaseLexem[]>>
     = mods:method_modificator_list? _ "(" _ ")" { new ValueTuple<IList<string>, BaseLexem[]>(mods.Count == 0 ? new string[0] : mods[0], new BaseLexem[0]) }
@@ -110,9 +136,7 @@ implicit_keyword
     = s:"implicit" { s }
 
 binary_3 <BaseLexem> -memoize
-    = left:binary_3 _ "==" _ right:binary_2 { new ExpressionBinaryEquals(left, right, state) }
-    / left:binary_3 _ "as" _ right:as_expr_right { new CastLexem(left, right, state) }
-    / left:binary_3 _ "!=" _ right:binary_2 { new ExpressionBinaryUnequals(left, right, state) }
+    = left:binary_3 _ "as" _ right:as_expr_right { new CastLexem(left, right, state) }
     / left:binary_3 _ ">=" _ right:binary_2 { new ExpressionBinaryGreaterThanEquals(left, right, state) }
     / left:binary_3 _ "<=" _ right:binary_2 { new ExpressionBinaryLessThanEquals(left, right, state) }
     / left:binary_3 _ ">" _ right:binary_2 { new ExpressionBinaryGreaterThan(left, right, state) }

@@ -3,5 +3,7 @@ Language:
     - Foreach cycle
     - linq context (linq.range, linq.max etc.)
     - Indexator and list initializers like in Python
+    - Logical operators (&&, ||) and binary bit operators (&, |, ^)
+    - Ternary operator
 Embedding:
     - Wrapping classes in context, wrapping static members and classes
