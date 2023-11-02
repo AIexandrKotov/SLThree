@@ -158,8 +158,8 @@ binary_0 <BaseLexem>
     = _ left:binary_min _ { left }
 
 binary_min <BaseLexem>
-    = "(" _ bin:binary_4 _ ")" { bin }
-    / _ u:unary _ { u }
+    //= "(" _ bin:binary_9 _ ")" { bin }
+    = _ u:unary _ { u }
 
 unary <BaseLexem>
     = "+" _ left:binary_min { new ExpressionUnaryAdd(left, state) }
@@ -177,18 +177,21 @@ as_expr_right <BaseLexem> -memoize
     / right:name { right }
 
 primary <BaseLexem> -memoize
-    = left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
+    = "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
+    / left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / "new" _ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
     / "new" _ right:primary { new NewLexem(right as MemberAccess, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / invoke_lexem
+    / "(" _ x:lexem _ ")" { x }
     / tuple_creator
     / dictionary_creator
     / list_creator
-    / literal
+    / special
     / name
+    / literal
 
 dictionary_creator <BaseLexem>
     = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
@@ -226,23 +229,45 @@ other_arg_name <BaseLexem> = ("," _ a:arg_name _ ) { a }
 
 arg_name = name
 
-literal <BaseLexem>
-    = f32:([0-9]+ ("." [0-9]+)? ("f32")) { new FloatLiteral(float.Parse(f32.Replace("f32", ""), CultureInfo.InvariantCulture), state) }
-    / f64:([0-9]+ ("." [0-9]+) ("f64")?) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }
-    / f64:([0-9]+ ("f64")) { new DoubleLiteral(double.Parse(f64.Replace("f64", ""), CultureInfo.InvariantCulture), state) }
-    / i8:([0-9]+ ("i8")) { new SByteLiteral(sbyte.Parse(i8.Replace("i8", ""), CultureInfo.InvariantCulture), state) }
-    / u8:([0-9]+ ("u8")) { new ByteLiteral(byte.Parse(u8.Replace("u8", ""), CultureInfo.InvariantCulture), state) }
-    / i16:([0-9]+ ("i16")) { new ShortLiteral(short.Parse(i16.Replace("i16", ""), CultureInfo.InvariantCulture), state) }
-    / u16:([0-9]+ ("u16")) { new UShortLiteral(ushort.Parse(u16.Replace("u16", ""), CultureInfo.InvariantCulture), state) }
-    / i32:([0-9]+ ("i32")) { new IntLiteral(int.Parse(i32.Replace("i32", ""), CultureInfo.InvariantCulture), state) }
-    / u32:([0-9]+ ("u32")) { new UIntLiteral(uint.Parse(u32.Replace("u32", ""), CultureInfo.InvariantCulture), state) }
-    / u64:([0-9]+ ("u64")) { new ULongLiteral(ulong.Parse(u64.Replace("u64", ""), CultureInfo.InvariantCulture), state) }
-    / i64:([0-9]+ ("i64")?) { new LongLiteral(long.Parse(i64.Replace("i64", ""), CultureInfo.InvariantCulture), state) }
-    / b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }
+special <BaseLexem>
+    = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }
     / "linq" { new LinqLiteral(state) }
     / "global" { new GlobalLiteral(state) }
     / "null" { new NullLiteral(state) }
     / "self" { new SelfLiteral(state) }
+
+literal <BaseLexem>
+    = f32:([0-9_]+ ("." [0-9_]+)? ("f32"))    { new FloatLiteral(float.Parse(f32.Replace("f32", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+
+    / "0b" i8:([01_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 2), state) }
+    / "0b" u8:([01_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 2), state) }
+    / "0b" i16:([01_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 2), state) }
+    / "0b" u16:([01_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 2), state) }
+    / "0b" i32:([01_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 2), state) }
+    / "0b" u32:([01_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 2), state) }
+    / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), state) }
+    / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), state) }
+
+    / "0x" i8:([0-9A-F_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), state) }
+    / "0x" u8:([0-9A-F_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), state) }
+    / "0x" i16:([0-9A-F_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 16), state) }
+    / "0x" u16:([0-9A-F_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 16), state) }
+    / "0x" i32:([0-9A-F_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 16), state) }
+    / "0x" u32:([0-9A-F_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), state) }
+    / "0x" u64:([0-9A-F_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), state) }
+    / "0x" i64:([0-9A-F_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), state) }
+
+    / i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / u8:([0-9_]+ ("u8"))       { new ByteLiteral   (byte.Parse     (u8.Replace("u8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / i16:([0-9_]+ ("i16"))     { new ShortLiteral  (short.Parse    (i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / u16:([0-9_]+ ("u16"))     { new UShortLiteral (ushort.Parse   (u16.Replace("u16", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / i32:([0-9_]+ ("i32"))     { new IntLiteral    (int.Parse      (i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / u32:([0-9_]+ ("u32"))     { new UIntLiteral   (uint.Parse     (u32.Replace("u32", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / u64:([0-9_]+ ("u64"))     { new ULongLiteral  (ulong.Parse    (u64.Replace("u64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / i64:([0-9_]+ ("i64")?)    { new LongLiteral   (long.Parse     (i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+
     / interpolated_string
     / string_literal
     / char_literal

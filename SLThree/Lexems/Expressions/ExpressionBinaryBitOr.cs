@@ -31,7 +31,8 @@ namespace SLThree
             {
                 if (right is ulong u2) return u1 | u2;
             }
-            throw new OperatorError(this, left?.GetType(), right?.GetType());
+            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
+            return null;
         }
     }
 }

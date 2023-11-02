@@ -11,6 +11,7 @@ namespace SLThree
 
         }
 
+        internal int current = 0;
         internal object[] Variables = new object[8];
         public Dictionary<string, int> NamedIdenificators = new Dictionary<string, int>();
 
@@ -33,6 +34,7 @@ namespace SLThree
         public void FillArguments(Method method, object[] args)
         {
             if (Variables.Length <= args.Length) Variables = new object[8 + args.Length + Variables.Length];
+            if (current <= args.Length) current = args.Length;
             args.CopyTo(Variables, 0);
             for (var i = 0; i < args.Length; i++)
                 NamedIdenificators[method.ParamNames[i]] = i;
@@ -48,11 +50,10 @@ namespace SLThree
             }
             else
             {
-                if (NamedIdenificators.Count >= Variables.Length) Expand();
-                var count = NamedIdenificators.Count;
-                Variables[count] = value;
-                NamedIdenificators[name] = count;
-                return count;
+                if (current >= Variables.Length) Expand();
+                Variables[current] = value;
+                NamedIdenificators[name] = current;
+                return current++;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
