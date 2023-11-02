@@ -50,8 +50,9 @@
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="ExecutionContext.cs" />
-    <Compile Include="Lexems\ArrayInitializer.cs" />
+    <Compile Include="Lexems\CreatorArray.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
+    <Compile Include="Lexems\CreatorDictionary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitAnd.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Lexems\Literals\UIntLiteral.cs" />
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
+    <Compile Include="Lexems\CreatorTuple.cs" />
     <Compile Include="Linq\Linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />
     <Compile Include="Method.cs" />

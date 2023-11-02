@@ -184,13 +184,29 @@ primary <BaseLexem> -memoize
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / invoke_lexem
+    / tuple_creator
+    / dictionary_creator
     / list_creator
     / literal
     / name
 
+dictionary_creator <BaseLexem>
+    = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
+
+dictionary_entries <IList<CreatorDictionary.Entry>>
+    = first:dictionary_entry _ oth:other_entry* { oth.AddAndRet(first) }
+    
+other_entry <CreatorDictionary.Entry> = ("," _ a:dictionary_entry _ ) { a }
+
+dictionary_entry <CreatorDictionary.Entry>
+    = left:primary _ ":" _ right:lexem { new CreatorDictionary.Entry(left, right, state) }
+
+tuple_creator <BaseLexem>
+    = "(" _ args:arguments_list _ ")" { new CreatorTuple(args.ToArray(), state) }
+
 list_creator <BaseLexem>
-    = "[" _ args:arguments_list _ "]" { new ArrayInitializer(args.ToArray(), state) }
-    / "[" _ "]" { new ArrayInitializer(new BaseLexem[0], state) }
+    = "[" _ args:arguments_list _ "]" { new CreatorArray(args.ToArray(), state) }
+    / "[" _ "]" { new CreatorArray(new BaseLexem[0], state) }
 
 invoke_lexem <InvokeLexem>
     = left:identifier _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }

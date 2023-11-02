@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class ArrayInitializer : BaseLexem
+    public class CreatorArray : BaseLexem
     {
         public BaseLexem[] Lexems;
 
-        public ArrayInitializer(BaseLexem[] lexems, Cursor cursor) : base(cursor)
+        public CreatorArray(BaseLexem[] lexems, Cursor cursor) : base(cursor)
         {
             Lexems = lexems;
         }
