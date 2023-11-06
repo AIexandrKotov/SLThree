@@ -245,6 +245,22 @@ namespace SLThree
                 ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
             return ret;
         }
+        public static void SafeUnwrapStatic(ExecutionContext context)
+        {
+            foreach (var name in context.LocalVariables.GetAsDictionary())
+            {
+                try
+                {
+                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
+                        Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
+                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                }
+                catch (Exception e)
+                {
+                    context.Errors.Add(e);
+                }
+            }
+        }
         public static void UnwrapStatic(ExecutionContext context)
         {
             foreach (var name in context.LocalVariables.GetAsDictionary())
@@ -304,6 +320,26 @@ namespace SLThree
                 else if (fields.ContainsKey(name.Key)) fields[name.Key].SetValue(null, UnwrapCast(fields[name.Key].FieldType, name.Value));
             }
         }
+
+        public static void SafeUnwrap(Type type, ExecutionContext context)
+        {
+            if (!Unwrappers.ContainsKey(type)) Unwrappers.Add(type, new UnwrapperForStaticClasses(type));
+            var props = Unwrappers[type].StaticProperties;
+            var fields = Unwrappers[type].StaticFields;
+            foreach (var name in context.LocalVariables.GetAsDictionary())
+            {
+                try
+                {
+                    if (props.ContainsKey(name.Key) && props[name.Key].SetMethod != null)
+                        props[name.Key].SetValue(null, UnwrapCast(props[name.Key].PropertyType, name.Value));
+                    else if (fields.ContainsKey(name.Key)) fields[name.Key].SetValue(null, UnwrapCast(fields[name.Key].FieldType, name.Value));
+                }
+                catch (Exception e)
+                {
+                    context.Errors.Add(e);
+                }
+            }
+        }
     }
 
     public abstract class UnwrapperForInstances<T> : Wrapper<T> where T: new()
@@ -317,6 +353,25 @@ namespace SLThree
                 if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null) 
                     Properties[name.Key].SetValue(ret, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
                 else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(ret, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+            }
+            return ret;
+        }
+
+        public static T SafeUnwrap(ExecutionContext context)
+        {
+            var ret = new T();
+            foreach (var name in context.LocalVariables.GetAsDictionary())
+            {
+                try
+                {
+                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
+                        Properties[name.Key].SetValue(ret, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
+                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(ret, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                }
+                catch (Exception e)
+                {
+                    context.Errors.Add(e);
+                }
             }
             return ret;
         }
