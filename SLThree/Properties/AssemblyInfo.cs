@@ -41,10 +41,10 @@ using System.Linq;
 
 public static class SLTVersion {
     public const string Major = "0"; //vh
-    public const string Minor = "2"; //vh
+    public const string Minor = "3"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "842"; //vh
-    public const long LastUpdate = 638348766608802346; //vh
+    public const string Revision = "845"; //vh
+    public const long LastUpdate = 638348783847449980; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
@@ -78,7 +78,7 @@ public static class SLTVersion {
         }
     }
 
-    public static string Edition { get; } = "Unwrap the wrap";
+    public static string Edition { get; } = "Third time is lucky";
 
     public static string GetTitle()
     {
