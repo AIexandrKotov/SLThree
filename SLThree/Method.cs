@@ -14,7 +14,7 @@ namespace SLThree
         public string[] ParamNames;
         public StatementListStatement Statements;
 
-        public bool IsImplicit = false;
+        public bool imp = false;
 
         public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
 
@@ -33,7 +33,7 @@ namespace SLThree
             }
             ret.PreviousContext = context;
             ret.LocalVariables.FillArguments(this, arguments);
-            ret.ForbidImplicit = !IsImplicit;
+            ret.fimp = !imp;
             return ret;
         }
 

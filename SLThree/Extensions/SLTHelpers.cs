@@ -28,6 +28,8 @@ namespace SLThree.Extensions
 
         public static string GetTypeString(this Type t)
         {
+            if (t.IsGenericType)
+                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`'))}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             if (t == type_object) return "object";
             if (t == type_byte) return "u8";
             if (t == type_sbyte) return "i8";
@@ -45,6 +47,18 @@ namespace SLThree.Extensions
 
             else return t.FullName;
         }
+
+        public static bool IsList(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_list;
+        }
+        public static bool IsDictionary(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_dict;
+        }
+        private static Type type_list = typeof(List<>);
+        private static Type type_dict = typeof(Dictionary<,>);
+
         public static string GetTypeString(this string t)
         {
             if (t == "System.Object") return "object";

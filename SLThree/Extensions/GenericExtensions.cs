@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +22,7 @@ namespace SLThree.Extensions
             return sb.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TOut[] ConvertAll<TIn, TOut>(this TIn[] array, Converter<TIn, TOut> func)
             => Array.ConvertAll(array, func);
 
@@ -38,6 +41,12 @@ namespace SLThree.Extensions
         }
 
         public static T ToEnum<T>(this string s) where T : Enum => (T)Enum.Parse(typeof(T), s);
+
+        public static IEnumerable<object> Enumerate(this IEnumerable enumerable)
+        {
+            foreach (var x in enumerable)
+                yield return x;
+        }
 
         public static TOut Cast<TIn, TOut>(this TIn o) where TOut: TIn => (TOut)o;
         public static T Cast<T>(this object o) => (T)o;

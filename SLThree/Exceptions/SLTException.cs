@@ -41,6 +41,9 @@ namespace SLThree
         public SyntaxError(SourceContext context) : base(context) { }
         public SyntaxError(string message, SourceContext context) : base(message, context) { }
         public SyntaxError(string message, Exception inner, SourceContext context) : base(message, inner, context) { }
+        public SyntaxError(Cursor cursor) : base(new SourceContext(cursor)) { }
+        public SyntaxError(string message, Cursor cursor) : base(message, new SourceContext(cursor)) { }
+        public SyntaxError(string message, Exception inner, Cursor cursor) : base(message, inner, new SourceContext(cursor)) { }
     }
 
 /*    /// <summary>

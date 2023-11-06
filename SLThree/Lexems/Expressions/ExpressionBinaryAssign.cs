@@ -20,20 +20,26 @@ namespace SLThree
             }
             else
             {
-                if (Left is MemberAccess memberAccess)
-                {
-                    memberAccess.SetValue(context, right);
-                    return right;
-                }
-                else if (Left is NameLexem nl)
+                if (Left is NameLexem nl)
                 {
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
                     is_namelexem = true;
                     counted_invoked = context;
                     return right;
                 }
+                else if (Left is MemberAccess memberAccess)
+                {
+                    memberAccess.SetValue(context, right);
+                    return right;
+                }
+                else if (Left is IndexLexem indexLexem)
+                {
+                    indexLexem.SetValue(context, right);
+                    return right;
+                }
             }
-            throw new OperatorError(this, Left?.GetType(), right?.GetType());
+            context.Errors.Add(new OperatorError(this, Left?.GetType(), right?.GetType()));
+            return null;
         }
     }
 }
