@@ -68,6 +68,7 @@ namespace SLThree
         public void Return(object o) { Returned = true; ReturnedValue = o; }
         public void Break() { Broken = true; }
         public void Continue() { Continued = true; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PrepareToInvoke() { Returned = Broken = Continued = false; }
         public void DefaultEnvironment()
         {

@@ -61,10 +61,10 @@ block_statement <StatementListStatement>
     = "{" _ st:statement_list _ "}" { st }
 
 while_statement <BaseStatement>
-    = "while" _ "(" _ cond:lexem _ ")" _ body:block_statement { new WhileCycleStatement(cond, body, state) }
+    = "while" _ "(" _ cond:lexem _ ")" _ body:block_statement { new WhileLoopStatement(cond, body, state) }
 
 foreach_statement <BaseStatement>
-    = "foreach" _ "(" _ n:name _ "in" _ iter:lexem _ ")" _ body:block_statement { new ForeachCycleStatement(n, iter, body, state) }
+    = "foreach" _ "(" _ n:name _ "in" _ iter:lexem _ ")" _ body:block_statement { new ForeachLoopStatement(n, iter, body, state) }
 
 condition_statement <BaseStatement>
     = "if" _ "(" cond:lexem ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }

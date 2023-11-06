@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class WhileCycleStatement : BaseStatement
+    public class WhileLoopStatement : BaseStatement
     {
         public BaseLexem Condition { get; set; }
         public BaseStatement[] CycleBody { get; set; }
 
-        public WhileCycleStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public WhileLoopStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
             CycleBody = cycleBody.Statements.ToArray();

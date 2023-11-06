@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class ForeachCycleStatement : BaseStatement
+    public class ForeachLoopStatement : BaseStatement
     {
         public NameLexem Name { get; set; }
         public BaseLexem Iterator { get; set; }
         public BaseStatement[] CycleBody { get; set; }
 
-        public ForeachCycleStatement(NameLexem name, BaseLexem iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public ForeachLoopStatement(NameLexem name, BaseLexem iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Name = name;
             Iterator = iterator;
@@ -25,7 +25,6 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var iterator = Iterator.GetValue(context).Cast<IEnumerable>();
-            var enumerator = iterator.GetEnumerator();
             if (context != last_context)
             {
                 last_context = context;
@@ -33,9 +32,9 @@ namespace SLThree
             }
             var ret = default(object);
             context.StartCycle();
-            while (enumerator.MoveNext())
+            foreach (var x in iterator)
             {
-                context.LocalVariables.SetValue(variable_index, enumerator.Current);
+                context.LocalVariables.SetValue(variable_index, x);
                 for (var i = 0; i < count; i++)
                 {
                     ret = CycleBody[i].GetValue(context);
