@@ -50,6 +50,9 @@
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Extensions\SLThreeExtensions.cs" />
+    <Compile Include="Lexems\ChanceChooseLexem.cs" />
+    <Compile Include="Lexems\EqualchanceChooseLexem.cs" />
     <Compile Include="Lexems\CreatorArray.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
     <Compile Include="Lexems\CreatorDictionary.cs" />
@@ -125,6 +128,12 @@
     <Compile Include="Statements\BaseStatement.cs" />
     <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileLoopStatement.cs" />
+    <Compile Include="Tools\ChanceChooser.cs" />
+    <Compile Include="Tools\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\ChanceChooser.cs" />
+    <Compile Include="Tools\Generic\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\IChooser.cs" />
+    <Compile Include="Tools\IChooser.cs" />
     <Compile Include="Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>

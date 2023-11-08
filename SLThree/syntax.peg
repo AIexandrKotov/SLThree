@@ -74,6 +74,32 @@ expr_statement <ExpressionStatement>
     = value:lexem { new ExpressionStatement(value, state) }
 
 lexem <BaseLexem>
+    = chance_choose_lexem
+    / equalchance_choose_lexem
+    / binary_9
+
+chance_choose_lexem <ChanceChooseLexem>
+    = ecce:chance_choose_elements { new ChanceChooseLexem(ecce, state) }
+
+chance_choose_elements <IList<ValueTuple<BaseLexem, BaseLexem>>>
+    = first:chance_choose_element _ other:chance_choose_other_element+ { other.AddAndRet(first) }
+
+chance_choose_other_element <ValueTuple<BaseLexem, BaseLexem>>
+    = "\\" _ lex:binary_9 _ ":" _ c:binary_9 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
+
+chance_choose_element <ValueTuple<BaseLexem, BaseLexem>>
+    = lex:binary_9 _ ":" _ c:binary_9 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
+
+equalchance_choose_lexem <EqualchanceChooseLexem>
+    = ecce:equalchance_choose_elements { new EqualchanceChooseLexem(ecce, state) }
+
+equalchance_choose_elements <IList<BaseLexem>>
+    = first:equalchance_choose_element _ other:equalchance_choose_other_element+ { other.AddAndRet(first) }
+
+equalchance_choose_other_element <BaseLexem>
+    = ("\\" _ lex:binary_9 _ ) { lex }
+
+equalchance_choose_element <BaseLexem>
     = binary_9
 
 binary_9 <BaseLexem> -memoize
@@ -136,7 +162,8 @@ implicit_keyword
     = s:"implicit" { s }
 
 binary_3 <BaseLexem> -memoize
-    = left:binary_3 _ "as" _required_ right:as_expr_right { new CastLexem(left, right, state) }
+    = left:binary_3 _ "as" _required_ "\\" { new CastLexem(left, new NameLexem("\\", state), state) }
+    / left:binary_3 _ "as" _required_ right:as_expr_right { new CastLexem(left, right, state) }
     / left:binary_3 _ ">=" _ right:binary_2 { new ExpressionBinaryGreaterThanEquals(left, right, state) }
     / left:binary_3 _ "<=" _ right:binary_2 { new ExpressionBinaryLessThanEquals(left, right, state) }
     / left:binary_3 _ ">" _ right:binary_2 { new ExpressionBinaryGreaterThan(left, right, state) }
@@ -237,9 +264,8 @@ special <BaseLexem>
     / "self" { new SelfLiteral(state) }
 
 literal <BaseLexem>
-    = f32:([0-9_]+ ("." [0-9_]+)? ("f32"))    { new FloatLiteral(float.Parse(f32.Replace("f32", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
-    / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
-    / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    = percent_literal
+    / float_literal
 
     / "0b" i8:([01_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 2), state) }
     / "0b" u8:([01_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 2), state) }
@@ -271,6 +297,14 @@ literal <BaseLexem>
     / interpolated_string
     / string_literal
     / char_literal
+
+percent_literal <DoubleLiteral>
+    = f64:([0-9_]+ ("."[0-9_]+)? "%") { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", "").Replace("%", ""), CultureInfo.InvariantCulture) / 100.0, state) }
+
+float_literal <BaseLexem>
+    = f32:([0-9_]+ ("." [0-9_]+)? ("f32"))    { new FloatLiteral(float.Parse(f32.Replace("f32", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
 
 identifier = name
 
