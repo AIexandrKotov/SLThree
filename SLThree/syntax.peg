@@ -275,7 +275,7 @@ literal <BaseLexem>
 identifier = name
 
 name <NameLexem>
-    = _ first:available_name _ { new NameLexem(first.JoinIntoString(""), state) }
+    = first:available_name { new NameLexem(first.JoinIntoString(""), state) }
 
 interpolated_string <InterpolatedString> = "$\"" chars:interpolated_start exp:interpolated_expr* ("\"" / #ERROR{ "Expected '\"'" }) {
     new InterpolatedString(chars, exp, state)
