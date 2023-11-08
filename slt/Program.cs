@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -284,6 +285,15 @@ namespace slt
         private static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
+            if (value is ITuple tuple)
+            {
+                var xvalue = CreatorTuple.ToArray(tuple); value =
+                    $"({(xvalue.Length <= 10 ? xvalue.Enumerate().Select(x => GetOutput(x)).JoinIntoString(", ") : xvalue.Enumerate().Take(10).Select(x => GetOutput(x)).JoinIntoString(", ") + "...")})";
+            }
+            if (value is IList list) value =
+                    $"[{(list.Count <= 10 ? list.Enumerate().Select(x => GetOutput(x)).JoinIntoString(", ") : list.Enumerate().Take(10).Select(x => GetOutput(x)).JoinIntoString(", ") + "...")}]";
+            if (value is IDictionary dict) value =
+                    $"{{{(dict.Count <= 10 ? dict.Keys.Enumerate().Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(10).Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") + "...")}}}";
             return value;
         }
 
