@@ -50,8 +50,16 @@
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Lexems\CreatorArray.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
+    <Compile Include="Lexems\CreatorDictionary.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitAnd.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitOr.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryBitXor.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryOr.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionTernary.cs" />
     <Compile Include="Lexems\Expressions\MemberAccess.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryEquals.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryGreaterThan.cs" />
@@ -73,6 +81,7 @@
     <Compile Include="Lexems\Expressions\ExpressionBinary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryRem.cs" />
     <Compile Include="Lexems\Expressions\ExpressionUnary.cs" />
+    <Compile Include="Lexems\IndexLexem.cs" />
     <Compile Include="Lexems\InterpolatedString.cs" />
     <Compile Include="Lexems\InvokeLexem.cs" />
     <Compile Include="Lexems\LambdaLexem.cs" />
@@ -82,6 +91,7 @@
     <Compile Include="Lexems\Literals\FloatLiteral.cs" />
     <Compile Include="Lexems\Literals\GlobalLiteral.cs" />
     <Compile Include="Lexems\Literals\IntLiteral.cs" />
+    <Compile Include="Lexems\Literals\LinqLiteral.cs" />
     <Compile Include="Lexems\Literals\LongLiteral.cs" />
     <Compile Include="Lexems\Literals\Literal.cs" />
     <Compile Include="Lexems\Literals\NullLiteral.cs" />
@@ -92,6 +102,8 @@
     <Compile Include="Lexems\Literals\UIntLiteral.cs" />
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
+    <Compile Include="Lexems\CreatorTuple.cs" />
+    <Compile Include="Linq\Linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />
     <Compile Include="Method.cs" />
     <Compile Include="Lexems\NameLexem.cs" />
@@ -103,6 +115,7 @@
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\BreakStatement.cs" />
     <Compile Include="Statements\ContinueStatement.cs" />
+    <Compile Include="Statements\ForeachLoopStatement.cs" />
     <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
@@ -111,11 +124,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\BaseStatement.cs" />
     <Compile Include="Statements\UsingStatement.cs" />
-    <Compile Include="Statements\WhileCycleStatement.cs" />
+    <Compile Include="Statements\WhileLoopStatement.cs" />
     <Compile Include="Wrapper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="docs\versions\0.1.1" />
@@ -124,6 +134,9 @@
     <EmbeddedResource Include="docs\versions\0.2.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\versions\0.3.0" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pegasus.4.1.0\build\Pegasus.targets" Condition="Exists('..\packages\Pegasus.4.1.0\build\Pegasus.targets')" />

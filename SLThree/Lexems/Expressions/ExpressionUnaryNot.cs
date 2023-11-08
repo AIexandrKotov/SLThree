@@ -11,7 +11,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             object left;
-            if (context.ForbidImplicit)
+            if (context.fimp)
             {
                 left = Left.GetValue(context);
             }
@@ -23,7 +23,8 @@ namespace SLThree
             {
                 case bool b: return !b;
             }
-            throw new OperatorError(this, left?.GetType());
+            context.Errors.Add(new OperatorError(this, left?.GetType()));
+            return null;
         }
     }
 }

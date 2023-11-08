@@ -12,7 +12,7 @@ namespace SLThree
         {
             object left;
             object right;
-            if (context.ForbidImplicit)
+            if (context.fimp)
             {
                 left = Left.GetValue(context);
                 right = Right.GetValue(context);
@@ -24,8 +24,8 @@ namespace SLThree
             }
             if (left is long i1)
             {
-                if (right is double d2) return i1 % d2;
                 if (right is long i2) return i1 % i2;
+                if (right is double d2) return i1 % d2;
             }
             else if (left is double d1)
             {
@@ -35,10 +35,11 @@ namespace SLThree
             }
             else if (left is ulong u1)
             {
-                if (right is double d2) return u1 % d2;
                 if (right is ulong u2) return u1 % u2;
+                if (right is double d2) return u1 % d2;
             }
-            throw new OperatorError(this, left?.GetType(), right?.GetType());
+            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
+            return null;
         }
     }
 }

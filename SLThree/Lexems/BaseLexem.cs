@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {

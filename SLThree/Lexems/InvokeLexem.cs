@@ -29,21 +29,22 @@ namespace SLThree
                 get_name = Name.ToString().Replace(" ", "");
                 get_counted_name = true;
             }
+
             var o = context.LocalVariables.GetValue(get_name).Item1;
 
             if (o == null) throw new RuntimeError($"Method {get_name}(_) not found", SourceContext);
 
-            if (o is BaseLexem bl) return bl.GetValue(context);
+            if (o is Method method)
+            {
+                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                return method.GetValue(context, args);
+            }
             else if (o is MethodInfo mi)
             {
                 if (!mi.IsStatic) return mi.Invoke(args[0], args.Skip(1).ToArray());
                 else return mi.Invoke(null, args);
             }
-            else if (o is Method method)
-            {
-                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
-                return method.GetValue(context, args);
-            }
+            else if (o is BaseLexem bl) return bl.GetValue(context);
             else
             {
                 var type = o.GetType();
@@ -60,15 +61,20 @@ namespace SLThree
             return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
         }
 
+        private bool cached_1;
+        private MethodInfo founded;
         public object GetValue(ExecutionContext context, object obj)
         {
             var key = Name.ToString().Replace(" ", "");
 
+            if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
+
             if (obj is MemberAccess.ClassAccess ca)
             {
-                return ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
+                founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                cached_1 = true;
+                return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)
             {

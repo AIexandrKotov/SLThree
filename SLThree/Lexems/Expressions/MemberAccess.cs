@@ -16,6 +16,7 @@ namespace SLThree
             {
                 Name = name;
             }
+            public override string ToString() => $"access to {Name.GetTypeString()}";
         }
 
         public override string Operator => ".";
@@ -42,6 +43,9 @@ namespace SLThree
 
         private bool counted_contextwrapcache;
         private string variable_name;
+
+        private bool counted_contextwrapcache2;
+        private bool is_unwrap;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
@@ -49,6 +53,11 @@ namespace SLThree
             if (counted_contextwrapcache)
             {
                 return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+            }
+            else if (counted_contextwrapcache2)
+            {
+                if (is_unwrap) return (left as ExecutionContext.ContextWrap).pred;
+                else return (Right as InvokeLexem).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeLexem).Arguments.ConvertAll(x => x.GetValue(context)));
             }
 
             if (left != null)
@@ -63,6 +72,12 @@ namespace SLThree
                     }
                     else if (Right is InvokeLexem invokeLexem)
                     {
+                        counted_contextwrapcache2 = true;
+                        if (invokeLexem.Name?.Cast<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
+                        {
+                            is_unwrap = true;
+                            return pred.pred;
+                        }
                         return invokeLexem.GetValue(pred.pred, invokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                 }
@@ -80,7 +95,7 @@ namespace SLThree
                     if (prop != null) return prop.GetValue(left);
                     nest_type = type.GetNestedType(nameLexem.Name);
                     if (nest_type != null) return new ClassAccess(nest_type);
-                    throw new RuntimeError($"Name {nameLexem.Name} not found in {type.Name.GetTypeString()}", SourceContext);
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in {type.GetTypeString()}", SourceContext);
                 }
                 else if (Right is InvokeLexem invokeLexem)
                 {

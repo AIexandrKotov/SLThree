@@ -1,0 +1,50 @@
+out_help = () => 
+{
+    global.println("0 - Выйти");
+    global.println("h - Вывести ещё раз");
+    global.println("+ - Вывести a + b");
+    global.println("* - Вывести a * b");
+    global.println("% - Вывести a % b");
+    global.println($"a - Заполнить a (Сейчас: {self.pred.a})");
+    global.println($"b - Заполнить b (Сейчас: {self.pred.b})");
+};
+read = str =>
+{
+    global.print(str);
+    return global.readln().Trim() as i64;
+};
+
+a = b = 2;
+out_help();
+while (true) 
+{
+    global.print(">>> ");
+    input = global.readln().Trim();
+    switch (input)
+    {
+        case "0":
+            break;
+        case "h":
+            out_help();
+        case "+":
+            {
+                global.println($"Вывод: {a + b}");
+            }
+        case "*":
+            {
+                global.println($"Вывод: {a * b}");
+            }
+        case "%":
+            {
+                global.println($"Вывод: {a % b}");
+            }
+        case "a":
+            {
+                a = read("Введите a: ");
+            }
+        case "b":
+            {
+                b = read("Введите b: ");
+            }
+    }
+}

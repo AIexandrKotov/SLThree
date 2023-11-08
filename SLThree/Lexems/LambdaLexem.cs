@@ -15,6 +15,8 @@ namespace SLThree
             Left = invokeLexem;
             Right = statements;
             Modificators = modificators;
+            var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
+            if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", cursor);
         }
 
         public override string ToString() => $"{Left} => {Right}";
@@ -29,12 +31,10 @@ namespace SLThree
                     Name = "anon_method",
                     ParamNames = Left.Arguments.Select(x => (x as NameLexem).Name).ToArray(),
                     Statements = Right,
-                    IsImplicit = Modificators.Contains("implicit")
+                    imp = Modificators.Contains("implicit")
                 };
             }
             return method;
         }
-
-        public string Operator => "=>";
     }
 }

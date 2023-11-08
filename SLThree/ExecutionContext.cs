@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,7 +14,10 @@ namespace SLThree
             object GetValue(ExecutionContext context);
         }
 
-        public bool ForbidImplicit = true;
+        /// <summary>
+        /// Запрещает implicit в контексте
+        /// </summary>
+        public bool fimp = false;
 
         public bool Returned;
         public bool Broken;
@@ -20,16 +25,13 @@ namespace SLThree
 
         public object ReturnedValue;
 
-        public static ContextWrap global = new ContextWrap(new ExecutionContext());
+        public List<Exception> Errors = new List<Exception>();
 
-        private static bool and(bool a, bool b) => a && b;
-        private static bool or(bool a, bool b) => a || b;
-        private static bool xor(bool a, bool b) => a ^ b;
+        public static ContextWrap global = new ContextWrap(new ExecutionContext() { fimp = true });
+
         static ExecutionContext()
         {
-            global.pred.LocalVariables.SetValue("and", Method.Create<bool, bool, bool>(and));
-            global.pred.LocalVariables.SetValue("or", Method.Create<bool, bool, bool>(or));
-            global.pred.LocalVariables.SetValue("xor", Method.Create<bool, bool, bool>(xor));
+
         }
 
         public class ContextWrap
@@ -42,10 +44,11 @@ namespace SLThree
         }
         internal ExecutionContext PreviousContext;
         public ContextWrap pred => new ContextWrap(PreviousContext);
-        public ContextWrap direct => new ContextWrap(this);
+        public ContextWrap wrap => new ContextWrap(this);
 
         private int cycles = 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartCycle()
         {
             cycles += 1;
@@ -54,6 +57,7 @@ namespace SLThree
 
         public bool InCycle() => cycles > 1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndCycle()
         {
             cycles -= 1;
@@ -64,6 +68,7 @@ namespace SLThree
         public void Return(object o) { Returned = true; ReturnedValue = o; }
         public void Break() { Broken = true; }
         public void Continue() { Continued = true; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PrepareToInvoke() { Returned = Broken = Continued = false; }
         public void DefaultEnvironment()
         {
