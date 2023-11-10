@@ -1,12 +1,19 @@
-﻿using System.Collections;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace SLThree.Tools
+namespace System.Collections
 {
     public interface IChooser : IEnumerable
     {
         object Choose();
+    }
+
+    public interface IChanceChooser : IChooser
+    {
+        IList<(object, double)> Values { get; }
+    }
+
+    public interface IEqualchanceChooser : IChooser
+    {
+        IList<object> Values { get; }
     }
 }

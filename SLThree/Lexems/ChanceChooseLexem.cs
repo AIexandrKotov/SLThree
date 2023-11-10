@@ -1,6 +1,5 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
-using SLThree.Tools.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,13 +28,14 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var doubles = Chooser.Select(x => context.fimp ? (double)x.Item2.GetValue(context) : (double)x.Item2.GetValue(context).CastToType(typeof(double))).ToArray();
+            var doubles_sum = doubles.Sum();
 
 
             var t = Random.NextDouble();
             var sum = 0.0;
             for (var i = 0; i < Chooser.Count; i++)
             {
-                sum += doubles[i];
+                sum += doubles[i] / doubles_sum;
                 if (sum >= t) return Chooser[i].Item1.GetValue(context);
             }
             return Chooser[Chooser.Count - 1].Item1.GetValue(context);

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SLThree.Tools
+namespace System.Collections
 {
-    public class ChanceChooser : IChooser
+    public class ChanceChooser : IChanceChooser
     {
         public static Random Random = new Random();
 

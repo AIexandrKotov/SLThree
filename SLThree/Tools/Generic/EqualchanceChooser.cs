@@ -1,11 +1,8 @@
-﻿using SLThree.Tools.Generic;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Linq;
 
-namespace SLThree.Tools.Generic
+namespace System.Collections.Generic
 {
-    public class EqualchanceChooser<T> : IChooser<T>
+    public class EqualchanceChooser<T> : IEqualchanceChooser<T>
     {
         public static Random Random = new Random();
 
@@ -32,5 +29,7 @@ namespace SLThree.Tools.Generic
         {
             while (true) yield return Choose();
         }
+
+        IList<object> IEqualchanceChooser.Values => Values.Select(x => (object)x).ToArray();
     }
 }
