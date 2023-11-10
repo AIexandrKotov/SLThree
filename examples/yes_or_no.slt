@@ -1,0 +1,3 @@
+while (global.readln() != "0") {
+    global.println("да" \ "нет");
+}
