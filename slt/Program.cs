@@ -20,6 +20,7 @@ namespace slt
         static Program()
         {
             InitSLThreeAssemblyInfo();
+            SupportingFeatures();
         }
 
         #region Arguments
@@ -42,6 +43,8 @@ namespace slt
             { "unicode", Encoding.Unicode },
             { "ansi", Encoding.GetEncoding(1250) },
         };
+        private static Assembly SLThreeAssembly;
+        private static Version SLThreeFullVersion;
         private static string SLTVersionWithoutRevision;
         private static string SLTRevision;
         private static long SLTTime;
@@ -55,11 +58,12 @@ namespace slt
         private static string GetArgument(string arg) => RunArguments.GetArgument(arg, ShortCommands);
         private static void InitSLThreeAssemblyInfo()
         {
-            var ass = Assembly.GetAssembly(typeof(SLTVersion));
-            var ver = ass.GetName().Version;
+            SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
+            var ver = SLThreeAssembly.GetName().Version;
+            SLThreeFullVersion = ver;
             SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
             SLTRevision = ver.Revision.ToString();
-            var sltver = ass.GetType("SLTVersion");
+            var sltver = SLThreeAssembly.GetType("SLTVersion");
             SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
             SLTEdition = sltver.GetProperty("Edition").GetValue(null).Cast<string>();
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
@@ -294,6 +298,7 @@ namespace slt
                     $"[{(list.Count <= 10 ? list.Enumerate().Select(x => GetOutput(x)).JoinIntoString(", ") : list.Enumerate().Take(10).Select(x => GetOutput(x)).JoinIntoString(", ") + "...")}]";
             if (value is IDictionary dict) value =
                     $"{{{(dict.Count <= 10 ? dict.Keys.Enumerate().Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(10).Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") + "...")}}}";
+            if (LANG040) value = LANG040_GetChoosersOutput(value);
             return value;
         }
 
@@ -304,9 +309,95 @@ namespace slt
             Console.WriteLine(GetOutput(value));
             Console.ResetColor();
         }
-#endregion
+        #endregion
 
-#region Compiler and Interpreter
+        #region Compatibility checking
+
+        private static void SupportingFeatures()
+        {
+            if (LANG040 = SLThreeFullVersion.Major >= 1 || SLThreeFullVersion.Minor >= 4) LANG040_Init();
+        }
+
+        #region LANG 0.4.0+ FEATURES
+
+        private static bool LANG040;
+        private static void LANG040_Init()
+        {
+            LANG040_IChooserType = SLThreeAssembly.GetType("System.Collections.IChooser");
+            LANG040_IChanceChooserType = SLThreeAssembly.GetType("System.Collections.IChanceChooser");
+            LANG040_IEqualchanceChooserType = SLThreeAssembly.GetType("System.Collections.IEqualchanceChooser");
+            LANG040_SLThreeExtensions = SLThreeAssembly.GetType("SLThree.Extensions.SLThreeExtensions");
+            LANG040_ToDynamicPercentsMethod = LANG040_SLThreeExtensions.GetMethod("ToDynamicPercents");
+            LANG040_IChanceChooser_Values = LANG040_IChanceChooserType.GetProperty("Values");
+            LANG040_IEqualchanceChooser_Values = LANG040_IEqualchanceChooserType.GetProperty("Values");
+        }
+
+        #region Outputing IChooser
+        private static Type LANG040_IChooserType;
+        private static Type LANG040_IChanceChooserType;
+        private static Type LANG040_IEqualchanceChooserType;
+        private static Type LANG040_SLThreeExtensions;
+        private static PropertyInfo LANG040_IChanceChooser_Values;
+        private static PropertyInfo LANG040_IEqualchanceChooser_Values;
+        private static IList<(object, double)> LANG040_GET_ChanceChooser_Values(object value)
+        {
+            return LANG040_IChanceChooser_Values.GetValue(value) as IList<(object, double)>;
+        }
+        private static IList<object> LANG040_GET_EqualchanceChooser_Values(object value)
+        {
+            return LANG040_IEqualchanceChooser_Values.GetValue(value) as IList<object>;
+        }
+        private static MethodInfo LANG040_ToDynamicPercentsMethod;
+        private static string LANG040_ToDynamicPercents(this double value)
+        {
+            return LANG040_ToDynamicPercentsMethod.Invoke(null, new object[1] { value }) as string;
+        }
+
+
+        private static bool LANG040_IsIChooser(Type type)
+        {
+            return type.GetInterfaces().Contains(LANG040_IChooserType);
+        }
+
+        private static bool LANG040_IsIChanceChooserType(Type type)
+        {
+            return type.GetInterfaces().Contains(LANG040_IChanceChooserType);
+        }
+        
+        private static bool LANG040_IsIEqualchanceChooserType(Type type)
+        {
+            return type.GetInterfaces().Contains(LANG040_IEqualchanceChooserType);
+        }
+
+        private static object LANG040_GetChoosersOutput(object value)
+        {
+            var type = value.GetType();
+            if (LANG040_IsIChooser(type))
+            {
+                if (LANG040_IsIChanceChooserType(type))
+                {
+                    var values = LANG040_GET_ChanceChooser_Values(value);
+                    value = values.Count > 10
+                        ? $"({values.Take(10).Select(x => $"{x.Item1}: {LANG040_ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")}...)"
+                        : $"({values.Select(x => $"{x.Item1}: {LANG040_ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")})";
+                }
+                else if (LANG040_IsIEqualchanceChooserType(type))
+                {
+                    var values = LANG040_GET_EqualchanceChooser_Values(value);
+                    value = values.Count > 10
+                        ? $"({values.Take(10).JoinIntoString(" \\ ")}...)"
+                        : $"({values.JoinIntoString(" \\ ")})";
+                }
+            }
+            return value;
+        }
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        #region Compiler and Interpreter
         public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
@@ -325,11 +416,11 @@ namespace slt
             }
             return executionContext;
         }
-#endregion
+        #endregion
 
-#region REPL
+        #region REPL
 
-#region REPL Commands
+        #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
         public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
@@ -623,7 +714,7 @@ namespace slt
                 OutAsWarning("Your request does nothing do");
             }
         }
-#endregion
+        #endregion
 
         public static void REPLShortVersion()
         {
@@ -727,7 +818,7 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-#endregion
+        #endregion
 
         public static void Main(string[] args)
         {
