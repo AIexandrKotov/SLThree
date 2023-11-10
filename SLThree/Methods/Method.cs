@@ -18,7 +18,7 @@ namespace SLThree
 
         public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
 
-        public ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
+        public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
         {
             ExecutionContext ret;
             if (cached_method_contextes.TryGetValue(this, out var cntx))

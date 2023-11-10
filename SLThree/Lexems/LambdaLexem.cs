@@ -26,13 +26,26 @@ namespace SLThree
         {
             if (method == null)
             {
-                method = new Method()
+                if (Modificators.Contains("recursive"))
                 {
-                    Name = "anon_method",
-                    ParamNames = Left.Arguments.Select(x => (x as NameLexem).Name).ToArray(),
-                    Statements = Right,
-                    imp = Modificators.Contains("implicit")
-                };
+                    method = new RecursiveMethod()
+                    {
+                        Name = "anon_method",
+                        ParamNames = Left.Arguments.Select(x => (x as NameLexem).Name).ToArray(),
+                        Statements = Right,
+                        imp = Modificators.Contains("implicit"),
+                    };
+                }
+                else
+                {
+                    method = new Method()
+                    {
+                        Name = "anon_method",
+                        ParamNames = Left.Arguments.Select(x => (x as NameLexem).Name).ToArray(),
+                        Statements = Right,
+                        imp = Modificators.Contains("implicit"),
+                    };
+                }
             }
             return method;
         }

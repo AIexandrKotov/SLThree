@@ -108,12 +108,13 @@
     <Compile Include="Lexems\CreatorTuple.cs" />
     <Compile Include="Linq\Linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />
-    <Compile Include="Method.cs" />
+    <Compile Include="Methods\Method.cs" />
     <Compile Include="Lexems\NameLexem.cs" />
     <Compile Include="Lexems\Literals\DoubleLiteral.cs" />
     <Compile Include="Lexems\BaseLexem.cs" />
     <Compile Include="Lexems\Literals\ULongLiteral.cs" />
     <Compile Include="Lexems\TypeofLexem.cs" />
+    <Compile Include="Methods\RecursiveMethod.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\BreakStatement.cs" />

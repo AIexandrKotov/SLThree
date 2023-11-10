@@ -157,7 +157,10 @@ other_modificators <IList<string>>
 
 method_modificator
     = implicit_keyword
-
+    / recursive_keyword
+    
+recursive_keyword
+    = s:"recursive" { s }
 implicit_keyword
     = s:"implicit" { s }
 
