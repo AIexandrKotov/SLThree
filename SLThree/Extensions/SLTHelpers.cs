@@ -29,7 +29,7 @@ namespace SLThree.Extensions
         public static string GetTypeString(this Type t)
         {
             if (t.IsGenericType)
-                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`'))}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
+                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last()}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             if (t == type_object) return "object";
             if (t == type_byte) return "u8";
             if (t == type_sbyte) return "i8";
