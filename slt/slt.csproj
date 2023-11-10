@@ -55,6 +55,7 @@
     <None Include="App.config" />
     <EmbeddedResource Include="docs\help" />
     <EmbeddedResource Include="docs\versions\1.0.0" />
+    <EmbeddedResource Include="docs\versions\1.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">
