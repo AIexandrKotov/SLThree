@@ -71,6 +71,10 @@ namespace SLThree
 
             if (obj is MemberAccess.ClassAccess ca)
             {
+                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static); 
+                    // после первого вызова GetMethod
+                    // переставляет перегрузки, у которых аргумент object
+                    // в начало массива методов
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
