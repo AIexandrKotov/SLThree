@@ -280,14 +280,23 @@ literal <BaseLexem>
     / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), state) }
     / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), state) }
 
-    / "0x" i8:([0-9A-F_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), state) }
-    / "0x" u8:([0-9A-F_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), state) }
-    / "0x" i16:([0-9A-F_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 16), state) }
-    / "0x" u16:([0-9A-F_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 16), state) }
-    / "0x" i32:([0-9A-F_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 16), state) }
-    / "0x" u32:([0-9A-F_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), state) }
-    / "0x" u64:([0-9A-F_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), state) }
-    / "0x" i64:([0-9A-F_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), state) }
+    / "0x" i8:([0-9A-Fa-f_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), state) }
+    / "0x" u8:([0-9A-Fa-f_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), state) }
+    / "0x" i16:([0-9A-Fa-f_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 16), state) }
+    / "0x" u16:([0-9A-Fa-f_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 16), state) }
+    / "0x" i32:([0-9A-Fa-f_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 16), state) }
+    / "0x" u32:([0-9A-Fa-f_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), state) }
+    / "0x" u64:([0-9A-Fa-f_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), state) }
+    / "0x" i64:([0-9A-Fa-f_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), state) }
+
+    / "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), state) }
+    / "0o" u8:([0-7_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 8), state) }
+    / "0o" i16:([0-7_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 8), state) }
+    / "0o" u16:([0-7_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 8), state) }
+    / "0o" i32:([0-7_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 8), state) }
+    / "0o" u32:([0-7_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 8), state) }
+    / "0o" u64:([0-7_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 8), state) }
+    / "0o" i64:([0-7_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 8), state) }
 
     / i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
     / u8:([0-9_]+ ("u8"))       { new ByteLiteral   (byte.Parse     (u8.Replace("u8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
