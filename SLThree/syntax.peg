@@ -225,6 +225,7 @@ primary <BaseLexem> -memoize
 
 dictionary_creator <BaseLexem>
     = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
+    / "{" _ "}" { new CreatorDictionary(new CreatorDictionary.Entry[0], state) }
 
 dictionary_entries <IList<CreatorDictionary.Entry>>
     = first:dictionary_entry _ oth:other_entry* { oth.AddAndRet(first) }
