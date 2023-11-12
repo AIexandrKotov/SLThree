@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
@@ -6,5 +7,6 @@ namespace SLThree
     {
         public ShortLiteral(short value, Cursor cursor) : base(value, cursor) { }
         public ShortLiteral() : base() { }
+        public override object Clone() => new ShortLiteral() { Value = Value, SourceContext = SourceContext.CloneCast() };
     }
 }

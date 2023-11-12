@@ -1,12 +1,13 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class ExpressionUnaryBitNot : ExpressionUnary
     {
         public override string Operator => "~";
-        public ExpressionUnaryBitNot(BaseLexem left, Cursor cursor) : base(left, cursor) { }
+        public ExpressionUnaryBitNot(BaseLexem left, SourceContext context) : base(left, context) { }
         public ExpressionUnaryBitNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -26,6 +27,11 @@ namespace SLThree
             }
             context.Errors.Add(new OperatorError(this, left?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionUnaryBitNot(Left.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Linq.Expressions;
 using System.Xml;
@@ -8,7 +9,7 @@ namespace SLThree
 {
     public class CastLexem : ExpressionBinary
     {
-        public CastLexem(BaseLexem castingLexem, BaseLexem castingType, Cursor cursor) : base(castingLexem, castingType, cursor)
+        public CastLexem(BaseLexem castingLexem, BaseLexem castingType, SourceContext context) : base(castingLexem, castingType, context)
         {
             name = Right.ToString().Replace(" ", "");
             mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
@@ -18,6 +19,8 @@ namespace SLThree
                 if (type == null) mode = 0;
             }
         }
+        public CastLexem(BaseLexem castingLexem, BaseLexem castingType, Cursor cursor)
+            : this(castingLexem, castingType, new SourceContext(cursor)) { }
 
         public int mode = 0; // -1 - predefined, 0 - find type, 1 - as is, 2 - as \
         public bool variable_assigned = false;
@@ -53,5 +56,7 @@ namespace SLThree
         }
 
         public override string Operator => "as";
+
+        public override object Clone() => new CastLexem(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
     }
 }

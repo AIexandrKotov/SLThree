@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace SLThree
 {
-    public class Method
+    public class Method : ICloneable
     {
         private static Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
         
@@ -14,7 +15,12 @@ namespace SLThree
         public string[] ParamNames;
         public StatementListStatement Statements;
 
+        public ExecutionContext.ContextWrap DefinitionPlace;
+
         public bool imp = false;
+
+        public string contextName = "";
+        public void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
         public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
 
@@ -29,8 +35,10 @@ namespace SLThree
             else
             {
                 ret = new ExecutionContext();
+                ret.@this = DefinitionPlace;
                 cached_method_contextes.Add(this, ret);
             }
+            ret.Name = contextName;
             ret.PreviousContext = context;
             ret.LocalVariables.FillArguments(this, arguments);
             ret.fimp = !imp;
@@ -42,7 +50,7 @@ namespace SLThree
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
             var context = GetExecutionContext(args, old_context);
-            for (var i = 0; i < Statements.Statements.Count; i++)
+            for (var i = 0; i < Statements.Statements.Length; i++)
             {
                 if (context.Returned) return context.ReturnedValue;
                 else Statements.Statements[i].GetValue(context);
@@ -60,5 +68,17 @@ namespace SLThree
         public static MethodInfo Create<T1, T2>(Action<T1, T2> func) => func.Method;
         public static MethodInfo Create<T1, T2, T3>(Action<T1, T2, T3> func) => func.Method;
         public static MethodInfo Create(Delegate func) => func.Method;
+
+        public virtual object Clone()
+        {
+            return new Method()
+            {
+                DefinitionPlace = DefinitionPlace,
+                imp = imp,
+                Name = Name,
+                ParamNames = ParamNames.CloneArray(),
+                Statements = Statements.CloneCast()
+            };
+        }
     }
 }

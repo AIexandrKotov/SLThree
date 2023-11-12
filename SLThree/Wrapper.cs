@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -12,49 +13,13 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public abstract class Wrapper<T>
+    public abstract class WrappersTypeSetting
     {
-        protected static readonly Dictionary<string, PropertyInfo> Properties = new Dictionary<string, PropertyInfo>();
-        protected static readonly Dictionary<string, FieldInfo> Fields = new Dictionary<string, FieldInfo>();
-        protected static readonly Dictionary<string, PropertyInfo> StaticProperties = new Dictionary<string, PropertyInfo>();
-        protected static readonly Dictionary<string, FieldInfo> StaticFields = new Dictionary<string, FieldInfo>();
-        private static PropertyInfo InjectClassname = null;
         #region Type Setting
-        static Wrapper()
-        {
-            var type = typeof(T);
-            var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
-            foreach (var property in props)
-            {
-                if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                //else if (Attribute.IsDefined(property, typeof(WrappingInjectClassname))) InjectClassname = property;
-                else Properties[property.Name] = property;
-            }
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
-            foreach (var field in fields)
-            {
-                if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
-                else Fields[field.Name] = field;
-            }
-            var static_props = type.GetProperties(BindingFlags.Static | BindingFlags.Public);
-            foreach (var property in static_props)
-            {
-                if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                //else if (Attribute.IsDefined(property, typeof(WrappingInjectClassname))) InjectClassname = property;
-                else StaticProperties[property.Name] = property;
-            }
-            var static_fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
-            foreach (var field in static_fields)
-            {
-                if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
-                else StaticFields[field.Name] = field;
-            }
-        }
-        protected internal Wrapper() { }
-        private static Type generic_list = typeof(List<int>).GetGenericTypeDefinition();
-        private static Type generic_dict = typeof(Dictionary<string, int>).GetGenericTypeDefinition();
-        private static Type type_ituple = typeof(ITuple);
-        private static bool HasRecast(Type type)
+        protected static Type generic_list = typeof(List<int>).GetGenericTypeDefinition();
+        protected static Type generic_dict = typeof(Dictionary<string, int>).GetGenericTypeDefinition();
+        protected static Type type_ituple = typeof(ITuple);
+        protected static bool HasRecast(Type type)
         {
             if (type.IsArray) return true;
             if (type.IsGenericType)
@@ -67,7 +32,7 @@ namespace SLThree
             if (interfaces.Contains(type_ituple)) return true;
             return false;
         }
-        private static object[] TupleToArray(ITuple tuple)
+        protected static object[] TupleToArray(ITuple tuple)
         {
             var ret = new object[tuple.Length];
             for (var i = 0; i < ret.Length; i++)
@@ -161,7 +126,7 @@ namespace SLThree
             }
             return o;
         }
-        private static object WrapCast(object o)
+        protected static object WrapCast(object o)
         {
             if (o == null) return null;
             var type = o.GetType();
@@ -227,59 +192,48 @@ namespace SLThree
             return o;
         }
         #endregion
-        public static ExecutionContext Wrap(T obj)
-        {
-            var ret = new ExecutionContext();
-            foreach (var x in Properties)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
-            foreach (var x in Fields)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
-            return ret;
-        }
-        public static ExecutionContext WrapStatic()
-        {
-            var ret = new ExecutionContext();
-            foreach (var x in StaticProperties)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
-            foreach (var x in StaticFields)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
-            return ret;
-        }
-        public static void SafeUnwrapStatic(ExecutionContext context)
-        {
-            foreach (var name in context.LocalVariables.GetAsDictionary())
-            {
-                try
-                {
-                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                        Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
-                }
-                catch (Exception e)
-                {
-                    context.Errors.Add(e);
-                }
-            }
-        }
-        public static void UnwrapStatic(ExecutionContext context)
-        {
-            foreach (var name in context.LocalVariables.GetAsDictionary())
-            {
-                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                    Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
-            }
-        }
+
+        internal protected WrappersTypeSetting() { }
     }
 
-    public sealed class UnwrapperForStaticClasses : Wrapper<object>
+    public class NonGenericWrapper : WrappersTypeSetting
     {
-        private static Dictionary<Type, UnwrapperForStaticClasses> Unwrappers = new Dictionary<Type, UnwrapperForStaticClasses>();
-        private new readonly Dictionary<string, PropertyInfo> StaticProperties = new Dictionary<string, PropertyInfo>();
-        private new readonly Dictionary<string, FieldInfo> StaticFields = new Dictionary<string, FieldInfo>();
-        private UnwrapperForStaticClasses(Type type)
+        protected Type type;
+        protected string typename;
+        protected int counter;
+        internal string GetWrappedContextName() => $"<{typename}>@{Convert.ToString(counter++, 16).ToUpper().PadLeft(2, '0')}";
+        private static Dictionary<Type, NonGenericWrapper> Wrappers { get; } = new Dictionary<Type, NonGenericWrapper>();
+        public static NonGenericWrapper GetWrapper(Type type)
         {
-            if (!type.IsAbstract || !type.IsSealed) throw new ArgumentException($"Type {type.Name} is not static class!");
+            if (Wrappers.TryGetValue(type, out var value)) return value;
+            else return new NonGenericWrapper(type);
+        }
+        public static NonGenericWrapper GetWrapper<T>() => GetWrapper(typeof(T));
+
+        protected internal NonGenericWrapper() { }
+        protected readonly Dictionary<string, PropertyInfo> Properties = new Dictionary<string, PropertyInfo>();
+        protected Dictionary<string, FieldInfo> Fields = new Dictionary<string, FieldInfo>();
+        protected readonly Dictionary<string, PropertyInfo> StaticProperties = new Dictionary<string, PropertyInfo>();
+        protected readonly Dictionary<string, FieldInfo> StaticFields = new Dictionary<string, FieldInfo>();
+        protected readonly PropertyInfo InjectClassname = null;
+        protected internal NonGenericWrapper(Type type)
+        {
+            this.type = type;
+            Wrappers.Add(type, this);
+            typename = type.Name;
+            var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            foreach (var property in props)
+            {
+                if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
+                //else if (Attribute.IsDefined(property, typeof(WrappingInjectClassname))) InjectClassname = property;
+                else Properties[property.Name] = property;
+            }
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            foreach (var field in fields)
+            {
+                if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
+                else Fields[field.Name] = field;
+            }
             var static_props = type.GetProperties(BindingFlags.Static | BindingFlags.Public);
             foreach (var property in static_props)
             {
@@ -295,24 +249,68 @@ namespace SLThree
             }
         }
 
-        public static ExecutionContext Wrap(Type type)
+
+        public ExecutionContext Wrap(object obj)
         {
             var ret = new ExecutionContext();
-            if (!Unwrappers.ContainsKey(type)) Unwrappers.Add(type, new UnwrapperForStaticClasses(type));
-            var props = Unwrappers[type].StaticProperties;
-            var fields = Unwrappers[type].StaticFields;
+            ret.Name = GetWrappedContextName();
+            foreach (var x in Properties)
+                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
+            foreach (var x in Fields)
+                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
+            return ret;
+        }
+        public ExecutionContext WrapStatic()
+        {
+            var ret = new ExecutionContext();
+            ret.Name = GetWrappedContextName();
+            foreach (var x in StaticProperties)
+                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
+            foreach (var x in StaticFields)
+                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
+            return ret;
+        }
+        public void SafeUnwrapStatic(ExecutionContext context)
+        {
+            foreach (var name in context.LocalVariables.GetAsDictionary())
+            {
+                try
+                {
+                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
+                        Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
+                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                }
+                catch (Exception e)
+                {
+                    context.Errors.Add(e);
+                }
+            }
+        }
+        public void UnwrapStatic(ExecutionContext context)
+        {
+            foreach (var name in context.LocalVariables.GetAsDictionary())
+            {
+                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
+                    Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
+                else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+            }
+        }
+        public ExecutionContext WrapStaticClass()
+        {
+            var ret = new ExecutionContext();
+            ret.Name = GetWrappedContextName();
+            var props = StaticProperties;
+            var fields = StaticFields;
             foreach (var x in props)
                 ret.LocalVariables.SetValue(x.Key, x.Value.GetValue(null));
             foreach (var x in fields)
                 ret.LocalVariables.SetValue(x.Key, x.Value.GetValue(null));
             return ret;
         }
-
-        public static void Unwrap(Type type, ExecutionContext context)
+        public void UnwrapStaticClass(ExecutionContext context)
         {
-            if (!Unwrappers.ContainsKey(type)) Unwrappers.Add(type, new UnwrapperForStaticClasses(type));
-            var props = Unwrappers[type].StaticProperties;
-            var fields = Unwrappers[type].StaticFields;
+            var props = StaticProperties;
+            var fields = StaticFields;
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 if (props.ContainsKey(name.Key) && props[name.Key].SetMethod != null)
@@ -320,12 +318,10 @@ namespace SLThree
                 else if (fields.ContainsKey(name.Key)) fields[name.Key].SetValue(null, UnwrapCast(fields[name.Key].FieldType, name.Value));
             }
         }
-
-        public static void SafeUnwrap(Type type, ExecutionContext context)
+        public void SafeUnwrapStaticClass(ExecutionContext context)
         {
-            if (!Unwrappers.ContainsKey(type)) Unwrappers.Add(type, new UnwrapperForStaticClasses(type));
-            var props = Unwrappers[type].StaticProperties;
-            var fields = Unwrappers[type].StaticFields;
+            var props = StaticProperties;
+            var fields = StaticFields;
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 try
@@ -340,26 +336,20 @@ namespace SLThree
                 }
             }
         }
-    }
-
-    public abstract class UnwrapperForInstances<T> : Wrapper<T> where T: new()
-    {
-        private UnwrapperForInstances() { }
-        public static T Unwrap(ExecutionContext context)
+        public object Unwrap(ExecutionContext context)
         {
-            var ret = new T();
+            var ret = Activator.CreateInstance(type);
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
-                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null) 
+                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
                     Properties[name.Key].SetValue(ret, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
                 else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(ret, UnwrapCast(Fields[name.Key].FieldType, name.Value));
             }
             return ret;
         }
-
-        public static T SafeUnwrap(ExecutionContext context)
+        public object SafeUnwrap(ExecutionContext context)
         {
-            var ret = new T();
+            var ret = Activator.CreateInstance(type);
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 try
@@ -375,6 +365,23 @@ namespace SLThree
             }
             return ret;
         }
+    }
+
+    public static class Wrapper<T>
+    {
+        private static readonly NonGenericWrapper wrapper;
+        static Wrapper()
+        {
+            wrapper = NonGenericWrapper.GetWrapper(typeof(T));
+        }
+        public static T Unwrap(ExecutionContext context) => (T)wrapper.Unwrap(context);
+        public static void UnwrapStatic(ExecutionContext context) => wrapper.UnwrapStatic(context);
+        public static ExecutionContext Wrap(T value) => wrapper.Wrap(value);
+        public static ExecutionContext WrapStatic() => wrapper.WrapStatic();
+
+
+        public static T SafeUnwrap(ExecutionContext context) => (T)wrapper.SafeUnwrap(context);
+        public static void SafeUnwrapStatic(ExecutionContext context) => wrapper.SafeUnwrapStatic(context);
     }
 
     /// <summary>

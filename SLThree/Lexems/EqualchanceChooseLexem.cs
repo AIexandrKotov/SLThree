@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace SLThree
 
         public EqualchanceChooser<BaseLexem> Chooser { get; set; }
 
-        public EqualchanceChooseLexem(IList<BaseLexem> elements, Cursor cursor) : base(cursor)
+        public EqualchanceChooseLexem(IList<BaseLexem> elements, SourceContext context) : base(context)
         {
             Chooser = new EqualchanceChooser<BaseLexem>(elements);
         }
@@ -31,5 +32,10 @@ namespace SLThree
         }
 
         public override string ToString() => Chooser.Values.JoinIntoString(" \\ ");
+
+        public override object Clone()
+        {
+            return new EqualchanceChooseLexem(Chooser.Values.ToArray().CloneArray(), SourceContext);
+        }
     }
 }

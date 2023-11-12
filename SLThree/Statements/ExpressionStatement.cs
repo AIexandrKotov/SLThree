@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,10 @@ namespace SLThree
     {
         public BaseLexem Lexem;
 
+        public ExpressionStatement(BaseLexem lexem, SourceContext context) : base(context)
+        {
+            Lexem = lexem;
+        }
         public ExpressionStatement(BaseLexem lexem, Cursor cursor) : base(cursor)
         {
             Lexem = lexem;
@@ -18,5 +23,10 @@ namespace SLThree
 
         public override string ToString() => $"{Lexem}";
         public override object GetValue(ExecutionContext context) => Lexem.GetValue(context);
+
+        public override object Clone()
+        {
+            return new ExpressionStatement(Lexem.CloneCast(), SourceContext.CloneCast());
+        }
     }
 }

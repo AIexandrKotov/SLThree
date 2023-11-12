@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Configuration;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace SLThree
         }
 
         public override string Operator => ".";
-        public MemberAccess(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public MemberAccess(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public MemberAccess() : base() { }
 
         private FieldInfo field;
@@ -109,7 +110,7 @@ namespace SLThree
 
         private bool counted_other_context_assign;
         private string other_context_name;
-        public void SetValue(ExecutionContext context, object value)
+        public void SetValue(ExecutionContext context, ref object value)
         {
             var left = Left.GetValue(context);
 
@@ -130,6 +131,14 @@ namespace SLThree
                     {
                         other_context_name = Right.ToString().Replace(" ", "");
                         counted_other_context_assign = true;
+                        if (value is Method mth)
+                        {
+                            mth = mth.CloneCast();
+                            mth.Name = nameLexem2.Name;
+                            mth.UpdateContextName();
+                            mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
+                            value = mth;
+                        }
                         context.LocalVariables.SetValue(other_context_name, value);
                     }
                     return;
@@ -165,6 +174,13 @@ namespace SLThree
             }
 
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
+        }
+
+        public override string ToString() => $"{Left}.{Right}";
+
+        public override object Clone()
+        {
+            return new MemberAccess(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

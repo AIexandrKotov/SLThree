@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace SLThree
         public string Value { get; set; }
         public BaseLexem[] Lexems { get; set; }
 
+        public InterpolatedString() : base() { }
         public InterpolatedString(string value, IList<(BaseLexem, string)> other, Cursor cursor) : base(cursor)
         {
             var sb = new StringBuilder();
@@ -30,6 +32,11 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             return string.Format(Value, Lexems.ConvertAll(x => x.GetValue(context)));
+        }
+
+        public override object Clone()
+        {
+            return new InterpolatedString() { Value = Value.CloneCast(), Lexems = Lexems.CloneArray(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class ExpressionUnaryNot : ExpressionUnary
     {
         public override string Operator => "!";
-        public ExpressionUnaryNot(BaseLexem left, Cursor cursor) : base(left, cursor) { }
+        public ExpressionUnaryNot(BaseLexem left, SourceContext context) : base(left, context) { }
         public ExpressionUnaryNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -25,6 +26,11 @@ namespace SLThree
             }
             context.Errors.Add(new OperatorError(this, left?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionUnaryNot(Left.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -12,7 +12,11 @@ namespace SLThree
 
         public IList<(BaseLexem, BaseLexem)> Chooser { get; set; }
 
-        public ChanceChooseLexem(IList<(BaseLexem, BaseLexem)> elements, Cursor cursor) : base(cursor)
+        public ChanceChooseLexem(IList<(BaseLexem, BaseLexem)> elements, SourceContext context) : base(context)
+        {
+            Chooser = elements;
+        }
+        public ChanceChooseLexem(IList<(BaseLexem, BaseLexem)> elements, Cursor cursor) : this(elements, new SourceContext(cursor))
         {
             Chooser = elements;
         }
@@ -42,5 +46,10 @@ namespace SLThree
         }
 
         public override string ToString() => Chooser.Select(x => $"{x.Item1}: {x.Item2}").JoinIntoString(" \\ ");
+
+        public override object Clone()
+        {
+            return new ChanceChooseLexem(Chooser, SourceContext);
+        }
     }
 }

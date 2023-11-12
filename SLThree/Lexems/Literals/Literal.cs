@@ -1,18 +1,25 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 using System.Threading;
 
 namespace SLThree
 {
-    public class Literal<T> : BaseLexem
+    public abstract class Literal : BaseLexem
     {
         public object Value;
-        public Literal() : this(default, default) { }
+        public Literal() : base() { }
+        public Literal(Cursor cursor) : base(cursor) { }
+        public override string ToString() => Value.ToString();
+    }
+
+    public abstract class Literal<T> : Literal
+    {
+        public Literal() : base() { }
         public Literal(T value, Cursor cursor) : base(cursor)
         {
             Value = value;
         }
 
-        public override string ToString() => Value.ToString();
         public override object GetValue(ExecutionContext context) => Value;
     }
 }

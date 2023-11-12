@@ -12,12 +12,12 @@ namespace SLThree
         public BaseLexem Left;
         public BaseLexem Right;
 
-        public ExpressionBinary(BaseLexem left, BaseLexem right, Cursor cursor) : base(cursor)
+        public ExpressionBinary(BaseLexem left, BaseLexem right, SourceContext context) : base(context)
         {
             Left = left;
             Right = right;
         }
-        public ExpressionBinary() : base(default) { }
+        public ExpressionBinary() : base() { }
 
         public abstract string Operator { get; }
         public override string ToString() => $"{Left?.ToString() ?? "null"} {Operator} {Right?.ToString() ?? "null"}";

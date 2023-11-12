@@ -113,6 +113,9 @@ binary_9 <BaseLexem> -memoize
     / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
     / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
+    / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new CreatorContext(n, st, state) }
+    / "context" _required_ n:name { new CreatorContext(n, state) }
+    / "context" { new CreatorContext(state) }
     / ternary_0
 
 ternary_0 <BaseLexem> -memoize
@@ -208,6 +211,7 @@ as_expr_right <BaseLexem> -memoize
 
 primary <BaseLexem> -memoize
     = "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
+    / "(" _ left:lexem _ ")" _ "." _ right:name { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / "new" _required_ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
@@ -262,8 +266,8 @@ arg_name = name
 
 special <BaseLexem>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }
-    / "linq" { new LinqLiteral(state) }
     / "global" { new GlobalLiteral(state) }
+    / "this" { new ThisLiteral(state) }
     / "null" { new NullLiteral(state) }
     / "self" { new SelfLiteral(state) }
 

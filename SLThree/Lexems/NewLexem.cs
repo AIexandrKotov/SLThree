@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Linq;
 
@@ -9,6 +10,8 @@ namespace SLThree
     {
         public InvokeLexem InvokeLexem;
         public MemberAccess MemberAccess;
+
+        public NewLexem() : base() { }
 
         public NewLexem(MemberAccess memberAccess, Cursor cursor) : base(cursor)
         {
@@ -39,5 +42,12 @@ namespace SLThree
                 InvokeLexem.Arguments.Select(x => x.GetValue(context)).ToArray());
             }
         }
+
+        public override object Clone() => new NewLexem()
+        {
+            MemberAccess = MemberAccess.CloneCast(),
+            InvokeLexem = InvokeLexem.CloneCast(),
+            SourceContext = SourceContext.CloneCast(),
+        };
     }
 }

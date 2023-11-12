@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
@@ -9,14 +10,14 @@ namespace SLThree
         public BaseLexem Condition;
         public BaseLexem Left;
         public BaseLexem Right;
-
-        public ExpressionTernary(BaseLexem cond, BaseLexem left, BaseLexem right, Cursor cursor) : base(cursor)
+        
+        public ExpressionTernary(BaseLexem cond, BaseLexem left, BaseLexem right, SourceContext context) : base(context)
         {
             Condition = cond;
             Left = left;
             Right = right;
         }
-        public ExpressionTernary() : base(default) { }
+        public ExpressionTernary() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             var cond = Condition.GetValue(context);
@@ -26,5 +27,10 @@ namespace SLThree
         }
 
         public override string ToString() => $"{Condition} ? {Left} : {Right}";
+
+        public override object Clone()
+        {
+            return new ExpressionTernary(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+        }
     }
 }

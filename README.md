@@ -2,6 +2,8 @@
 
 .NET Framework script programming language.
 
+For more information about language: [wiki/Language](https://github.com/AIexandrKotov/SLThree/wiki/Language)
+
 ### Powerful REPL
 
 ![image](https://github.com/AIexandrKotov/SLThree/assets/44296606/8f6fb9df-54c3-42aa-835a-6fbb35c93e85)
