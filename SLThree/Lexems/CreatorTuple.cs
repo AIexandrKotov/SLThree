@@ -10,7 +10,7 @@ namespace SLThree
     {
         public BaseLexem[] Lexems;
         
-        public CreatorTuple(BaseLexem[] lexems, Cursor cursor) : base(cursor)
+        public CreatorTuple(BaseLexem[] lexems, SourceContext context) : base(context)
         {
             Lexems = lexems;
         }
@@ -43,5 +43,10 @@ namespace SLThree
             return ret;
         }
         public override string ToString() => $"({Lexems.JoinIntoString(", ")})";
+
+        public override object Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

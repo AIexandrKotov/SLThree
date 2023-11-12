@@ -1,12 +1,14 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class ExpressionBinaryBitXor : ExpressionBinary
     {
         public override string Operator => "^";
-        public ExpressionBinaryBitXor(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryBitXor(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+
         public ExpressionBinaryBitXor() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -33,6 +35,11 @@ namespace SLThree
             }
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryBitXor(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

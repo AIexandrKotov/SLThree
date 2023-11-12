@@ -1,22 +1,2 @@
-﻿--=== SLT SPECIFICATION ===--
-Nums (default 64 bit), chars, strings (+interpolated) and bools like in C#
-Suffixes for nums determine type like in Rust (1u32 = uint, 1f32 = float)
-Operators (priority like in C#, exclude bit operators):
-    Ternary: ?:
-    Binary: + - * / % == != > >= < <= = += -= *= /= %= => as, &&, ||, &, |, ^
-    Unary: + - ! ~
-    Primary: x.y, x(), new x(), x[y]
-Statements like in C#:
-    - if and while
-    - return, break, continue
-Almost like in C#:
-    - foreach (<name> in <iterator>)
-    - using <Type>; // not namespace
-    - switch (supports non-const in case and break not needed)
-    - [implicit] <lambda definition> - implicit supports more types (slower)
-SLThree features:
-    - getting lexems (<lex> as is) and call it
-    - list, tuple and dictionary initializers
---=== END SPECIFICATON ===--
-For more information:
+﻿For more information:
     https://github.com/AIexandrKotov/SLThree/wiki/Language

@@ -29,7 +29,7 @@ namespace SLThree.Extensions
         public static string GetTypeString(this Type t)
         {
             if (t.IsGenericType)
-                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`'))}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
+                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last()}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             if (t == type_object) return "object";
             if (t == type_byte) return "u8";
             if (t == type_sbyte) return "i8";
@@ -44,6 +44,7 @@ namespace SLThree.Extensions
             if (t == type_bool) return "bool";
             if (t == type_string) return "string";
             if (t == type_char) return "char";
+            if (t == type_context) return "context";
 
             else return t.FullName;
         }
@@ -95,6 +96,7 @@ namespace SLThree.Extensions
                 case "object": return type_object;
                 case "bool": return type_bool;
                 case "char": return type_char;
+                case "context": return type_context;
             }
             return Type.GetType(s, false);
         }
@@ -113,6 +115,7 @@ namespace SLThree.Extensions
         private static Type type_char = typeof(char);
         private static Type type_double = typeof(double);
         private static Type type_float = typeof(float);
+        private static Type type_context = typeof(ExecutionContext.ContextWrap);
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;

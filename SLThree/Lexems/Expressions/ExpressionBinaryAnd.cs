@@ -1,19 +1,35 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class ExpressionBinaryAnd : ExpressionBinary
     {
         public override string Operator => "&&";
-        public ExpressionBinaryAnd(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryAnd(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public ExpressionBinaryAnd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left = Left.GetValue(context);
-            object right = Right.GetValue(context);
-            if (left is bool b1 && right is bool b2) return b1 && b2;
+            object right = null;
+            var right_counted = false;
+            if (left is bool b1)
+            {
+                if (b1)
+                {
+                    right_counted = true;
+                    if (Right.GetValue(context) is bool b2) return b2;
+                }
+                else return false;
+            }
+            right = right_counted ? right : Right.GetValue(context);
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿------ 0.3.0 Third time is lucky ------ [06.11.23]
 Language:
-    - Foreach cycle
+    - Foreach loop
     - linq context (linq.range, linq.max etc.)
     - list, tuples and dictionary initializers
     - Indexators

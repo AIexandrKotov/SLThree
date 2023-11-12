@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,12 @@ namespace SLThree
     public partial class NameLexem : BaseLexem
     {
         public string Name;
-        public NameLexem(string name, Cursor cursor) : base(cursor)
+        public NameLexem() : base() { }
+        public NameLexem(string name, SourceContext context) : base(context)
         {
             Name = name;
         }
-        public NameLexem(string name, string next, Cursor cursor) : base(cursor)
+        public NameLexem(string name, string next, SourceContext context) : base(context)
         {
             Name = name;
             if (next.Length != 0) Name += $".{next}";
@@ -34,10 +36,16 @@ namespace SLThree
             else
             {
                 var (value, ind) = context.LocalVariables.GetValue(Name);
+                if (ind == -1) return value;
                 counted = context;
                 variable_index = ind;
                 return value;
             }
+        }
+
+        public override object Clone()
+        {
+            return new NameLexem() { Name = Name.CloneCast(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

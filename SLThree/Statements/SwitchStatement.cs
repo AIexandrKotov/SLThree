@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,13 @@ namespace SLThree
 {
     public class SwitchStatement : BaseStatement
     {
-        public class Node
+        public class Node : ICloneable
         {
             public bool Next { get; set; }
             public BaseLexem Value { get; set; }
             public BaseStatement Statements { get; set; }
 
+            public Node() { }
             public Node(BaseLexem condition, BaseStatement statements, bool next)
             {
                 Value = condition;
@@ -24,15 +26,21 @@ namespace SLThree
             }
 
             public override string ToString() => $"case {Value}: {{{Statements}}}";
+
+            public object Clone()
+            {
+                return new Node() { Next = Next.Copy(), Value = Value.CloneCast(), Statements = Statements.CloneCast() };
+            }
         }
 
         public BaseLexem Value;
-        public IList<Node> Cases;
+        public Node[] Cases;
 
-        public SwitchStatement(BaseLexem value, IList<Node> cases, Cursor cursor) : base(cursor)
+        public SwitchStatement() : base() { }
+        public SwitchStatement(BaseLexem value, IList<Node> cases, SourceContext context) : base(context)
         {
             Value = value;
-            Cases = cases;
+            Cases = cases.ToArray();
         }
 
         public override string ToString() => $"switch ({Value}) {{{Cases}}}";
@@ -40,20 +48,25 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var value = Value.GetValue(context);
-            for (var i = 0; i < Cases.Count; i++)
+            for (var i = 0; i < Cases.Length; i++)
             {
                 var found = (value as IComparable)?.CompareTo(Cases[i].Value.GetValue(context)) == 0;
                 var found_but_next = found && Cases[i].Next;
                 if (found_but_next)
                 {
-                    while (i < Cases.Count && Cases[i].Next) i++;
-                    if (i == Cases.Count) return null;
+                    while (i < Cases.Length && Cases[i].Next) i++;
+                    if (i == Cases.Length) return null;
                     else return Cases[i].Statements.GetValue(context);
                 }
                 else if (found) return Cases[i].Statements.GetValue(context);
                 else continue;
             }
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new SwitchStatement() { Cases = Cases.CloneArray(), Value = Value.CloneCast(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

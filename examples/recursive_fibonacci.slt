@@ -1,0 +1,9 @@
+global.fib = recursive n => {
+    if (n < 2) { 
+        return n;
+    }
+    else { 
+        return global.fib(n - 2) + global.fib(n - 1);
+    }
+};
+linq.jts(linq.map(linq.range(1, 10), x => global.fib(x)));

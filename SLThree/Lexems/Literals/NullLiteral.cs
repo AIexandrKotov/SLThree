@@ -1,13 +1,19 @@
-﻿using Pegasus.Common;
+﻿using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class NullLiteral : BaseLexem
     {
-        public NullLiteral(Cursor cursor) : base(cursor) { }
+        public NullLiteral() : base() { }
+        public NullLiteral(SourceContext context) : base(context) { }
 
         public override string ToString() => "null";
 
         public override object GetValue(ExecutionContext context) => null;
+
+        public override object Clone()
+        {
+            return new NullLiteral(SourceContext.CloneCast());
+        }
     }
 }
