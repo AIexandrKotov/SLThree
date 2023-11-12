@@ -1,4 +1,6 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
+using System.Net.NetworkInformation;
 
 namespace SLThree
 {
@@ -7,12 +9,13 @@ namespace SLThree
         public bool VoidReturn;
         public BaseLexem Lexem;
 
-        public ReturnStatement(BaseLexem lexem, Cursor cursor) : base(cursor)
+        public ReturnStatement() : base() { }
+        public ReturnStatement(BaseLexem lexem, SourceContext context) : base(context)
         {
             Lexem = lexem;
         }
 
-        public ReturnStatement(Cursor cursor) : base(cursor)
+        public ReturnStatement(SourceContext context) : base(context)
         {
             VoidReturn = true;
         }
@@ -31,6 +34,11 @@ namespace SLThree
                 context.Return(value);
                 return value;
             }
+        }
+
+        public override object Clone()
+        {
+            return new ReturnStatement() { Lexem = Lexem.CloneCast(), VoidReturn = VoidReturn.Copy(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

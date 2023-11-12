@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,11 @@ namespace SLThree
     {
         public BaseLexem Typename;
 
-        public TypeofLexem(BaseLexem type, Cursor cursor) : base(cursor)
+        public TypeofLexem() : base() { }
+        public TypeofLexem(BaseLexem type, SourceContext context) : base(context)
         {
             Typename = type;
+            if (this.type == null) this.type = Typename.ToString().Replace(" ", "").ToType();
         }
 
         public override string ToString() => $"{Typename}";
@@ -22,8 +25,12 @@ namespace SLThree
         private Type type;
         public override object GetValue(ExecutionContext context)
         {
-            if (type == null) type = Typename.ToString().Replace(" ", "").ToType();
             return type;
+        }
+
+        public override object Clone()
+        {
+            return new TypeofLexem() { Typename = Typename.CloneCast(), SourceContext = SourceContext.CloneCast(), type = type };
         }
     }
 }

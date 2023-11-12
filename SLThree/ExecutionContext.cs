@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +17,12 @@ namespace SLThree
         }
 
         /// <summary>
+        /// Имя данного контекста
+        /// </summary>
+        public string Name = $"@{Convert.ToString(context_count++, 16).ToUpper().PadLeft(4, '0')}";
+        private static long context_count = 0;
+
+        /// <summary>
         /// Запрещает implicit в контексте
         /// </summary>
         public bool fimp = false;
@@ -27,12 +35,30 @@ namespace SLThree
 
         public List<Exception> Errors = new List<Exception>();
 
-        public static ContextWrap global = new ContextWrap(new ExecutionContext() { fimp = true });
+        public static ContextWrap global = new ContextWrap(new ExecutionContext(false) { fimp = false, Name = "global" });
 
         static ExecutionContext()
         {
 
         }
+
+        public ExecutionContext(bool assign_to_global)
+        {
+            @this = new ContextWrap(this);
+            wrap = new ContextWrap(this);
+            if (assign_to_global) toplevel = global.pred;
+        }
+
+        public ExecutionContext(ExecutionContext context)
+        {
+            @this = new ContextWrap(this);
+            wrap = new ContextWrap(this);
+            toplevel = context;
+        }
+
+        public ExecutionContext() : this(false) { }
+
+        public ContextWrap @this;
 
         public class ContextWrap
         {
@@ -41,10 +67,68 @@ namespace SLThree
             {
                 this.pred = pred;
             }
+
+            public static Func<object, object> Decoration = o => o;
+
+            public string ToDetailedString(int index, List<ContextWrap> outed_contexts)
+            {
+                var sb = new StringBuilder();
+                outed_contexts.Add(this);
+
+                sb.AppendLine($"context {pred.Name} {{");
+                foreach (var x in pred.LocalVariables.GetAsDictionary())
+                {
+                    
+                    sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
+                    if (x.Value is ContextWrap wrap)
+                    {
+                        if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //recursive");
+                        else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
+                    }
+                    else sb.AppendLine(Decoration(x.Value).ToString() + ";");
+                }
+                index -= 1;
+                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");
+
+                return sb.ToString();
+            }
+
+            public string ToShortString()
+            {
+                var sb = new StringBuilder();
+
+                var index = 1;
+
+                sb.AppendLine($"context {pred.Name} {{");
+                foreach (var x in pred.LocalVariables.GetAsDictionary())
+                {
+
+                    sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
+                    if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.pred.Name};");
+                    else sb.AppendLine(Decoration(x.Value).ToString() + ";");
+                }
+                index -= 1;
+                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");
+                return sb.ToString();
+            }
+
+            public override string ToString() => ToShortString();
         }
+
         internal ExecutionContext PreviousContext;
         public ContextWrap pred => new ContextWrap(PreviousContext);
-        public ContextWrap wrap => new ContextWrap(this);
+        public readonly ContextWrap wrap;
+        public ExecutionContext toplevel;
+
+        public IEnumerable<ExecutionContext> GetHierarchy()
+        {
+            var context = this;
+            while (context.toplevel != null)
+            {
+                yield return context.toplevel;
+                context = context.toplevel;
+            }
+        }
 
         private int cycles = 0;
 

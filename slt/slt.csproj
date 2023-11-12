@@ -47,14 +47,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="compatibility\LANG_030.cs" />
+    <Compile Include="compatibility\LANG_040.cs" />
     <Compile Include="DocsIntergration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="sys\repl.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <EmbeddedResource Include="docs\help" />
     <EmbeddedResource Include="docs\versions\1.0.0" />
+    <EmbeddedResource Include="docs\versions\1.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">

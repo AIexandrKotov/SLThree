@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +13,7 @@ namespace SLThree
         public BaseLexem Name;
         public BaseLexem[] Arguments;
 
-        public InvokeLexem(BaseLexem name, BaseLexem[] arguments, Cursor cursor) : base(cursor)
+        public InvokeLexem(BaseLexem name, BaseLexem[] arguments, SourceContext context) : base(context)
         {
             Name = name;
             Arguments = arguments;
@@ -71,6 +72,10 @@ namespace SLThree
 
             if (obj is MemberAccess.ClassAccess ca)
             {
+                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static); 
+                    // после первого вызова GetMethod
+                    // переставляет перегрузки, у которых аргумент object
+                    // в начало массива методов
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
@@ -84,6 +89,11 @@ namespace SLThree
             }
 
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new InvokeLexem(Name.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
         }
     }
 }

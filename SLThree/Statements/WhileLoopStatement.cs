@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +12,17 @@ namespace SLThree
     public class WhileLoopStatement : BaseStatement
     {
         public BaseLexem Condition { get; set; }
-        public BaseStatement[] CycleBody { get; set; }
+        public BaseStatement[] LoopBody { get; set; }
 
+        public WhileLoopStatement() : base() { }
         public WhileLoopStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
-            CycleBody = cycleBody.Statements.ToArray();
-            count = CycleBody.Length;
+            LoopBody = cycleBody.Statements.ToArray();
+            count = LoopBody.Length;
         }
 
-        public override string ToString() => $"while ({Condition}) {{{CycleBody}}}";
+        public override string ToString() => $"while ({Condition}) {{{LoopBody}}}";
 
         private int count;
         public override object GetValue(ExecutionContext context)
@@ -31,13 +33,24 @@ namespace SLThree
             {
                 for (var i = 0; i < count; i++)
                 {
-                    ret = CycleBody[i].GetValue(context);
-                    if (context.Returned || context.Broken) break;
-                    if (context.Continued) continue;
+                    ret = LoopBody[i].GetValue(context);
+                    if (context.Continued || context.Returned || context.Broken) break;
                 }
+                if (context.Returned || context.Broken) break;
             }
             context.EndCycle();
             return ret;
+        }
+
+        public override object Clone()
+        {
+            return new WhileLoopStatement()
+            {
+                Condition = Condition.CloneCast(),
+                LoopBody = LoopBody.CloneArray(),
+                count = count.Copy(),
+                SourceContext = SourceContext.CloneCast()
+            };
         }
     }
 }

@@ -18,5 +18,10 @@ namespace SLThree
             parsed.GetValue(ret);
             return ret;
         }
+
+        private static T Panic<T>(SLTException exception)
+        {
+            throw exception;
+        }
     }
 }

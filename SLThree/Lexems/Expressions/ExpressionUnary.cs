@@ -10,11 +10,11 @@ namespace SLThree
     public abstract class ExpressionUnary : BaseLexem
     {
         public BaseLexem Left;
-        public ExpressionUnary(BaseLexem left, Cursor cursor) : base(cursor)
+        public ExpressionUnary(BaseLexem left, SourceContext context) : base(context)
         {
             Left = left;
         }
-        public ExpressionUnary() : base(default) { }
+        public ExpressionUnary() : base() { }
 
         public abstract string Operator { get; }
         public override string ToString() => $"{Operator}{Left?.ToString() ?? "null"}";

@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,16 +12,18 @@ namespace SLThree
 {
     public class StatementListStatement : BaseStatement
     {
-        public IList<BaseStatement> Statements;
+        public BaseStatement[] Statements;
         private int count;
 
-        public StatementListStatement(IList<BaseStatement> statements, Cursor cursor) : base(cursor)
+        public StatementListStatement() : base() { }
+
+        public StatementListStatement(IList<BaseStatement> statements, SourceContext context) : base(context)
         {
-            Statements = statements;
+            Statements = statements.ToArray();
             count = statements.Count;
         }
 
-        public override string ToString() => $"{Statements.Count} statements";
+        public override string ToString() => $"{Statements.Length} statements";
 
         public override object GetValue(ExecutionContext context)
         {
@@ -31,6 +34,11 @@ namespace SLThree
                 if (context.Returned || context.Broken || context.Continued) break;
             }
             return ret;
+        }
+
+        public override object Clone()
+        {
+            return new StatementListStatement() { Statements = Statements.CloneArray(), count = count.Copy(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

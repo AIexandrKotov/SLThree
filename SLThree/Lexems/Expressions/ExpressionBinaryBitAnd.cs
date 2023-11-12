@@ -1,12 +1,13 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class ExpressionBinaryBitAnd : ExpressionBinary
     {
         public override string Operator => "&";
-        public ExpressionBinaryBitAnd(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryBitAnd(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public ExpressionBinaryBitAnd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -33,6 +34,11 @@ namespace SLThree
             }
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

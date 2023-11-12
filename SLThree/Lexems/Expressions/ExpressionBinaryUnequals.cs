@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 
 namespace SLThree
@@ -7,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryUnequals : ExpressionBinary
     {
         public override string Operator => "!=";
-        public ExpressionBinaryUnequals(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryUnequals(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public ExpressionBinaryUnequals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -39,10 +40,14 @@ namespace SLThree
                 if (right is ulong u2) return u1 != u2;
                 if (right is double d2) return u1 != d2;
             }
-            if (!context.fimp)
+            if (!context.fimp && left is IComparable)
                 return (left as IComparable).CompareTo(right) != 0;
-            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
-            return null;
+            return !ReferenceEquals(left, right);
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryUnequals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

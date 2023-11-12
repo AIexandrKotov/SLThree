@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -19,6 +20,7 @@ namespace slt
         static Program()
         {
             InitSLThreeAssemblyInfo();
+            SupportingFeatures();
         }
 
         #region Arguments
@@ -41,6 +43,8 @@ namespace slt
             { "unicode", Encoding.Unicode },
             { "ansi", Encoding.GetEncoding(1250) },
         };
+        internal static Assembly SLThreeAssembly;
+        private static Version SLThreeFullVersion;
         private static string SLTVersionWithoutRevision;
         private static string SLTRevision;
         private static long SLTTime;
@@ -54,11 +58,12 @@ namespace slt
         private static string GetArgument(string arg) => RunArguments.GetArgument(arg, ShortCommands);
         private static void InitSLThreeAssemblyInfo()
         {
-            var ass = Assembly.GetAssembly(typeof(SLTVersion));
-            var ver = ass.GetName().Version;
+            SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
+            var ver = SLThreeAssembly.GetName().Version;
+            SLThreeFullVersion = ver;
             SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
             SLTRevision = ver.Revision.ToString();
-            var sltver = ass.GetType("SLTVersion");
+            var sltver = SLThreeAssembly.GetType("SLTVersion");
             SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
             SLTEdition = sltver.GetProperty("Edition").GetValue(null).Cast<string>();
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
@@ -281,9 +286,11 @@ namespace slt
             Console.ResetColor();
         }
 
-        private static object GetOutput(object value)
+        public static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
+            if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
+            else if (LANG_030.Supports) value = LANG_030.GetChoosersOutput(value);
             return value;
         }
 
@@ -294,9 +301,9 @@ namespace slt
             Console.WriteLine(GetOutput(value));
             Console.ResetColor();
         }
-#endregion
+        #endregion
 
-#region Compiler and Interpreter
+        #region Compiler and Interpreter
         public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
@@ -315,11 +322,17 @@ namespace slt
             }
             return executionContext;
         }
-#endregion
+        #endregion
 
-#region REPL
+        #region REPL
 
-#region REPL Commands
+        private static void SupportingFeatures()
+        {
+            LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
+            if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
+        }
+
+        #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
         public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
@@ -460,7 +473,8 @@ namespace slt
                 }
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = GetOutput(x.Value)?.ToString() ?? "null";
+                var output = LANG_040.Supports ? (x.Value is ExecutionContext.ContextWrap wrap ? $"context {LANG_040.NameOfContext(wrap.pred)}" : GetOutput(x.Value)?.ToString() ?? "null")
+                        : (GetOutput(x.Value)?.ToString() ?? "null");
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -507,9 +521,16 @@ namespace slt
         }
         public static void UpdateGlobalContext()
         {
-            ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
-            ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
-            ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
+            if (LANG_040.Supports)
+            {
+
+            }
+            else
+            {
+                ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
+                ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
+                ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
+            }
         }
         public static bool ExtendedCommands(string command)
         {
@@ -521,7 +542,13 @@ namespace slt
             if (wrds.HasArgument("-l", ShortREPLCommands))
             {
                 var typed = wrds.HasArgument("--typed");
-                var context = wrds.HasArgument("--global") ? ExecutionContext.global.pred : REPLContext;
+                var context =
+                    wrds.HasArgument("--global")
+                    ? ExecutionContext.global.pred
+                        //:  (wrds.TryGetArgument("--context", out var vname) 
+                        //    ? REPLContext.LocalVariables.GetValue(vname).Item1.TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
+                        : REPLContext//)
+                        ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
                     OutLocals(context, table, typed);
@@ -613,7 +640,7 @@ namespace slt
                 OutAsWarning("Your request does nothing do");
             }
         }
-#endregion
+        #endregion
 
         public static void REPLShortVersion()
         {
@@ -627,7 +654,7 @@ namespace slt
 
         public static void OutREPLInfo()
         {
-            Console.Title = $"{REPLVersion.Name}";
+            Console.Title = $"{REPLVersion.FullName}";
             REPLShortVersion();
 
             Console.Write("Maded by ");
@@ -651,7 +678,7 @@ namespace slt
 
         private static Parser REPLParser;
         private static bool REPLLoop;
-        private static ExecutionContext REPLContext;
+        internal static ExecutionContext REPLContext;
         private static bool REPLPerfomance = false;
         private static Stopwatch ParsingStopwatch;
         private static Stopwatch ExecutinStopwatch;
@@ -709,6 +736,10 @@ namespace slt
                             Console.ResetColor();
                         }
                     }
+                    catch (TargetInvocationException e)
+                    {
+                        OutException(e.InnerException);
+                    }
                     catch (Exception e)
                     {
                         OutException(e);
@@ -717,7 +748,7 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-#endregion
+        #endregion
 
         public static void Main(string[] args)
         {

@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 
 namespace SLThree
@@ -7,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryLessThanEquals : ExpressionBinary
     {
         public override string Operator => "<=";
-        public ExpressionBinaryLessThanEquals(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryLessThanEquals(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public ExpressionBinaryLessThanEquals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -43,6 +44,11 @@ namespace SLThree
                 return (left as IComparable).CompareTo(right) <= 0;
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryLessThanEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

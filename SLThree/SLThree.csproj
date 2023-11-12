@@ -49,7 +49,13 @@
     <Compile Include="Embedding\EmbeddingExtensions.cs" />
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
+    <Compile Include="Exceptions\UnexpectedError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Extensions\CloningExtensions.cs" />
+    <Compile Include="Extensions\SLThreeExtensions.cs" />
+    <Compile Include="Lexems\ChanceChooseLexem.cs" />
+    <Compile Include="Lexems\CreatorContext.cs" />
+    <Compile Include="Lexems\EqualchanceChooseLexem.cs" />
     <Compile Include="Lexems\CreatorArray.cs" />
     <Compile Include="Lexems\CastLexem.cs" />
     <Compile Include="Lexems\CreatorDictionary.cs" />
@@ -91,7 +97,6 @@
     <Compile Include="Lexems\Literals\FloatLiteral.cs" />
     <Compile Include="Lexems\Literals\GlobalLiteral.cs" />
     <Compile Include="Lexems\Literals\IntLiteral.cs" />
-    <Compile Include="Lexems\Literals\LinqLiteral.cs" />
     <Compile Include="Lexems\Literals\LongLiteral.cs" />
     <Compile Include="Lexems\Literals\Literal.cs" />
     <Compile Include="Lexems\Literals\NullLiteral.cs" />
@@ -99,18 +104,21 @@
     <Compile Include="Lexems\Literals\SelfLiteral.cs" />
     <Compile Include="Lexems\Literals\ShortLiteral.cs" />
     <Compile Include="Lexems\Literals\StringLiteral.cs" />
+    <Compile Include="Lexems\Literals\ThisLiteral.cs" />
     <Compile Include="Lexems\Literals\UIntLiteral.cs" />
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
     <Compile Include="Lexems\CreatorTuple.cs" />
-    <Compile Include="Linq\Linq.cs" />
+    <Compile Include="sys\console.cs" />
+    <Compile Include="sys\linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />
-    <Compile Include="Method.cs" />
+    <Compile Include="Methods\Method.cs" />
     <Compile Include="Lexems\NameLexem.cs" />
     <Compile Include="Lexems\Literals\DoubleLiteral.cs" />
     <Compile Include="Lexems\BaseLexem.cs" />
     <Compile Include="Lexems\Literals\ULongLiteral.cs" />
     <Compile Include="Lexems\TypeofLexem.cs" />
+    <Compile Include="Methods\RecursiveMethod.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\BreakStatement.cs" />
@@ -125,6 +133,19 @@
     <Compile Include="Statements\BaseStatement.cs" />
     <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileLoopStatement.cs" />
+    <Compile Include="sys\convert.cs" />
+    <Compile Include="sys\slt.cs" />
+    <Compile Include="Tools\ChanceChooser.cs" />
+    <Compile Include="Tools\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\ChanceChooser.cs" />
+    <Compile Include="Tools\Generic\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\IChooser.cs" />
+    <Compile Include="Tools\IChooser.cs" />
+    <Compile Include="Visitors\Definition\AbstractVisitor.cs" />
+    <Compile Include="Visitors\Definition\ILexemVisitor.cs" />
+    <Compile Include="Visitors\Definition\IVisitor.cs" />
+    <Compile Include="Visitors\Definition\IStatementVisitor.cs" />
+    <Compile Include="Visitors\TreeViewer.cs" />
     <Compile Include="Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +153,7 @@
     <EmbeddedResource Include="docs\versions\0.1.0" />
     <EmbeddedResource Include="docs\specification" />
     <EmbeddedResource Include="docs\versions\0.2.0" />
+    <EmbeddedResource Include="docs\versions\0.4.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>

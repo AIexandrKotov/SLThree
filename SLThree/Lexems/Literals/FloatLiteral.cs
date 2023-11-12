@@ -1,4 +1,5 @@
 ﻿using Pegasus.Common;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace SLThree
     {
         public FloatLiteral(float value, Cursor cursor) : base(value, cursor) { }
         public FloatLiteral() : base() { }
+        public override object Clone() => new FloatLiteral() { Value = Value, SourceContext = SourceContext.CloneCast() };
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System.Linq;
 
 namespace SLThree
@@ -8,7 +9,7 @@ namespace SLThree
     {
         public BaseLexem[] Lexems;
 
-        public CreatorArray(BaseLexem[] lexems, Cursor cursor) : base(cursor)
+        public CreatorArray(BaseLexem[] lexems, SourceContext context) : base(context)
         {
             Lexems = lexems;
         }
@@ -19,5 +20,10 @@ namespace SLThree
         }
 
         public override string ToString() => $"[{Lexems.JoinIntoString(", ")}]";
+
+        public override object Clone()
+        {
+            return new CreatorArray(Lexems.CloneArray(), SourceContext);
+        }
     }
 }

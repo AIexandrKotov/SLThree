@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 
 namespace SLThree
@@ -7,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryAdd : ExpressionBinary
     {
         public override string Operator => "+";
-        public ExpressionBinaryAdd(BaseLexem left, BaseLexem right, Cursor cursor) : base(left, right, cursor) { }
+        public ExpressionBinaryAdd(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
         public ExpressionBinaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -41,6 +42,11 @@ namespace SLThree
             }
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
+        }
+
+        public override object Clone()
+        {
+            return new ExpressionBinaryAdd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }
