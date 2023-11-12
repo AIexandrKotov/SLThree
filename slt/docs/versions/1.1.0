@@ -1,3 +1,8 @@
 ------ SLThree REPL 1.1.0 ------ [~.~.~]
-New:
+For LANG 0.4.0+:
+    - REPL classes (sys.*) available for using <class>;
+    - Contextes don't outputs in locals
+For LANG 0.3.0+:
     - Detailed displaying: array, lists, tuples and dictionaries
+For ALL:
+    - nothing
