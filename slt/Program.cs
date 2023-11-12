@@ -43,7 +43,7 @@ namespace slt
             { "unicode", Encoding.Unicode },
             { "ansi", Encoding.GetEncoding(1250) },
         };
-        private static Assembly SLThreeAssembly;
+        internal static Assembly SLThreeAssembly;
         private static Version SLThreeFullVersion;
         private static string SLTVersionWithoutRevision;
         private static string SLTRevision;
@@ -286,19 +286,11 @@ namespace slt
             Console.ResetColor();
         }
 
-        private static object GetOutput(object value)
+        public static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
-            if (value is ITuple tuple)
-            {
-                var xvalue = CreatorTuple.ToArray(tuple); value =
-                    $"({(xvalue.Length <= 10 ? xvalue.Enumerate().Select(x => GetOutput(x)).JoinIntoString(", ") : xvalue.Enumerate().Take(10).Select(x => GetOutput(x)).JoinIntoString(", ") + "...")})";
-            }
-            if (value is IList list) value =
-                    $"[{(list.Count <= 10 ? list.Enumerate().Select(x => GetOutput(x)).JoinIntoString(", ") : list.Enumerate().Take(10).Select(x => GetOutput(x)).JoinIntoString(", ") + "...")}]";
-            if (value is IDictionary dict) value =
-                    $"{{{(dict.Count <= 10 ? dict.Keys.Enumerate().Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(10).Select(x => $"{GetOutput(x)}: {GetOutput(dict[x])}").JoinIntoString(", ") + "...")}}}";
-            if (LANG040) value = LANG040_GetChoosersOutput(value);
+            if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
+            else if (LANG_030.Supports) value = LANG_030.GetChoosersOutput(value);
             return value;
         }
 
@@ -309,92 +301,6 @@ namespace slt
             Console.WriteLine(GetOutput(value));
             Console.ResetColor();
         }
-        #endregion
-
-        #region Compatibility checking
-
-        private static void SupportingFeatures()
-        {
-            if (LANG040 = SLThreeFullVersion.Major >= 1 || SLThreeFullVersion.Minor >= 4) LANG040_Init();
-        }
-
-        #region LANG 0.4.0+ FEATURES
-
-        private static bool LANG040;
-        private static void LANG040_Init()
-        {
-            LANG040_IChooserType = SLThreeAssembly.GetType("System.Collections.IChooser");
-            LANG040_IChanceChooserType = SLThreeAssembly.GetType("System.Collections.IChanceChooser");
-            LANG040_IEqualchanceChooserType = SLThreeAssembly.GetType("System.Collections.IEqualchanceChooser");
-            LANG040_SLThreeExtensions = SLThreeAssembly.GetType("SLThree.Extensions.SLThreeExtensions");
-            LANG040_ToDynamicPercentsMethod = LANG040_SLThreeExtensions.GetMethod("ToDynamicPercents");
-            LANG040_IChanceChooser_Values = LANG040_IChanceChooserType.GetProperty("Values");
-            LANG040_IEqualchanceChooser_Values = LANG040_IEqualchanceChooserType.GetProperty("Values");
-        }
-
-        #region Outputing IChooser
-        private static Type LANG040_IChooserType;
-        private static Type LANG040_IChanceChooserType;
-        private static Type LANG040_IEqualchanceChooserType;
-        private static Type LANG040_SLThreeExtensions;
-        private static PropertyInfo LANG040_IChanceChooser_Values;
-        private static PropertyInfo LANG040_IEqualchanceChooser_Values;
-        private static IList<(object, double)> LANG040_GET_ChanceChooser_Values(object value)
-        {
-            return LANG040_IChanceChooser_Values.GetValue(value) as IList<(object, double)>;
-        }
-        private static IList<object> LANG040_GET_EqualchanceChooser_Values(object value)
-        {
-            return LANG040_IEqualchanceChooser_Values.GetValue(value) as IList<object>;
-        }
-        private static MethodInfo LANG040_ToDynamicPercentsMethod;
-        private static string LANG040_ToDynamicPercents(this double value)
-        {
-            return LANG040_ToDynamicPercentsMethod.Invoke(null, new object[1] { value }) as string;
-        }
-
-
-        private static bool LANG040_IsIChooser(Type type)
-        {
-            return type.GetInterfaces().Contains(LANG040_IChooserType);
-        }
-
-        private static bool LANG040_IsIChanceChooserType(Type type)
-        {
-            return type.GetInterfaces().Contains(LANG040_IChanceChooserType);
-        }
-        
-        private static bool LANG040_IsIEqualchanceChooserType(Type type)
-        {
-            return type.GetInterfaces().Contains(LANG040_IEqualchanceChooserType);
-        }
-
-        private static object LANG040_GetChoosersOutput(object value)
-        {
-            var type = value.GetType();
-            if (LANG040_IsIChooser(type))
-            {
-                if (LANG040_IsIChanceChooserType(type))
-                {
-                    var values = LANG040_GET_ChanceChooser_Values(value);
-                    value = values.Count > 10
-                        ? $"({values.Take(10).Select(x => $"{x.Item1}: {LANG040_ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")}...)"
-                        : $"({values.Select(x => $"{x.Item1}: {LANG040_ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")})";
-                }
-                else if (LANG040_IsIEqualchanceChooserType(type))
-                {
-                    var values = LANG040_GET_EqualchanceChooser_Values(value);
-                    value = values.Count > 10
-                        ? $"({values.Take(10).JoinIntoString(" \\ ")}...)"
-                        : $"({values.JoinIntoString(" \\ ")})";
-                }
-            }
-            return value;
-        }
-        #endregion
-
-        #endregion
-
         #endregion
 
         #region Compiler and Interpreter
@@ -419,6 +325,12 @@ namespace slt
         #endregion
 
         #region REPL
+
+        private static void SupportingFeatures()
+        {
+            LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
+            if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
+        }
 
         #region REPL Commands
 
@@ -561,7 +473,8 @@ namespace slt
                 }
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = GetOutput(x.Value)?.ToString() ?? "null";
+                var output = LANG_040.Supports ? (x.Value is ExecutionContext.ContextWrap wrap ? $"context {LANG_040.NameOfContext(wrap.pred)}" : GetOutput(x.Value)?.ToString() ?? "null")
+                        : (GetOutput(x.Value)?.ToString() ?? "null");
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -608,9 +521,16 @@ namespace slt
         }
         public static void UpdateGlobalContext()
         {
-            ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
-            ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
-            ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
+            if (LANG_040.Supports)
+            {
+
+            }
+            else
+            {
+                ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
+                ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
+                ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
+            }
         }
         public static bool ExtendedCommands(string command)
         {
@@ -622,7 +542,13 @@ namespace slt
             if (wrds.HasArgument("-l", ShortREPLCommands))
             {
                 var typed = wrds.HasArgument("--typed");
-                var context = wrds.HasArgument("--global") ? ExecutionContext.global.pred : REPLContext;
+                var context =
+                    wrds.HasArgument("--global")
+                    ? ExecutionContext.global.pred
+                        //:  (wrds.TryGetArgument("--context", out var vname) 
+                        //    ? REPLContext.LocalVariables.GetValue(vname).Item1.TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
+                        : REPLContext//)
+                        ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
                     OutLocals(context, table, typed);
@@ -752,7 +678,7 @@ namespace slt
 
         private static Parser REPLParser;
         private static bool REPLLoop;
-        private static ExecutionContext REPLContext;
+        internal static ExecutionContext REPLContext;
         private static bool REPLPerfomance = false;
         private static Stopwatch ParsingStopwatch;
         private static Stopwatch ExecutinStopwatch;
@@ -809,6 +735,10 @@ namespace slt
                                 $"(Parse: {ParsingStopwatch.Elapsed.TotalMilliseconds} ms, Exec: {ExecutinStopwatch.Elapsed.TotalMilliseconds} ms)");
                             Console.ResetColor();
                         }
+                    }
+                    catch (TargetInvocationException e)
+                    {
+                        OutException(e.InnerException);
                     }
                     catch (Exception e)
                     {
