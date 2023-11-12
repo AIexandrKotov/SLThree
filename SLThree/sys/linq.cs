@@ -110,6 +110,19 @@ namespace SLThree.sys
         public static object min_by(IEnumerable<object> objects, Method method, ExecutionContext context)
             => objects.MinBy(x => method.GetValue(context, new object[1] { x }));
 
+        public static IEnumerable<object> group_by(IEnumerable<object> objects, Method method)
+            => objects.GroupBy(x => method.GetValue(new object[1] { x }));
+        public static IEnumerable<object> group_by(IEnumerable<object> objects, Method method, ExecutionContext context) 
+            => objects.GroupBy(x => method.GetValue(context, new object[1] { x }));
+        public static IEnumerable<object> order_by(IEnumerable<object> objects, Method method)
+            => objects.OrderBy(x => method.GetValue(new object[1] { x }));
+        public static IEnumerable<object> order_by(IEnumerable<object> objects, Method method, ExecutionContext context)
+            => objects.OrderBy(x => method.GetValue(context, new object[1] { x }));
+        public static IEnumerable<object> order_by_desc(IEnumerable<object> objects, Method method)
+            => objects.OrderByDescending(x => method.GetValue(new object[1] { x }));
+        public static IEnumerable<object> order_by_desc(IEnumerable<object> objects, Method method, ExecutionContext context)
+            => objects.OrderByDescending(x => method.GetValue(context, new object[1] { x }));
+
         public static IEnumerable<object> select(IEnumerable<object> objects, Method method, ExecutionContext context)
         {
             return objects.Select(x => method.GetValue(context, new object[] { x }));
@@ -188,6 +201,29 @@ namespace SLThree.sys
 
         public static IEnumerable<object> skip(IEnumerable<object> objects, long count) => objects.Skip((int)count);
         public static IEnumerable<object> take(IEnumerable<object> objects, long count) => objects.Take((int)count);
+
+        public static object first(IEnumerable<object> objects) => objects.First();
+        public static object first(IEnumerable<object> objects, Method method) => objects.First(x => (bool)method.GetValue(new object[1] { x }));
+        public static object first(IEnumerable<object> objects, Method method, ExecutionContext context) => objects.First(x => (bool)method.GetValue(context, new object[1] { x }));
+
+        public static object last(IEnumerable<object> objects) => objects.Last();
+        public static object last(IEnumerable<object> objects, Method method) => objects.Last(x => (bool)method.GetValue(new object[1] { x }));
+        public static object last(IEnumerable<object> objects, Method method, ExecutionContext context) => objects.Last(x => (bool)method.GetValue(context, new object[1] { x }));
+
+        public static object first_or(IEnumerable<object> objects, object or) => objects.FirstOrDefault() ?? or;
+        public static object first_or(IEnumerable<object> objects, Method method, object or) => objects.FirstOrDefault(x => (bool)method.GetValue(new object[1] { x })) ?? or;
+        public static object first_or(IEnumerable<object> objects, Method method, ExecutionContext context, object or) => objects.FirstOrDefault(x => (bool)method.GetValue(context, new object[1] { x })) ?? or;
+
+        public static object last_or(IEnumerable<object> objects, object or) => objects.LastOrDefault() ?? or;
+        public static object last_or(IEnumerable<object> objects, Method method, object or) => objects.LastOrDefault(x => (bool)method.GetValue(new object[1] { x })) ?? or;
+        public static object last_or(IEnumerable<object> objects, Method method, ExecutionContext context, object or) => objects.LastOrDefault(x => (bool)method.GetValue(context, new object[1] { x })) ?? or;
+
+        public static object element_at(IEnumerable<object> objects, long index) => objects.ElementAt((int)index);
+        private static Random RandomFor_element_rand = new Random();
+        public static object element_rand(IList<object> objects)
+        {
+            return objects[RandomFor_element_rand.Next(objects.Count)];
+        }
 
         public static string jts(IEnumerable<object> objects, string str) => objects.JoinIntoString(str);
         public static string jts(IEnumerable<object> objects) => objects.JoinIntoString(" ");
