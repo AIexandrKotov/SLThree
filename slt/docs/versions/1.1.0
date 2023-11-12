@@ -1,8 +1,7 @@
------- SLThree REPL 1.1.0 ------ [~.~.~]
+------ SLThree REPL 1.1.0 ------ [13.11.23]
 For LANG 0.4.0+:
     - REPL classes (sys.*) available for using <class>;
+    - global aren't contained console method, use `using console;`
     - Contextes don't outputs in locals
 For LANG 0.3.0+:
     - Detailed displaying: array, lists, tuples and dictionaries
-For ALL:
-    - nothing
