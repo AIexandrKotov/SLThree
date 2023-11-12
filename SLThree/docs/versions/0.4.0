@@ -1,4 +1,4 @@
------- 0.4.0 ------ [~.~.~]
+------ 0.4.0 Armavir update ------ [13.11.23]
 Language:
     - Creating own contextes
     - Operator \ (random choose, including with chances)
@@ -9,3 +9,5 @@ Language:
     - sys.linq (sys.* classes) class instead `linq` keywords
     - fixed lazy of && and ||
     - Octal num literals
+Embedding
+    - Added NonGenericWrapper
