@@ -8,8 +8,8 @@ file <BaseStatement>
     = "#SLT#" _ v:statement_list _ EOF { v }
 
 statement_list <StatementListStatement>
-    = st:statement_ws* comment? { new StatementListStatement(st, state) }
-    / st:statement comment? { new StatementListStatement(new BaseStatement[1] {st}, state) }
+    = st:statement_ws* { new StatementListStatement(st, state) }
+    / st:statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
 statement_ws <BaseStatement>
     = _ st:statement _ ";" { st }
@@ -71,7 +71,7 @@ condition_statement <BaseStatement>
     / "if" _ "(" cond:lexem ")" _ t:block_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
 
 expr_statement <ExpressionStatement> 
-    = value:lexem { new ExpressionStatement(value, state) }
+    = _ value:lexem _ { new ExpressionStatement(value, state) }
 
 lexem <BaseLexem>
     = chance_choose_lexem
@@ -113,7 +113,7 @@ binary_9 <BaseLexem> -memoize
     / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
     / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
-    / left:ternary_0 { left }
+    / ternary_0
 
 ternary_0 <BaseLexem> -memoize
     = cond:ternary_0 _ "?" _ t:lexem _ ":" _ f:lexem { new ExpressionTernary(cond, t, f, state) }
@@ -171,25 +171,25 @@ binary_3 <BaseLexem> -memoize
     / left:binary_3 _ "<=" _ right:binary_2 { new ExpressionBinaryLessThanEquals(left, right, state) }
     / left:binary_3 _ ">" _ right:binary_2 { new ExpressionBinaryGreaterThan(left, right, state) }
     / left:binary_3 _ "<" _ right:binary_2 { new ExpressionBinaryLessThan(left, right, state) }
-    / left:binary_2 { left }
+    / binary_2
 
 binary_2 <BaseLexem> -memoize
     = left:binary_2 _ "+" _ right:binary_1 { new ExpressionBinaryAdd(left, right, state) }
     / left:binary_2 _ "-" _ right:binary_1 { new ExpressionBinaryRem(left, right, state) }
-    / left:binary_1 { left }
+    / binary_1
 
 binary_1 <BaseLexem> -memoize
     = left:binary_1 _ "*" _ right:binary_0 { new ExpressionBinaryMultiply(left, right, state) }
     / left:binary_1 _ "/" _ right:binary_0 { new ExpressionBinaryDivide(left, right, state) }
     / left:binary_1 _ "%" _ right:binary_0 { new ExpressionBinaryMod(left, right, state) }
-    / left:binary_0 { left }
+    / binary_0
 
 binary_0 <BaseLexem>
     = _ left:binary_min _ { left }
 
 binary_min <BaseLexem>
     //= "(" _ bin:binary_9 _ ")" { bin }
-    = _ u:unary _ { u }
+    = unary
 
 unary <BaseLexem>
     = "+" _ left:binary_min { new ExpressionUnaryAdd(left, state) }
@@ -200,7 +200,7 @@ unary <BaseLexem>
     / "-" _ left:binary_min { new ExpressionUnaryRem(left, state) }
     / "~" _ left:binary_min { new ExpressionUnaryBitNot(left, state) }
     / "!" _ left:binary_min { new ExpressionUnaryNot(left, state) }
-    / _ p:primary _ { p }
+    / primary
 
 as_expr_right <BaseLexem> -memoize
     = left:as_expr_right _ "." _ right:name { new MemberAccess(left, right, state) }
@@ -210,8 +210,8 @@ primary <BaseLexem> -memoize
     = "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
-    / "new" _ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
-    / "new" _ right:primary { new NewLexem(right as MemberAccess, state) }
+    / "new" _required_ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
+    / "new" _required_ right:primary { new NewLexem(right as MemberAccess, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / invoke_lexem
@@ -364,10 +364,17 @@ string_escape
 available_name <IList<string>>
     = value:([a-zA-Z_] [a-zA-Z0-9_]*)+ { value }
 
-comment = _ "//" [^\r\n]*
+comment
+    = "//" [^\r\n]*
 
-_required_ = [ \t\r\n]+
+_required_ 
+    = [ \t\r\n]+ comment+ [ \t\r\n]* { " " }
+    / comment+ [ \t\r\n]* { " " }
+    / [ \t\r\n]+ { " " }
 
-_ = [ \t\r\n]*
+_
+    = [ \t\r\n]* comment+ [ \t\r\n]* { " " }
+    / comment+ [ \t\r\n]* { " " }
+    / [ \t\r\n]* { " " }
 
-EOF = !. / c:. #ERROR{ "Unexpected '" + c + "'" }
+EOF = !. / c:. { Panic<string>(new UnexpectedError(c[0], state)) }
