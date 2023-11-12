@@ -654,7 +654,7 @@ namespace slt
 
         public static void OutREPLInfo()
         {
-            Console.Title = $"{REPLVersion.Name}";
+            Console.Title = $"{REPLVersion.FullName}";
             REPLShortVersion();
 
             Console.Write("Maded by ");
