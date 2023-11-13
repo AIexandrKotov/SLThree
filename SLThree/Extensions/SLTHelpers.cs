@@ -149,26 +149,28 @@ namespace SLThree.Extensions
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;
+
             if (casting_type == typeof(string))
-            {
                 return o.ToString();
-            }
+            if (casting_type == type_context)
+                return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
             if (o is IConvertible) return Convert.ChangeType(o, casting_type);
+
             var type = o.GetType();
+            if (type == type_context)
+                return NonGenericWrapper.GetWrapper(casting_type).Unwrap(((ExecutionContext.ContextWrap)o).pred);
             if (casting_type.IsEnum)
             {
+                if (type == type_string) return Enum.Parse(casting_type, (string)o);
+                if (type == type_int) return Enum.ToObject(casting_type, (int)o);
                 if (type == type_byte) return Enum.ToObject(casting_type, (byte)o);
                 if (type == type_sbyte) return Enum.ToObject(casting_type, (sbyte)o);
                 if (type == type_ushort) return Enum.ToObject(casting_type, (ushort)o);
                 if (type == type_short) return Enum.ToObject(casting_type, (short)o);
                 if (type == type_uint) return Enum.ToObject(casting_type, (uint)o);
-                if (type == type_int) return Enum.ToObject(casting_type, (int)o);
                 if (type == type_ulong) return Enum.ToObject(casting_type, (ulong)o);
                 if (type == type_long) return Enum.ToObject(casting_type, (long)o);
-                if (type == type_string) return Enum.Parse(casting_type, (string)o);
             }
-            if (type == type_context)
-                return NonGenericWrapper.GetWrapper(casting_type).Unwrap(((ExecutionContext.ContextWrap)o).pred);
             return o;
         }
     }

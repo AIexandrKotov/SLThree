@@ -63,6 +63,7 @@ namespace SLThree
         public class ContextWrap
         {
             public ExecutionContext pred;
+
             public ContextWrap(ExecutionContext pred)
             {
                 this.pred = pred;
