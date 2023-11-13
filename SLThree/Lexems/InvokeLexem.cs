@@ -10,30 +10,24 @@ namespace SLThree
 {
     public class InvokeLexem : BaseLexem
     {
-        public BaseLexem Name;
+        public BaseLexem Left;
         public BaseLexem[] Arguments;
 
         public InvokeLexem(BaseLexem name, BaseLexem[] arguments, SourceContext context) : base(context)
         {
-            Name = name;
+            Left = name;
             Arguments = arguments;
         }
 
-        public override string ToString() => $"{Name}({Arguments.JoinIntoString(", ")})";
+        public override string ToString() => $"{Left}({Arguments.JoinIntoString(", ")})";
 
-        private bool get_counted_name;
-        private string get_name;
+        /*private bool get_counted_name;
+        private string get_name;*/
         public object GetValue(ExecutionContext context, object[] args)
         {
-            if (!get_counted_name)
-            {
-                get_name = Name.ToString().Replace(" ", "");
-                get_counted_name = true;
-            }
+            var o = Left.GetValue(context);
 
-            var o = context.LocalVariables.GetValue(get_name).Item1;
-
-            if (o == null) throw new RuntimeError($"Method {get_name}(_) not found", SourceContext);
+            if (o == null) throw new RuntimeError($"Method {Left}(_) not found", SourceContext);
 
             if (o is Method method)
             {
@@ -50,11 +44,11 @@ namespace SLThree
             {
                 var type = o.GetType();
                 type.GetMethods()
-                    .FirstOrDefault(x => x.Name == Name.ToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
+                    .FirstOrDefault(x => x.Name == Left.ToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.Invoke(o, args);
             }
 
-            return null;
+            throw new RuntimeError("Unexecutable method", SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)
@@ -66,7 +60,7 @@ namespace SLThree
         private MethodInfo founded;
         public object GetValue(ExecutionContext context, object obj)
         {
-            var key = Name.ToString().Replace(" ", "");
+            var key = Left.ToString().Replace(" ", "");
 
             if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
 
@@ -93,7 +87,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new InvokeLexem(Name.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
+            return new InvokeLexem(Left.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
         }
     }
 }

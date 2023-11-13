@@ -1,0 +1,4 @@
+global.a = () => context { r = () => global; };
+global.a().r().a().r().a().r().a();
+global.a = [() => 2];
+global.a[0]().ToString();

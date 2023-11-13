@@ -34,7 +34,7 @@ namespace SLThree
             {
                 if (!counted_name)
                 {
-                    invk_name = InvokeLexem.Name.ToString();
+                    invk_name = InvokeLexem.Left.ToString();
                     counted_name = true;
                 }
                 return Activator.CreateInstance(

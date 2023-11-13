@@ -12,13 +12,14 @@ statement_list <StatementListStatement>
     / st:statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
 statement_ws <BaseStatement>
-    = _ st:statement _ ";" { st }
-    / _ st:switch_statement _ { st }
+    = _ st:switch_statement _ { st }
     / _ st:foreach_statement _ { st }
     / _ st:while_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:block_statement _ { st }
+    / _ st:statement _ ";" { st }
     / _ ";"+ _ { new StatementListStatement(new BaseStatement[0], state) }
+    / _ st:statement _ { Panic<StatementListStatement>(new SyntaxError("Expected ;", state)) }
 
 statement <BaseStatement>
     = _ st:return_statement _ { st }
@@ -35,6 +36,7 @@ statement <BaseStatement>
 using_statement <UsingStatement>
     = "using" _required_ ex: as_expr_right  _required_ "as" _required_ n:name { new UsingStatement(ex, n.Name, state) }
     / "using" _required_ ex: as_expr_right { new UsingStatement(ex, state) }
+    / "using" _required_ lex:lexem { Panic<UsingStatement>(new SyntaxError("", state)) }
 
 return_statement <ReturnStatement>
     = "return" _ lex:lexem { new ReturnStatement(lex, state) }
@@ -59,12 +61,22 @@ case_node <SwitchStatement.Node>
 
 block_statement <StatementListStatement>
     = "{" _ st:statement_list _ "}" { st }
+    / "{" _ st:statement_list _ { Panic<StatementListStatement>(new SyntaxError("Unclosed block", state)) }
 
 while_statement <BaseStatement>
     = "while" _ "(" _ cond:lexem _ ")" _ body:block_statement { new WhileLoopStatement(cond, body, state) }
 
+    / "while" _ "(" _ cond:lexem _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("While body must be in { }", state)) }
+    / "while" _ "(" _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Empty loop head", state)) }
+    / "while" _ cond:lexem { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+
 foreach_statement <BaseStatement>
     = "foreach" _ "(" _ n:name _ "in" _ iter:lexem _ ")" _ body:block_statement { new ForeachLoopStatement(n, iter, body, state) }
+    
+    / "foreach" _ "(" _ n:name _ "in" _ iter:lexem _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach body must be in { }", state)) }
+    / "foreach" _ "(" _ n:lexem _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
+    / "foreach" _ "(" _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Empty loop head", state)) }
+    / "foreach" _ cond:lexem { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 condition_statement <BaseStatement>
     = "if" _ "(" cond:lexem ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
@@ -77,7 +89,8 @@ lexem <BaseLexem>
     = binary_9
 
 binary_9 <BaseLexem> -memoize
-    = left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
+    = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseLexem>(new SyntaxError("Keywords is not a valid name", state)) }
+    / left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
     / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
     / left:binary_7 _ "-=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
     / left:binary_7 _ "*=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
@@ -86,11 +99,23 @@ binary_9 <BaseLexem> -memoize
     / left:binary_7 _ "&=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitAnd(left, right, state), state) }
     / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
-    / left:lambda_left _ "=>" _ right:lambda_right _ { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
-    / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new CreatorContext(n, st, state) }
+    / left:lambda_left _ "=>" _ right:lambda_right { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
+    / context_creator
+    / ternary_0
+
+context_creator <CreatorContext>
+    = "context" _required_ n:name _ "{" _ st:context_statements _ "}"{ new CreatorContext(n, st.Statements.ToArray(), state) }
+    / "context" _ "{" _ st:context_statements _ "}"{ new CreatorContext(st.Statements.ToArray(), state) }
     / "context" _required_ n:name { new CreatorContext(n, state) }
     / "context" { new CreatorContext(state) }
-    / ternary_0
+
+context_statements <StatementListStatement>
+    = st:context_statement* { new StatementListStatement(st, state) }
+    / st:context_statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
+
+context_statement <BaseStatement>
+    = _ left:name _ "=" _ right:lexem _ ";" _ { new ExpressionStatement(new ExpressionBinaryAssign(left, right, state), state) }
+    / statement { Panic<BaseStatement>(new SyntaxError("In context supported only assigns", state)) }
 
 ternary_0 <BaseLexem> -memoize
     = cond:ternary_0 _ "?" _ t:lexem _ ":" _ f:lexem { new ExpressionTernary(cond, t, f, state) }
@@ -222,6 +247,8 @@ as_expr_right <BaseLexem> -memoize
 primary <BaseLexem> -memoize
     = "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / "(" _ left:lexem _ ")" _ "." _ right:name { new MemberAccess(left, right, state) }
+    / left:primary _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
+    / left:primary _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
     / left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / "new" _required_ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
@@ -237,25 +264,21 @@ primary <BaseLexem> -memoize
     / special
     / name
     / literal
+    / "[" _ x:lexem { Panic<BaseLexem>(new SyntaxError("Unclosed brackets", state)) }
+    / "(" _ x:lexem { Panic<BaseLexem>(new SyntaxError("Unclosed brackets", state)) }
 
 which_lexem <BaseLexem>
-    = "which" _ "(" _ wmn:as_expr_right _ types:types_list _ ")" {
+    = "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
+    }
+    / "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ ")" {
+        new WhichLexem(tname, wmn, new TypeofLexem[0], state)
+    }
+    / "which" _ "(" _ wmn:as_expr_right _ types:types_list _ ")" {
         new WhichLexem(wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
     }
     / "which" _ "(" _ wmn:as_expr_right _ ")" {
         new WhichLexem(wmn, new TypeofLexem[0], state)
-    }
-    / "which" _ "(" _ tname:as_expr_right _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
-        new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
-    }
-    / "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
-        new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
-    }
-    / "which" _ "(" _ tname:as_expr_right _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
-        new WhichLexem(tname, wmn, new TypeofLexem[0], state)
-    }
-    / "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
-        new WhichLexem(tname, wmn, new TypeofLexem[0], state)
     }
 
 dictionary_creator <BaseLexem>
@@ -277,9 +300,11 @@ list_creator <BaseLexem>
     = "[" _ args:arguments_list _ "]" { new CreatorArray(args.ToArray(), state) }
     / "[" _ "]" { new CreatorArray(new BaseLexem[0], state) }
 
-invoke_lexem <InvokeLexem>
-    = left:identifier _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
-    / left:identifier _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
+invoke_lexem <InvokeLexem> -memoize
+    = left:invoke_lexem _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
+    / left:invoke_lexem _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
+    / left:name _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
+    / left:name _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
 
 types_list <IList<BaseLexem>>
     = "<" _ l:names_arguments_list _ ">" { l }
@@ -296,7 +321,9 @@ names_arguments_list <IList<BaseLexem>>
 
 other_arg_name <BaseLexem> = ("," _ a:arg_name _ ) { a }
 
-arg_name = name
+arg_name <NameLexem>
+    = keyword { Panic<NameLexem>(new SyntaxError("Keyword keyword", state))}
+    / name
 
 special <BaseLexem>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }
@@ -317,6 +344,7 @@ literal <BaseLexem>
     / "0b" u32:([01_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 2), state) }
     / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), state) }
     / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), state) }
+    / "0b" .* { Panic<BaseLexem>(new RuntimeError("Wrong binary literal", state)) }
 
     / "0x" i8:([0-9A-Fa-f_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), state) }
     / "0x" u8:([0-9A-Fa-f_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), state) }
@@ -326,6 +354,7 @@ literal <BaseLexem>
     / "0x" u32:([0-9A-Fa-f_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), state) }
     / "0x" u64:([0-9A-Fa-f_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), state) }
     / "0x" i64:([0-9A-Fa-f_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), state) }
+    / "0x" .* { Panic<BaseLexem>(new RuntimeError("Wrong hexadecimal literal", state)) }
 
     / "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), state) }
     / "0o" u8:([0-7_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 8), state) }
@@ -335,6 +364,7 @@ literal <BaseLexem>
     / "0o" u32:([0-7_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 8), state) }
     / "0o" u64:([0-7_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 8), state) }
     / "0o" i64:([0-7_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 8), state) }
+    / "0o" .* { Panic<BaseLexem>(new RuntimeError("Wrong octal const", state)) }
 
     / i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
     / u8:([0-9_]+ ("u8"))       { new ByteLiteral   (byte.Parse     (u8.Replace("u8", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
@@ -357,7 +387,11 @@ float_literal <BaseLexem>
     / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
     / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), state) }
 
-identifier = name
+identifier <BaseLexem>
+    = name
+
+keyword
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof"
 
 name <NameLexem>
     = first:available_name { new NameLexem(first.JoinIntoString(""), state) }

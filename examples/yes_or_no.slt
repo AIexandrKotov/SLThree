@@ -1,3 +1,4 @@
-while (global.readln() != "0") {
-    global.println("да" \ "нет");
+using console;
+while (console.readln() != "0") {
+    console.writeln("да" \ "нет");
 }

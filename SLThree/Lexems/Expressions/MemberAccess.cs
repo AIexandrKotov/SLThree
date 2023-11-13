@@ -29,7 +29,7 @@ namespace SLThree
         private Type nest_type;
         public object Create(ExecutionContext context)
         {
-            var left = Left.ToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Name}";
+            var left = Left.ToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Left}";
 
             if (left != null)
             {
@@ -74,7 +74,7 @@ namespace SLThree
                     else if (Right is InvokeLexem invokeLexem)
                     {
                         counted_contextwrapcache2 = true;
-                        if (invokeLexem.Name?.Cast<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
+                        if (invokeLexem.Left?.TryCastRef<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
                         {
                             is_unwrap = true;
                             return pred.pred;

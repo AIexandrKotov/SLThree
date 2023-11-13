@@ -6,4 +6,5 @@ global.fib = recursive n => {
         return global.fib(n - 2) + global.fib(n - 1);
     }
 };
-linq.jts(linq.map(linq.range(1, 10), x => global.fib(x)));
+using linq;
+linq.jts(linq.select(linq.range(1, 10), x => global.fib(x)));
