@@ -109,6 +109,7 @@
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
     <Compile Include="Lexems\CreatorTuple.cs" />
+    <Compile Include="Lexems\WhichLexem.cs" />
     <Compile Include="sys\console.cs" />
     <Compile Include="sys\linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />

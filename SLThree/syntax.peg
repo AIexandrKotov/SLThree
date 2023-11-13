@@ -76,30 +76,6 @@ expr_statement <ExpressionStatement>
 lexem <BaseLexem>
     = binary_9
 
-chance_choose_lexem <ChanceChooseLexem>
-    = ecce:chance_choose_elements { new ChanceChooseLexem(ecce, state) }
-
-chance_choose_elements <IList<ValueTuple<BaseLexem, BaseLexem>>>
-    = first:chance_choose_element _ other:chance_choose_other_element+ { other.AddAndRet(first) }
-
-chance_choose_other_element <ValueTuple<BaseLexem, BaseLexem>>
-    = "\\" _ lex:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
-
-chance_choose_element <ValueTuple<BaseLexem, BaseLexem>>
-    = lex:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
-
-equalchance_choose_lexem <EqualchanceChooseLexem>
-    = ecce:equalchance_choose_elements { new EqualchanceChooseLexem(ecce, state) }
-
-equalchance_choose_elements <IList<BaseLexem>>
-    = first:equalchance_choose_element _ other:equalchance_choose_other_element+ { other.AddAndRet(first) }
-
-equalchance_choose_other_element <BaseLexem>
-    = ("\\" _ lex:binary_7 _ ) { lex }
-
-equalchance_choose_element <BaseLexem>
-    = binary_7
-
 binary_9 <BaseLexem> -memoize
     = left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
     / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
@@ -124,6 +100,38 @@ binary_8 <BaseLexem> -memoize
     = chance_choose_lexem
     / equalchance_choose_lexem
     / binary_7
+    
+//-------------------------------
+// SUGAR SUGAR SUGAR SUGAR SUGAR
+//-------------------------------
+
+chance_choose_lexem <ChanceChooseLexem>
+    = ecce:chance_choose_elements { new ChanceChooseLexem(ecce, state) }
+
+chance_choose_elements <IList<ValueTuple<BaseLexem, BaseLexem>>>
+    = first:chance_choose_element _ other:chance_choose_other_element+ { other.AddAndRet(first) }
+
+chance_choose_other_element <ValueTuple<BaseLexem, BaseLexem>>
+    = "\\" _ lex:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
+
+chance_choose_element <ValueTuple<BaseLexem, BaseLexem>>
+    = lex:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseLexem, BaseLexem>(lex, c) }
+
+equalchance_choose_lexem <EqualchanceChooseLexem>
+    = ecce:equalchance_choose_elements { new EqualchanceChooseLexem(ecce, state) }
+
+equalchance_choose_elements <IList<BaseLexem>>
+    = first:equalchance_choose_element _ other:equalchance_choose_other_element+ { other.AddAndRet(first) }
+
+equalchance_choose_other_element <BaseLexem>
+    = ("\\" _ lex:binary_7 _ ) { lex }
+
+equalchance_choose_element <BaseLexem>
+    = binary_7
+    
+//-------------------------------
+// SUGAR SUGAR SUGAR SUGAR SUGAR
+//-------------------------------
 
 binary_7 <BaseLexem> -memoize
     = left:binary_7 _ "||" _ right:binary_6 { new ExpressionBinaryOr(left, right, state) }
@@ -220,6 +228,7 @@ primary <BaseLexem> -memoize
     / "new" _required_ right:primary { new NewLexem(right as MemberAccess, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
+    / which_lexem
     / invoke_lexem
     / "(" _ x:lexem _ ")" { x }
     / tuple_creator
@@ -228,6 +237,26 @@ primary <BaseLexem> -memoize
     / special
     / name
     / literal
+
+which_lexem <BaseLexem>
+    = "which" _ "(" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
+    }
+    / "which" _ "(" _ wmn:as_expr_right _ ")" {
+        new WhichLexem(wmn, new TypeofLexem[0], state)
+    }
+    / "which" _ "(" _ tname:as_expr_right _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
+    }
+    / "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
+    }
+    / "which" _ "(" _ tname:as_expr_right _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(tname, wmn, new TypeofLexem[0], state)
+    }
+    / "which" _ "(" _ tname:lexem _ "::" _ wmn:as_expr_right _ types:types_list _ ")" {
+        new WhichLexem(tname, wmn, new TypeofLexem[0], state)
+    }
 
 dictionary_creator <BaseLexem>
     = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
@@ -251,6 +280,9 @@ list_creator <BaseLexem>
 invoke_lexem <InvokeLexem>
     = left:identifier _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
     / left:identifier _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
+
+types_list <IList<BaseLexem>>
+    = "<" _ l:names_arguments_list _ ">" { l }
 
 arguments_list <IList<BaseLexem>>
     = a:argument _ o:other_arg* { o.AddAndRet(a) }

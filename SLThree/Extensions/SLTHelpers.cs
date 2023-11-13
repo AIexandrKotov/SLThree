@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
@@ -144,8 +145,7 @@ namespace SLThree.Extensions
         private static Type type_list = typeof(List<object>);
         private static Type type_dict = typeof(Dictionary<object, object>);
         private static Type type_tuple = typeof(ITuple);
-        //private static Type type_ = typeof(ExecutionContext.ContextWrap);
-        //private static Type type_context = typeof(ExecutionContext.ContextWrap);
+
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;
@@ -153,12 +153,21 @@ namespace SLThree.Extensions
             if (casting_type == typeof(string))
                 return o.ToString();
             if (casting_type == type_context)
-                return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
+            {
+                if (o is Type st_type)
+                    return 
+                        st_type.IsAbstract && st_type.IsSealed
+                        ? new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
+                        : new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
+                else
+                    return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
+            }
             if (o is IConvertible) return Convert.ChangeType(o, casting_type);
-
             var type = o.GetType();
             if (type == type_context)
+            {
                 return NonGenericWrapper.GetWrapper(casting_type).Unwrap(((ExecutionContext.ContextWrap)o).pred);
+            }
             if (casting_type.IsEnum)
             {
                 if (type == type_string) return Enum.Parse(casting_type, (string)o);
