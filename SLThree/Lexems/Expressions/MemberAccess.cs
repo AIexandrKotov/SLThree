@@ -169,7 +169,7 @@ namespace SLThree
                         prop.SetValue(left, value);
                         return;
                     }
-                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.Name.GetTypeString()}\"", SourceContext);
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.GetTypeString()}\"", SourceContext);
                 }
             }
 

@@ -45,7 +45,7 @@ namespace SLThree
                 if (!mi.IsStatic) return mi.Invoke(args[0], args.Skip(1).ToArray());
                 else return mi.Invoke(null, args);
             }
-            else if (o is BaseLexem bl) return bl.GetValue(context);
+            else if (o is ExecutionContext.IExecutable bl) return bl.GetValue(context);
             else
             {
                 var type = o.GetType();
