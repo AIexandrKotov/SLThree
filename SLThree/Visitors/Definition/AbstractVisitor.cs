@@ -132,6 +132,7 @@ namespace SLThree.Visitors
         }
         public virtual void VisitLexem(InvokeLexem lexem)
         {
+            VisitLexem(lexem.Left);
             foreach (var x in lexem.Arguments)
             {
                 VisitLexem(x);

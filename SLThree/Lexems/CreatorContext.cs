@@ -1,40 +1,53 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System.Linq;
 
 namespace SLThree
 {
     public class CreatorContext : BaseLexem
     {
         public NameLexem Name;
-        public StatementListStatement Body;
+        public BaseStatement[] Body;
         
         public bool HasName => Name != null;
-        public bool HasBody => Body != null;
+        public bool HasBody => Body.Length > 0;
 
         public CreatorContext(SourceContext context) : base(context)
         {
-
+            Body = new BaseStatement[0];
         }
 
         public CreatorContext(NameLexem name, SourceContext context) : base(context)
         {
             Name = name;
-
+            Body = new BaseStatement[0];
         }
 
-        public CreatorContext(NameLexem name, StatementListStatement body, SourceContext context) : base(context)
+        public CreatorContext(BaseStatement[] body, SourceContext context) : base(context)
+        {
+            Body = body;
+        }
+
+        public CreatorContext(NameLexem name, BaseStatement[] body, SourceContext context) : base(context)
         {
             Name = name;
             Body = body;
         }
 
-        public override string ToString() => $"context {(HasName?Name.Name:"")} {{\n{Body.Statements.JoinIntoString("\n")}\n}}";
+        public override string LexemToString() => $"context {(HasName?Name.Name:"")} {{\n{Body.JoinIntoString("\n")}\n}}";
 
         public override object GetValue(ExecutionContext context)
         {
             var ret = new ExecutionContext(context);
             if (HasName) ret.Name = Name.Name;
-            if (HasBody) Body.GetValue(ret);
+            if (HasBody)
+            {
+                for (var i = 0; i < Body.Length; i++)
+                {
+                    if (Body[i] is ExpressionStatement es && es.Lexem is ExpressionBinaryAssign assign)
+                        assign.AssignValue(ret, assign.Left, assign.Right.GetValue(context));
+                }
+            }
             return new ExecutionContext.ContextWrap(ret);
         }
 

@@ -11,7 +11,7 @@ namespace SLThree
         public BaseLexem Left;
         public BaseLexem Right;
         
-        public ExpressionTernary(BaseLexem cond, BaseLexem left, BaseLexem right, SourceContext context) : base(context)
+        public ExpressionTernary(BaseLexem cond, BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(priority, context)
         {
             Condition = cond;
             Left = left;
@@ -26,11 +26,11 @@ namespace SLThree
             return (bool)cond ? left : right;
         }
 
-        public override string ToString() => $"{Condition} ? {Left} : {Right}";
+        public override string LexemToString() => $"{Condition} ? {Left} : {Right}";
 
         public override object Clone()
         {
-            return new ExpressionTernary(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionTernary(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

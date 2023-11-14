@@ -2,13 +2,15 @@
 using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
+using static SLThree.SwitchStatement;
+using System.Xml.Linq;
 
 namespace SLThree
 {
     public class ExpressionBinaryEquals : ExpressionBinary
     {
         public override string Operator => "==";
-        public ExpressionBinaryEquals(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryEquals(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryEquals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -47,7 +49,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

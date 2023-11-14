@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionUnaryNot : ExpressionUnary
     {
         public override string Operator => "!";
-        public ExpressionUnaryNot(BaseLexem left, SourceContext context) : base(left, context) { }
+        public ExpressionUnaryNot(BaseLexem left, SourceContext context, bool priority = false) : base(left, context, priority) { }
         public ExpressionUnaryNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -30,7 +30,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryNot(Left.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionUnaryNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace SLThree
         public ThisLiteral(SourceContext context) : base(context) { }
         public ThisLiteral(Cursor cursor) : base(cursor) { }
 
-        public override string ToString() => "this";
+        public override string LexemToString() => "this";
 
         public override object GetValue(ExecutionContext context) => context.@this;
         public override object Clone() => new ThisLiteral(SourceContext);

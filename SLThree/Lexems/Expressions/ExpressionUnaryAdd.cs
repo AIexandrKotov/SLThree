@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionUnaryAdd : ExpressionUnary
     {
         public override string Operator => "+";
-        public ExpressionUnaryAdd(BaseLexem left, SourceContext context) : base(left, context) { }
+        public ExpressionUnaryAdd(BaseLexem left, SourceContext context, bool priority = false) : base(left, context, priority) { }
         public ExpressionUnaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -32,7 +32,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryAdd(Left.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionUnaryAdd(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

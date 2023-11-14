@@ -63,6 +63,7 @@ namespace SLThree
         public class ContextWrap
         {
             public ExecutionContext pred;
+
             public ContextWrap(ExecutionContext pred)
             {
                 this.pred = pred;
@@ -105,7 +106,7 @@ namespace SLThree
 
                     sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
                     if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.pred.Name};");
-                    else sb.AppendLine(Decoration(x.Value).ToString() + ";");
+                    else sb.AppendLine((Decoration(x.Value)?.ToString() ?? "null") + ";");
                 }
                 index -= 1;
                 sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");

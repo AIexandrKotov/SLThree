@@ -1,0 +1,14 @@
+
+    ASSERT(self, (0xFFu8 is u8) as is);
+    ASSERT(self, (-128i8 is i8) as is);
+    ASSERT(self, (0xFFFFu16 is u16) as is);
+    ASSERT(self, (-32768i16 is i16) as is);
+    ASSERT(self, (0xFFFFFFFFu32 is u32) as is);
+    ASSERT(self, (-1_000_000i32 is i32) as is);
+    ASSERT(self, (0xFFFFFFFFFFFFFFFFu64 is u64) as is);
+    ASSERT(self, (-1_000_000_000_000i64 is i64) as is);
+    ASSERT(self, (0 is i64) as is);
+    ASSERT(self, (0% is f64) as is);
+    ASSERT(self, (0.0 is f64) as is);
+    ASSERT(self, (0f64 is f64) as is);
+    ASSERT(self, (0.0f32 is f32) as is);

@@ -42,7 +42,7 @@ namespace SLThree
                 ret[i] = tuple[i];
             return ret;
         }
-        public override string ToString() => $"({Lexems.JoinIntoString(", ")})";
+        public override string LexemToString() => $"({Lexems.JoinIntoString(", ")})";
 
         public override object Clone()
         {

@@ -31,7 +31,7 @@ namespace SLThree
             return Chooser.Choose().GetValue(context);
         }
 
-        public override string ToString() => Chooser.Values.JoinIntoString(" \\ ");
+        public override string LexemToString() => Chooser.Values.JoinIntoString(" \\ ");
 
         public override object Clone()
         {

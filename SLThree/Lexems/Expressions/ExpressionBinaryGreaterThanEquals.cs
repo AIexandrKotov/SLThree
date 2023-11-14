@@ -8,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryGreaterThanEquals : ExpressionBinary
     {
         public override string Operator => ">=";
-        public ExpressionBinaryGreaterThanEquals(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryGreaterThanEquals(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryGreaterThanEquals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -48,7 +48,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryGreaterThanEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryGreaterThanEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

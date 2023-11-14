@@ -1,0 +1,8 @@
+------ 0.5.0 No Native November ------ [~.~.~]
+Language:
+    - [remove] which expression
+    - is operator (type checking)
+    - linq without context.unwrap()
+    - unwrapping context with as
+    - Change priorities of as and \
+    - x1.5 speed up of type cast

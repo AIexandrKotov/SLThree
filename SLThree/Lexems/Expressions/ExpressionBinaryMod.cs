@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionBinaryMod : ExpressionBinary
     {
         public override string Operator => "%";
-        public ExpressionBinaryMod(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryMod(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryMod() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -45,7 +45,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

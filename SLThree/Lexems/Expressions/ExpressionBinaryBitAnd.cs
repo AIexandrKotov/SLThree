@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionBinaryBitAnd : ExpressionBinary
     {
         public override string Operator => "&";
-        public ExpressionBinaryBitAnd(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryBitAnd(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryBitAnd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -38,7 +38,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

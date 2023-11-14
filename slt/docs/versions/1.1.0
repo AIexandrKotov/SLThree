@@ -1,4 +1,4 @@
------- SLThree REPL 1.1.0 ------ [~.~.~]
+------ SLThree REPL 1.1.0 ------ [13.11.23]
 For LANG 0.4.0+:
     - REPL classes (sys.*) available for using <class>;
     - global aren't contained console method, use `using console;`

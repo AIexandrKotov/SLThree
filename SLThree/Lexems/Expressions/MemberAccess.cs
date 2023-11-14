@@ -29,7 +29,7 @@ namespace SLThree
         private Type nest_type;
         public object Create(ExecutionContext context)
         {
-            var left = Left.ToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Name}";
+            var left = Left.LexemToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Left}";
 
             if (left != null)
             {
@@ -67,14 +67,14 @@ namespace SLThree
                 {
                     if (Right is NameLexem predName)
                     {
-                        variable_name = predName.ToString().Replace(" ", "");
+                        variable_name = predName.LexemToString().Replace(" ", "");
                         counted_contextwrapcache = true;
                         return pred.pred.LocalVariables.GetValue(variable_name).Item1;
                     }
                     else if (Right is InvokeLexem invokeLexem)
                     {
                         counted_contextwrapcache2 = true;
-                        if (invokeLexem.Name?.Cast<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
+                        if (invokeLexem.Left?.TryCastRef<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
                         {
                             is_unwrap = true;
                             return pred.pred;
@@ -129,7 +129,7 @@ namespace SLThree
                     var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameLexem nameLexem2)
                     {
-                        other_context_name = Right.ToString().Replace(" ", "");
+                        other_context_name = Right.LexemToString().Replace(" ", "");
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
@@ -169,14 +169,14 @@ namespace SLThree
                         prop.SetValue(left, value);
                         return;
                     }
-                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.Name.GetTypeString()}\"", SourceContext);
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.GetTypeString()}\"", SourceContext);
                 }
             }
 
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
-        public override string ToString() => $"{Left}.{Right}";
+        public override string LexemToString() => $"{Left}.{Right}";
 
         public override object Clone()
         {
