@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="compatibility\LANG_030.cs" />
     <Compile Include="compatibility\LANG_040.cs" />
+    <Compile Include="compatibility\LANG_050.cs" />
     <Compile Include="DocsIntergration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,7 +75,6 @@
     <PreBuildEvent>../building/IncREPLRevision.bat</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>if exist TestSuite.exe ( TestSuite.exe )</PostBuildEvent>
   </PropertyGroup>
 </Project>
