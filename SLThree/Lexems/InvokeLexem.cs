@@ -19,7 +19,7 @@ namespace SLThree
             Arguments = arguments;
         }
 
-        public override string ToString() => $"{Left}({Arguments.JoinIntoString(", ")})";
+        public override string LexemToString() => $"{Left}({Arguments.JoinIntoString(", ")})";
 
         /*private bool get_counted_name;
         private string get_name;*/
@@ -44,7 +44,7 @@ namespace SLThree
             {
                 var type = o.GetType();
                 type.GetMethods()
-                    .FirstOrDefault(x => x.Name == Left.ToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
+                    .FirstOrDefault(x => x.Name == Left.LexemToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.Invoke(o, args);
             }
 
@@ -60,7 +60,7 @@ namespace SLThree
         private MethodInfo founded;
         public object GetValue(ExecutionContext context, object obj)
         {
-            var key = Left.ToString().Replace(" ", "");
+            var key = Left.LexemToString().Replace(" ", "");
 
             if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
 

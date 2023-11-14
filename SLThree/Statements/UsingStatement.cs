@@ -23,7 +23,7 @@ namespace SLThree
             Lexem = lexem;
             Name = name;
 
-            var str = Lexem.ToString().Replace(" ", "");
+            var str = Lexem.LexemToString().Replace(" ", "");
             if (SystemTypes.ContainsKey(str))
             {
                 any_type = new MemberAccess.ClassAccess(SystemTypes[str]);
@@ -33,9 +33,9 @@ namespace SLThree
         public UsingStatement(BaseLexem lexem, SourceContext context) : base(context)
         {
             Lexem = lexem;
-            Name = Lexem.ToString().Split('.').Last().Replace(" ", "");
+            Name = Lexem.LexemToString().Split('.').Last().Replace(" ", "");
 
-            var str = Lexem.ToString().Replace(" ", "");
+            var str = Lexem.LexemToString().Replace(" ", "");
             if (SystemTypes.ContainsKey(str))
             {
                 any_type = new MemberAccess.ClassAccess(SystemTypes[str]);
@@ -49,7 +49,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            if (any_type.Name == null) throw new RuntimeError($"Type {Lexem.ToString()} not found", SourceContext);
+            if (any_type.Name == null) throw new RuntimeError($"Type {Lexem.LexemToString()} not found", SourceContext);
             context.LocalVariables.SetValue(Name, any_type);
             return null;
         }

@@ -27,7 +27,7 @@ namespace SLThree
             Value = sb.ToString();
         }
 
-        public override string ToString() => string.Format(Value, Lexems.ConvertAll(x => x.ToString()));
+        public override string LexemToString() => string.Format(Value, Lexems.ConvertAll(x => x.LexemToString()));
 
         public override object GetValue(ExecutionContext context)
         {

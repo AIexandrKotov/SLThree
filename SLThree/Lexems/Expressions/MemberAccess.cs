@@ -29,7 +29,7 @@ namespace SLThree
         private Type nest_type;
         public object Create(ExecutionContext context)
         {
-            var left = Left.ToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Left}";
+            var left = Left.LexemToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Left}";
 
             if (left != null)
             {
@@ -67,7 +67,7 @@ namespace SLThree
                 {
                     if (Right is NameLexem predName)
                     {
-                        variable_name = predName.ToString().Replace(" ", "");
+                        variable_name = predName.LexemToString().Replace(" ", "");
                         counted_contextwrapcache = true;
                         return pred.pred.LocalVariables.GetValue(variable_name).Item1;
                     }
@@ -129,7 +129,7 @@ namespace SLThree
                     var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameLexem nameLexem2)
                     {
-                        other_context_name = Right.ToString().Replace(" ", "");
+                        other_context_name = Right.LexemToString().Replace(" ", "");
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
@@ -176,7 +176,7 @@ namespace SLThree
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
-        public override string ToString() => $"{Left}.{Right}";
+        public override string LexemToString() => $"{Left}.{Right}";
 
         public override object Clone()
         {

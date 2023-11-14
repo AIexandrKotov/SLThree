@@ -97,7 +97,7 @@ namespace SLThree.Extensions
             if (t == "SLThree.ExecutionContext+ContextWrap") return "context";
             else return t;
         }
-        public static Type ToType(this string s)
+        public static Type ToType(this string s, bool throwError = false)
         {
             switch (s)
             {
@@ -122,7 +122,38 @@ namespace SLThree.Extensions
                 case "tuple": return type_tuple;
                 case "array": return type_array;
             }
-            return Type.GetType(s, false);
+            return GetTypeFromRegistredAssemblies(s, throwError);
+        }
+        private static readonly Dictionary<string, Type> founded_types = new Dictionary<string, Type>();
+        public static Type GetTypeFromRegistredAssemblies(this string s, bool throwError)
+        {
+            if (founded_types.TryGetValue(s, out var type)) return type;
+            else
+            {
+                foreach (var ass in TypeofLexem.RegistredAssemblies)
+                {
+                    var ret = ass.GetType(s, throwError);
+                    if (ret != null) return founded_types[s] = ret;
+                    else
+                    {
+                        foreach (var str in s.NestedVariations())
+                        {
+                            ret = ass.GetType(str, throwError);
+                            if (ret != null) return founded_types[s] = ret;
+                        }
+                    }
+                }
+            }
+            if (throwError) throw new Exception($"Type {s} not found");
+            return null;
+        }
+        private static IEnumerable<string> NestedVariations(this string s)
+        {
+            var ind = -1;
+            while ((ind = s.LastIndexOf('.')) != -1)
+            {
+                yield return s = s.Substring(0, ind) + "+" + s.Substring(ind + 1, s.Length - ind - 1);
+            }
         }
         private static Type type_bool = typeof(bool);
         private static Type type_string = typeof(string);
@@ -145,6 +176,18 @@ namespace SLThree.Extensions
         private static Type type_list = typeof(List<object>);
         private static Type type_dict = typeof(Dictionary<object, object>);
         private static Type type_tuple = typeof(ITuple);
+
+        public static BaseLexem RaisePriority(this BaseLexem lexem)
+        {
+            lexem.PrioriryRaised = true;
+            return lexem;
+        }
+
+        public static BaseLexem DropPriority(this BaseLexem lexem)
+        {
+            lexem.PrioriryRaised = false;
+            return lexem;
+        }
 
         public static object CastToType(this object o, Type casting_type)
         {
@@ -181,6 +224,13 @@ namespace SLThree.Extensions
                 if (type == type_long) return Enum.ToObject(casting_type, (long)o);
             }
             return o;
+        }
+
+        public static bool IsType(this Type type, Type other)
+        {
+            if (type == other) return true;
+            if (other.IsAssignableFrom(type)) return true;
+            return false;
         }
     }
 }

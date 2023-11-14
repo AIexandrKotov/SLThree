@@ -64,6 +64,7 @@
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitOr.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitXor.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryIs.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryOr.cs" />
     <Compile Include="Lexems\Expressions\ExpressionTernary.cs" />
     <Compile Include="Lexems\Expressions\MemberAccess.cs" />

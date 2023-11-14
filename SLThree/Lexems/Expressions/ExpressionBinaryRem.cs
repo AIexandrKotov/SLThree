@@ -13,7 +13,7 @@ namespace SLThree
     public class ExpressionBinaryRem : ExpressionBinary
     {
         public override string Operator => "-";
-        public ExpressionBinaryRem(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryRem(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -51,7 +51,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryRem(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryRem(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

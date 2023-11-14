@@ -23,7 +23,7 @@ namespace SLThree
             InvokeLexem = invokeLexem;
         }
 
-        public override string ToString() => $"new {MemberAccess}";
+        public override string LexemToString() => $"new {MemberAccess}";
 
         private bool counted_name;
         private string invk_name;
@@ -34,7 +34,7 @@ namespace SLThree
             {
                 if (!counted_name)
                 {
-                    invk_name = InvokeLexem.Left.ToString();
+                    invk_name = InvokeLexem.Left.LexemToString();
                     counted_name = true;
                 }
                 return Activator.CreateInstance(

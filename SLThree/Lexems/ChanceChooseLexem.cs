@@ -45,7 +45,7 @@ namespace SLThree
             return Chooser[Chooser.Count - 1].Item1.GetValue(context);
         }
 
-        public override string ToString() => Chooser.Select(x => $"{x.Item1}: {x.Item2}").JoinIntoString(" \\ ");
+        public override string LexemToString() => Chooser.Select(x => $"{x.Item1}: {x.Item2}").JoinIntoString(" \\ ");
 
         public override object Clone()
         {

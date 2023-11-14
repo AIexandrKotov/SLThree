@@ -23,6 +23,8 @@ namespace SLThree
 
         public override string ToString() => $"{Line}:{Column}{(string.IsNullOrEmpty(Filename) ? "" : $" in {Filename}")}";
 
+        public string ToStringWithoutFile() => $"{Line}:{Column}";
+
         public object Clone() => new SourceContext() { Line = Line, Column = Column, Filename = Filename };
 
         public static implicit operator SourceContext(Cursor cursor) => new SourceContext(cursor);

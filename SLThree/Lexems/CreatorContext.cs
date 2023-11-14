@@ -34,7 +34,7 @@ namespace SLThree
             Body = body;
         }
 
-        public override string ToString() => $"context {(HasName?Name.Name:"")} {{\n{Body.JoinIntoString("\n")}\n}}";
+        public override string LexemToString() => $"context {(HasName?Name.Name:"")} {{\n{Body.JoinIntoString("\n")}\n}}";
 
         public override object GetValue(ExecutionContext context)
         {

@@ -15,43 +15,54 @@ namespace SLThree
         public BaseLexem From;
         public BaseLexem Name;
         public TypeofLexem[] Types;
+        public bool PropertyMode;
 
-        public WhichLexem(BaseLexem from, BaseLexem name, TypeofLexem[] types, SourceContext context) : base(context)
+        public WhichLexem(BaseLexem from, BaseLexem name, TypeofLexem[] types, SourceContext context, bool propertyMode = false) : base(context)
         {
             From = from;
             Name = name;
             Types = types;
 
-            method_name = Name.ToString();
+            method_name = Name.LexemToString();
+            PropertyMode = propertyMode;
         }
 
-        public WhichLexem(BaseLexem name, TypeofLexem[] types, SourceContext context) : base(context)
+        public WhichLexem(BaseLexem name, TypeofLexem[] types, SourceContext context, bool propertyMode = false) : base(context)
         {
             Name = name;
             Types = types;
 
-            var n = Name.ToString().Split('.');
+            var n = Name.LexemToString().Split('.');
             method_name = n.Last();
-            type = n.Reverse().Skip(1).Reverse().JoinIntoString(".").ToType();
+            var s = n.Reverse().Skip(1).Reverse().JoinIntoString(".");
+            if (string.IsNullOrEmpty(s)) throw new SyntaxError("Wrong which expression", context);
+            type = s.ToType();
+            PropertyMode = propertyMode;
         }
 
-        public override string ToString() =>
+        public override string LexemToString() =>
             From == null
-            ? $"which({Name}<{Types.Select(x => x.GetType().GetTypeString() ?? "undefined").JoinIntoString(", ")}>)"
-            : $"which({From}::{Name}<{Types.Select(x => x.GetType().GetTypeString() ?? "undefined").JoinIntoString(", ")}>)";
+            ? $"which({Name}({Types.Select(x => x.Typename.LexemToString() ?? "undefined").JoinIntoString(", ")}))"
+            : $"which({From}::{Name}({Types.Select(x => x.Typename.LexemToString() ?? "undefined").JoinIntoString(", ")}))";
 
         private Type type;
         private string method_name;
         public override object GetValue(ExecutionContext context)
         {
             if (From == null)
-                return type.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
+            {
+                return PropertyMode
+                    ? (object)type.GetProperty(method_name)
+                    : type.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
+            }
             else
             {
                 var value = From.GetValue(context);
                 if (value is MemberAccess.ClassAccess maca) value = maca.Name;
                 var type = value as Type;
-                return type.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
+                return PropertyMode
+                    ? (object)type.GetProperty(method_name)
+                    : type.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
             }
         }
 

@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionBinaryBitOr : ExpressionBinary
     {
         public override string Operator => "|";
-        public ExpressionBinaryBitOr(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryBitOr(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
 
         public ExpressionBinaryBitOr() : base() { }
 
@@ -41,7 +41,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

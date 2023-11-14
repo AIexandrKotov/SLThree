@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionBinaryAssign : ExpressionBinary
     {
         public override string Operator => "=";
-        public ExpressionBinaryAssign(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryAssign(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryAssign() : base() { }
         private ExecutionContext counted_invoked;
         private bool is_namelexem;
@@ -93,7 +93,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryAssign(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryAssign(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }
