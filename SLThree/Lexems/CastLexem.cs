@@ -3,7 +3,6 @@ using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
 using System.Linq.Expressions;
-using System.Xml;
 
 namespace SLThree
 {
