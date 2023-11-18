@@ -17,22 +17,38 @@ namespace SLThree
         public ReflectionLexem[] Types;
         public bool PropertyMode;
 
+        public bool from_is_generic;
+        public ReflectionLexem[] FromGenericArguments;
+
+        public ReflectionLexem(BaseLexem from, ReflectionLexem[] from_generic, BaseLexem nameLexem, ReflectionLexem[] types, SourceContext context)
+            : this(from, nameLexem, types, context)
+        {
+            from_is_generic = true;
+            FromGenericArguments = from_generic;
+        }
+        public ReflectionLexem(BaseLexem from, ReflectionLexem[] from_generic, BaseLexem nameLexem, SourceContext context)
+            : this(from, nameLexem, context)
+        {
+            from_is_generic = true;
+            FromGenericArguments = from_generic;
+        }
+        public ReflectionLexem(BaseLexem from, ReflectionLexem[] from_generic, SourceContext context)
+            : this(from, context)
+        {
+            from_is_generic = true;
+            FromGenericArguments = from_generic;
+        }
+
         public ReflectionLexem(BaseLexem from, BaseLexem nameLexem, ReflectionLexem[] types, SourceContext context) : base(context)
         {
             From = from;
             Name = nameLexem;
             Types = types;
 
-            name = from.LexemToString().Replace(" ", "");
             method_name = nameLexem.LexemToString().Replace(" ", "");
-            mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
-            if (mode == -1)
-            {
-                if (type == null) type = name.ToType();
-                if (type == null) mode = 0;
-            }
-
             PropertyMode = false;
+
+            init_mode();
         }
 
         public ReflectionLexem(BaseLexem from, BaseLexem nameLexem, SourceContext context) : base(context)
@@ -40,24 +56,22 @@ namespace SLThree
             From = from;
             Name = nameLexem;
 
-            name = from.LexemToString().Replace(" ", "");
             method_name = nameLexem.LexemToString().Replace(" ", "");
-            mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
-            if (mode == -1)
-            {
-                if (type == null) type = name.ToType();
-                if (type == null) mode = 0;
-            }
-
             PropertyMode = true;
-        }
 
+            init_mode();
+        }
         public ReflectionLexem(BaseLexem from, SourceContext context) : base(context)
         {
             From = from;
             Name = null;
 
-            name = from.LexemToString().Replace(" ", "");
+            init_mode();
+        }
+
+        private void init_mode()
+        {
+            name = From.LexemToString().Replace(" ", "");
             mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
             if (mode == -1)
             {
@@ -65,6 +79,7 @@ namespace SLThree
                 if (type == null) mode = 0;
             }
         }
+
 
         public override string LexemToString()
         {
@@ -76,7 +91,14 @@ namespace SLThree
                 }
                 else
                 {
-                    return $"@{From}::{Name}({Types.Select(x => x.ToString() ?? "undefined").JoinIntoString(", ")})";
+                    if (from_is_generic)
+                    {
+                        return $"@{From}<{FromGenericArguments.JoinIntoString(", ")}>::{Name}({Types.Select(x => x.ToString() ?? "undefined").JoinIntoString(", ")})";
+                    }
+                    else
+                    {
+                        return $"@{From}::{Name}({Types.Select(x => x.ToString() ?? "undefined").JoinIntoString(", ")})";
+                    }
                 }
             }
             else return $"@{From}";

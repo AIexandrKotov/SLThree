@@ -36,8 +36,14 @@ statement <BaseStatement>
     / _ st:expr_statement _ { st }
 
 using_statement <UsingStatement>
-    = "using" _required_ ex: as_expr_right  _required_ "as" _required_ n:name { new UsingStatement(ex, n.Name, state) }
-    / "using" _required_ ex: as_expr_right { new UsingStatement(ex, state) }
+    = "using" _required_ ex: as_expr_right _ gens:generic_types _ "as" _required_ n:name { 
+        new UsingStatement(new TypeofLexem(ex, gens.Select(x => new TypeofLexem(x, state)).ToArray(), state), n.Name, state)
+    }
+    / "using" _required_ ex: as_expr_right _ gens:generic_types {
+        new UsingStatement(new TypeofLexem(ex, gens.Select(x => new TypeofLexem(x, state)).ToArray(), state), ex, state)
+    }
+    / "using" _required_ ex: as_expr_right  _required_ "as" _required_ n:name { new UsingStatement(ex, n.Name, state) }
+    / "using" _required_ ex: as_expr_right { new UsingStatement(ex, ex, state) }
     / "using" _required_ lex:lexem { Panic<UsingStatement>(new SyntaxError("", state)) }
 
 return_statement <ReturnStatement>
@@ -254,9 +260,13 @@ as_expr_right <BaseLexem> -memoize
     / name
 
 primary <BaseLexem> -memoize
+    //= "@" _ left:as_expr_right _ gens:generic_types _ "::" _ invk:invoke_lexem { new ReflectionLexem(left, gens.Select(x => new ReflectionLexem(x, x.SourceContext)).ToArray(), invk.Left, invk.Arguments.ConvertAll(x => new ReflectionLexem(x, x.SourceContext)), state) }
+    // "@" _ left:as_expr_right _ gens:generic_types _ "::" _ prop:name { new ReflectionLexem(left, gens.Select(x => new ReflectionLexem(x, x.SourceContext)).ToArray(), prop, state) }
+    // "@" _ left:as_expr_right _ gens:generic_types { new ReflectionLexem(left, gens.Select(x => new ReflectionLexem(x, x.SourceContext)).ToArray(), state) }
     = "@" _ left:as_expr_right _ "::" _ invk:invoke_lexem { new ReflectionLexem(left, invk.Left, invk.Arguments.ConvertAll(x => new ReflectionLexem(x, x.SourceContext)), state) }
     / "@" _ left:as_expr_right _ "::" _ prop:name { new ReflectionLexem(left, prop, state) }
-    / "@" _ left:as_expr_right _ { new ReflectionLexem(left, state) }
+    / "@" _ left:as_expr_right { new ReflectionLexem(left, state) }
+    / "typeof" _ "(" _ left:primary _ gens:generic_types _ ")" { new TypeofLexem(left, gens.Select(x => new TypeofLexem(x, x.SourceContext)).ToArray(), state) }
     / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left.RaisePriority(), right, state) }
     / "(" _ left:lexem _ ")" _ "." _ right:name { new MemberAccess(left.RaisePriority(), right, state) }
@@ -307,7 +317,7 @@ invoke_lexem <InvokeLexem> -memoize
 
 generic_types <IList<BaseLexem>>
     = "<" _ l:names_arguments_list _ ">" { l }
-    / "<" gens:( _ "," _ )* ">" { new BaseLexem[1] { new IntLiteral(gens.Count, state) } }
+    // "<" gens:( _ "," _ )* ">" { new BaseLexem[1] { new IntLiteral(gens.Count, state) } }
 
 arguments_list <IList<BaseLexem>>
     = a:argument _ o:other_arg* { o.AddAndRet(a) }

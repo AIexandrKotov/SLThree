@@ -19,25 +19,52 @@ namespace SLThree
         };
 
         public BaseLexem Typename;
+        public TypeofLexem[] GenericArguments;
 
         public TypeofLexem() : base() { }
         public TypeofLexem(BaseLexem type, SourceContext context) : base(context)
         {
             Typename = type;
             if (this.type == null) this.type = Typename.LexemToString().Replace(" ", "").ToType();
+            if (this.type == null) throw new LogicalError($"Type \"{Typename}\" not found", context);
+        }
+        public TypeofLexem(BaseLexem type, TypeofLexem[] generics, SourceContext context) : base(context)
+        {
+            Typename = type;
+            if (this.type == null) this.type = (Typename.LexemToString().Replace(" ", "") + "`" + generics.Length.ToString() ).ToType();
+            is_generic = true;
+            GenericArguments = generics;
+            generic_types = GenericArguments.ConvertAll(x => x.type);
         }
 
-        public override string LexemToString() => $"typeof({Typename})";
+        public override string LexemToString() => is_generic ? $"typeof({Typename}<{generic_types.JoinIntoString(", ")}>)" : $"typeof({Typename})";
 
         private Type type;
+        private bool is_generic;
+        private Type[] generic_types;
+        public Type GetTypeofType() => is_generic ? type.MakeGenericType(generic_types) : type;
+
         public override object GetValue(ExecutionContext context)
         {
-            return type;
+            return is_generic ? type.MakeGenericType(generic_types) : type;
         }
 
         public override object Clone()
         {
-            return new TypeofLexem() { Typename = Typename.CloneCast(), SourceContext = SourceContext.CloneCast(), type = type };
+            return is_generic 
+                ? new TypeofLexem()
+                {
+                    Typename = Typename.CloneCast(),
+                    generic_types = generic_types.ReferenceCopy(),
+                    SourceContext = SourceContext.CloneCast(),
+                    type = type
+                } 
+                : new TypeofLexem()
+                {
+                    Typename = Typename.CloneCast(),
+                    SourceContext = SourceContext.CloneCast(),
+                    type = type
+                };
         }
     }
 }
