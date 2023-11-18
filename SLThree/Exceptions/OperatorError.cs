@@ -11,5 +11,7 @@ namespace SLThree
             : base($"Operator {binary.Operator} not allow for {left?.GetTypeString() ?? "null"} and {right?.GetTypeString() ?? "null"}", binary.SourceContext) { }
         public OperatorError(string op, Type cond, SourceContext context)
             : base($"Operator {op} not allow for {cond?.GetTypeString() ?? "null"}", context) { }
+        public OperatorError(string binary, Type left, Type right, SourceContext context)
+            : base($"Operator {binary} not allow for {left?.GetTypeString() ?? "null"} and {right?.GetTypeString() ?? "null"}", context) { }
     }
 }

@@ -4,6 +4,7 @@ Language:
     - generics in typeof and using
     - is operator (type checking), ?= operator (naming by right)
     - power up of invokation (() => 2)()
+    - Tuple assign, Tuple -> ValueTuple
     - linq without context.unwrap()
     - unwrapping context with as
     - Changed priorities of as, \ and new context
