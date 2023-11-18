@@ -9,7 +9,7 @@ namespace SLThree
         public ExpressionBinaryIs(BaseLexem castingLexem, BaseLexem castingType, SourceContext context, bool priority = false) : base(castingLexem, castingType, context, priority)
         {
             name = Right.LexemToString().Replace(" ", "");
-            mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
+            mode = name == "\\" ? 2 : -1;
             if (mode == -1)
             {
                 if (type == null) type = name.ToType();
@@ -33,9 +33,7 @@ namespace SLThree
             }
             if (mode == 0)
             {
-                if (variable_assigned) return Left.GetValue(context).GetType().IsType((context.LocalVariables.GetValue(variable_index) as MemberAccess.ClassAccess).Name);
-                var (obj, ind) = context.LocalVariables.GetValue(name);
-                variable_index = ind;
+                var obj = Right.GetValue(context);
                 if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", Right.SourceContext);
                 return Left.GetValue(context).GetType().IsType((obj as MemberAccess.ClassAccess).Name);
             }

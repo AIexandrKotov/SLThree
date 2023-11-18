@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +17,8 @@ namespace SLThree
             object GetValue(ExecutionContext context);
         }
 
+        public T GetCasted<T>(string name) => LocalVariables.GetValue(name).Item1.Cast<T>();
+
         /// <summary>
         /// Имя данного контекста
         /// </summary>
@@ -27,9 +30,9 @@ namespace SLThree
         /// </summary>
         public bool fimp = false;
 
-        public bool Returned;
-        public bool Broken;
-        public bool Continued;
+        internal bool Returned;
+        internal bool Broken;
+        internal bool Continued;
 
         public object ReturnedValue;
 
@@ -53,10 +56,10 @@ namespace SLThree
         {
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
-            toplevel = context;
+            if (context != null) toplevel = context;
         }
 
-        public ExecutionContext() : this(false) { }
+        public ExecutionContext() : this(true) { }
 
         public ContextWrap @this;
 
@@ -117,9 +120,10 @@ namespace SLThree
         }
 
         internal ExecutionContext PreviousContext;
-        public ContextWrap pred => new ContextWrap(PreviousContext);
-        public readonly ContextWrap wrap;
-        public ExecutionContext toplevel;
+        //public ContextWrap pred => new ContextWrap(PreviousContext);
+        internal readonly ContextWrap wrap;
+        internal ContextWrap upper;
+        internal ExecutionContext toplevel { get => upper?.pred; set => upper = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
         {

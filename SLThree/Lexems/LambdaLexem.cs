@@ -49,6 +49,7 @@ namespace SLThree
         public Method Method;
         public override object GetValue(ExecutionContext context)
         {
+            Method.DefinitionPlace = context.wrap;
             return Method;
         }
 

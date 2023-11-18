@@ -5,6 +5,7 @@ using System;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace SLThree
 {
@@ -47,13 +48,15 @@ namespace SLThree
 
         private bool counted_contextwrapcache2;
         private bool is_unwrap;
+        private bool is_upper;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
 
             if (counted_contextwrapcache)
             {
-                return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+                if (is_upper) return (left as ExecutionContext.ContextWrap).pred.upper;
+                else return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
             {
@@ -67,6 +70,12 @@ namespace SLThree
                 {
                     if (Right is NameLexem predName)
                     {
+                        if (predName.Name == "upper")
+                        {
+                            counted_contextwrapcache = true;
+                            is_upper = true;
+                            return pred.pred.upper;
+                        }
                         variable_name = predName.LexemToString().Replace(" ", "");
                         counted_contextwrapcache = true;
                         return pred.pred.LocalVariables.GetValue(variable_name).Item1;

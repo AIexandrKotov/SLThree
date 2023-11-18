@@ -20,8 +20,6 @@ namespace SLThree
         }
 
         public int mode = 0; // -1 - predefined, 0 - find type, 1 - as is, 2 - as \
-        public bool variable_assigned = false;
-        public int variable_index;
 
         public override string LexemToString() => $"{Left} as {Right}";
 
@@ -35,9 +33,7 @@ namespace SLThree
             }
             if (mode == 0)
             {
-                if (variable_assigned) return Left.GetValue(context).CastToType((context.LocalVariables.GetValue(variable_index) as MemberAccess.ClassAccess).Name);
-                var (obj, ind) = context.LocalVariables.GetValue(name);
-                variable_index = ind;
+                var obj = Right.GetValue(context);
                 if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", Right.SourceContext);
                 return Left.GetValue(context).CastToType((obj as MemberAccess.ClassAccess).Name);
             }

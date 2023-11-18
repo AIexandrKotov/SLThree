@@ -32,6 +32,8 @@ namespace SLThree
                     return statement;
                 throw new SyntaxError($"Expected assign expression, found {expressionStatement.Lexem.GetType().Name}", expressionStatement.Lexem.SourceContext);
             }
+            if (statement is ContextStatement contextStatement)
+                return contextStatement;
             throw new SyntaxError($"Expected assign expression, found {statement.GetType().Name}", statement.SourceContext);
         }
     }

@@ -1,9 +1,8 @@
-return 0;
-ASSERT(self, (typeof(TestSuite.Program) == typeof(TestSuite.Program)) as is);
-ASSERT(self, (which(TestSuite.Program.Assert(context, SLThree.BaseLexem)) == ASSERT) as is);
-x = context A {
+ASSERT(self, (@TestSuite.Program == @TestSuite.Program) as is);
+ASSERT(self, (@TestSuite.Program::Assert(context, SLThree.BaseLexem) == ASSERT) as is);
+x = new context A {
     ASSERT = ASSERT;
-    OWN_ASSERT = which(TestSuite.Program.Assert(context, SLThree.BaseLexem));
+    OWN_ASSERT = @TestSuite.Program::Assert(context, SLThree.BaseLexem);
     m1 = () => this.ASSERT;
     m2 = () => this.OWN_ASSERT;
 };

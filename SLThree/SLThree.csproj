@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Embedding\EmbeddingExtensions.cs" />
+    <Compile Include="Embedding\ScriptLayout.cs" />
     <Compile Include="Exceptions\SLTException.cs" />
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="Exceptions\UnexpectedError.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Lexems\CreatorDictionary.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryAssign.cs" />
+    <Compile Include="Lexems\Expressions\ExpressionBinaryAssignUnknown.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitAnd.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitOr.cs" />
     <Compile Include="Lexems\Expressions\ExpressionBinaryBitXor.cs" />
@@ -107,7 +109,8 @@
     <Compile Include="Lexems\Literals\UShortLiteral.cs" />
     <Compile Include="Lexems\NewLexem.cs" />
     <Compile Include="Lexems\CreatorTuple.cs" />
-    <Compile Include="Lexems\WhichLexem.cs" />
+    <Compile Include="Lexems\ReflectionLexem.cs" />
+    <Compile Include="Statements\ContextStatement.cs" />
     <Compile Include="sys\console.cs" />
     <Compile Include="sys\linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />

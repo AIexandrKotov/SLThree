@@ -46,6 +46,8 @@ namespace SLThree
                 {
                     if (Body[i] is ExpressionStatement es && es.Lexem is ExpressionBinaryAssign assign)
                         assign.AssignValue(ret, assign.Left, assign.Right.GetValue(context));
+                    else if (Body[i] is ContextStatement cs)
+                        cs.GetValue(ret);
                 }
             }
             return new ExecutionContext.ContextWrap(ret);

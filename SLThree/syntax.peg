@@ -12,7 +12,8 @@ statement_list <StatementListStatement>
     / st:statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
 statement_ws <BaseStatement>
-    = _ st:switch_statement _ { st }
+    = _ st:context_statement _ { st }
+    / _ st:switch_statement _ { st }
     / _ st:foreach_statement _ { st }
     / _ st:while_statement _ { st }
     / _ st:condition_statement _ { st }
@@ -26,6 +27,7 @@ statement <BaseStatement>
     / _ st:break_statement _ { st }
     / _ st:continue_statement _ { st }
     / _ st:using_statement _ { st }
+    / _ st:context_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:switch_statement _  { st }
     / _ st:foreach_statement _  { st }
@@ -82,6 +84,12 @@ condition_statement <BaseStatement>
     = "if" _ "(" cond:lexem ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
     / "if" _ "(" cond:lexem ")" _ t:block_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
 
+context_statement <BaseStatement>
+    = "context" _required_ n:name _ ":" _ cast:as_expr_right _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, cast, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    // "context" _required_ n:name _ ":" _ cast:as_expr_right { new ContextStatement(n, cast, state) }
+    / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    / "context" _required_ n:name { new ContextStatement(n, state) }
+
 expr_statement <ExpressionStatement> 
     = _ value:lexem _ { new ExpressionStatement(value, state) }
 
@@ -90,6 +98,7 @@ lexem <BaseLexem>
 
 binary_9 <BaseLexem> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseLexem>(new SyntaxError("Keywords is not a valid name", state)) }
+    / "?" _ "=" _ right:binary_9 { new ExpressionBinaryAssignUnknown(right, state) }
     / left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
     / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
     / left:binary_7 _ "-=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
@@ -100,20 +109,19 @@ binary_9 <BaseLexem> -memoize
     / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
     / left:lambda_left _ "=>" _ right:lambda_right { new LambdaLexem(new InvokeLexem(null, left.Item2, state), right, left.Item1, state) }
-    / context_creator
     / ternary_0
 
 context_creator <CreatorContext>
-    = "context" _ "{" _ st:statement_list _ "}" { new CreatorContext(st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new CreatorContext(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "context" _required_ n:name { new CreatorContext(n, state) }
-    / "context" { new CreatorContext(state) }
+    = "new" _required_ "context" _ "{" _ st:statement_list _ "}" { new CreatorContext(st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    / "new" _required_ "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new CreatorContext(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    / "new" _required_ "context" _required_ n:name { new CreatorContext(n, state) }
+    / "new" _required_ "context" { new CreatorContext(state) }
 
 context_statements <StatementListStatement>
-    = st:context_statement* { new StatementListStatement(st, state) }
-    / st:context_statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
+    = st:context_allowed_statement* { new StatementListStatement(st, state) }
+    / st:context_allowed_statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
-context_statement <BaseStatement>
+context_allowed_statement <BaseStatement>
     = _ st:statement _ ";" _ { CheckOnContextStatements(st) }
 
 ternary_0 <BaseLexem> -memoize
@@ -242,16 +250,21 @@ unary <BaseLexem>
 
 as_expr_right <BaseLexem> -memoize
     = left:as_expr_right _ "." _ right:name { new MemberAccess(left, right, state) }
-    / right:name { right }
+    / special
+    / name
 
 primary <BaseLexem> -memoize
-    = "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
+    = "@" _ left:as_expr_right _ "::" _ invk:invoke_lexem { new ReflectionLexem(left, invk.Left, invk.Arguments.ConvertAll(x => new ReflectionLexem(x, x.SourceContext)), state) }
+    / "@" _ left:as_expr_right _ "::" _ prop:name { new ReflectionLexem(left, prop, state) }
+    / "@" _ left:as_expr_right _ { new ReflectionLexem(left, state) }
+    / "typeof" _ "(" _ left:primary _ ")" { new TypeofLexem(left, state) }
     / "(" _ left:lexem _ ")" _ "." _ right:invoke_lexem { new MemberAccess(left.RaisePriority(), right, state) }
     / "(" _ left:lexem _ ")" _ "." _ right:name { new MemberAccess(left.RaisePriority(), right, state) }
     / left:primary _ "(" _ args:arguments_list _ ")" { new InvokeLexem(left, args.ToArray(), state) }
     / left:primary _ "(" _ ")" { new InvokeLexem(left, new BaseLexem[0], state) }
     / left:primary _ "." _ right:invoke_lexem { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
+    / context_creator
     / "new" _required_ right:invoke_lexem { new NewLexem(right as InvokeLexem, state) }
     / "new" _required_ right:primary { new NewLexem(right as MemberAccess, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexLexem(left, args.ToArray(), state) }
@@ -260,32 +273,12 @@ primary <BaseLexem> -memoize
     / tuple_creator
     / dictionary_creator
     / list_creator
+    / name_literal
     / special
     / name
     / literal
     / "[" _ x:lexem { Panic<BaseLexem>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:lexem { Panic<BaseLexem>(new SyntaxError("Unclosed brackets", state)) }
-
-which_body <BaseLexem>
-    = wmn:as_expr_right _ "(" _ types:names_arguments_list _ ")" {
-        new WhichLexem(wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
-    }
-    / wmn:as_expr_right _ "(" _ ")" {
-        new WhichLexem(wmn, new TypeofLexem[0], state)
-    }
-    / wmn:as_expr_right {
-        new WhichLexem(wmn, new TypeofLexem[0], state, true)
-    }
-
-    // tname:lexem _ "::" _ wmn:as_expr_right _ "(" _ types:names_arguments_list _ ")" {
-    //    new WhichLexem(tname, wmn, types.ToArray().ConvertAll(x => new TypeofLexem(new NameLexem(x.ToString(), state), state)), state)
-    //}
-    // tname:lexem _ "::" _ wmn:as_expr_right _ "(" _ ")"  {
-    //    new WhichLexem(tname, wmn, new TypeofLexem[0], state)
-    //}
-    // tname:lexem _ "::" _ wmn:as_expr_right {
-    //    new WhichLexem(tname, wmn, new TypeofLexem[0], state, true)
-    //}
 
 dictionary_creator <BaseLexem>
     = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
@@ -331,11 +324,14 @@ other_arg_name <BaseLexem> = ("," _ a:arg_name _ ) { a }
 arg_name <NameLexem>
     = name
 
-special <BaseLexem>
+name_literal <BaseLexem>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }
-    / "global" { new GlobalLiteral(state) }
-    / "this" { new ThisLiteral(state) }
     / "null" { new NullLiteral(state) }
+
+special <BaseLexem>
+    = "global" { new GlobalLiteral(state) }
+    / "upper" { new UpperLiteral(state) }
+    / "this" { new ThisLiteral(state) }
     / "self" { new SelfLiteral(state) }
 
 literal <BaseLexem>
