@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.sys;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -185,9 +186,9 @@ namespace SLThree
                     return ret;
                 }
             }
-            else if (type.GetInterfaces().Contains(type_ituple))
+            else if (type.IsTuple())
             {
-                //todo supporting any-size tuples
+                return CreatorTuple.Create(linq.entuple((ITuple)o).ToArray());
             }
             return o;
         }
