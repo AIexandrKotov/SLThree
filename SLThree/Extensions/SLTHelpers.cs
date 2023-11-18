@@ -52,6 +52,7 @@ namespace SLThree.Extensions
             if (t == type_string) return "string";
             if (t == type_char) return "char";
             if (t == type_context) return "context";
+            if (t == type_void) return "void";
 
             else return t.FullName;
         }
@@ -74,6 +75,7 @@ namespace SLThree.Extensions
             : (is_tuple_cache[type] = type.GetInterfaces().Contains(type_tuple));
         private static Type type_generic_list = typeof(List<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
+        private static Type type_void = typeof(void);
 
         /// <summary>
         /// Only for compatibility with old REPLs
@@ -95,6 +97,7 @@ namespace SLThree.Extensions
             if (t == "System.String") return "string";
             if (t == "System.Char") return "char";
             if (t == "SLThree.ExecutionContext+ContextWrap") return "context";
+            if (t == "System.Void") return "void";
             else return t;
         }
         public static Type ToType(this string s, bool throwError = false)

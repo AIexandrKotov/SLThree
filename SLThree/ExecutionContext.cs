@@ -109,6 +109,7 @@ namespace SLThree
 
                     sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
                     if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.pred.Name};");
+                    else if (x.Value is MemberAccess.ClassAccess maca) sb.AppendLine($"access to {maca.Name.GetTypeString()};");
                     else sb.AppendLine((Decoration(x.Value)?.ToString() ?? "null") + ";");
                 }
                 index -= 1;
