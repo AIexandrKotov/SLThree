@@ -19,7 +19,7 @@ namespace SLThree
             return Lexems.ConvertAll(x => x.GetValue(context)).ToList();
         }
 
-        public override string ToString() => $"[{Lexems.JoinIntoString(", ")}]";
+        public override string LexemToString() => $"[{Lexems.JoinIntoString(", ")}]";
 
         public override object Clone()
         {

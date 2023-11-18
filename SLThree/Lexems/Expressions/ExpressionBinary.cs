@@ -17,9 +17,14 @@ namespace SLThree
             Left = left;
             Right = right;
         }
+        public ExpressionBinary(BaseLexem left, BaseLexem right, SourceContext context, bool priority) : base(priority, context)
+        {
+            Left = left;
+            Right = right;
+        }
         public ExpressionBinary() : base() { }
 
         public abstract string Operator { get; }
-        public override string ToString() => $"{Left?.ToString() ?? "null"} {Operator} {Right?.ToString() ?? "null"}";
+        public override string LexemToString() => $"{Left?.ToString() ?? "null"} {Operator} {Right?.ToString() ?? "null"}";
     }
 }

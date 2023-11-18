@@ -44,11 +44,12 @@ namespace SLThree
             }
         }
 
-        public override string ToString() => $"{Left} => {Right}";
+        public override string LexemToString() => $"{Left} => {Right}";
 
         public Method Method;
         public override object GetValue(ExecutionContext context)
         {
+            Method.DefinitionPlace = context.wrap;
             return Method;
         }
 

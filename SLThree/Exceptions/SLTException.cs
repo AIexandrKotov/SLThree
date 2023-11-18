@@ -46,17 +46,17 @@ namespace SLThree
         public SyntaxError(string message, Exception inner, Cursor cursor) : base(message, inner, new SourceContext(cursor)) { }
     }
 
-/*    /// <summary>
-    /// Исключения на этапе переработки AST в Tree
+    /// <summary>
+    /// Исключения на этапе создания дерева
     /// </summary>
     [Serializable]
-    public class SemanticError : SLTException
+    public class LogicalError : SLTException
     {
-        public SemanticError() : base() { }
-        public SemanticError(SourceContext context) : base(context) { }
-        public SemanticError(string message, SourceContext context) : base(message, context) { }
-        public SemanticError(string message, Exception inner, SourceContext context) : base(message, inner, context) { }
-    }*/
+        public LogicalError() : base() { }
+        public LogicalError(SourceContext context) : base(context) { }
+        public LogicalError(string message, SourceContext context) : base(message, context) { }
+        public LogicalError(string message, Exception inner, SourceContext context) : base(message, inner, context) { }
+    }
 
     /// <summary>
     /// Исключения во время работы программы

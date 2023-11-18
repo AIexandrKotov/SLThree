@@ -5,6 +5,8 @@ using System;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace SLThree
 {
@@ -17,7 +19,60 @@ namespace SLThree
             {
                 Name = name;
             }
-            public override string ToString() => $"access to {Name.GetTypeString()}";
+            public override string ToString()
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine($"{Name.GetTypeString()} {{");
+                //var methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+                var static_methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                //var fields = Name.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                var static_fields = Name.GetFields(BindingFlags.Public | BindingFlags.Static);
+                //var props = Name.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var static_props = Name.GetProperties(BindingFlags.Public | BindingFlags.Static);
+                foreach (var x in static_fields)
+                {
+                    sb.AppendLine($"    {x.FieldType.GetTypeString()} {x.Name};");
+                }
+                /*if (!Name.IsSealed && !Name.IsAbstract)
+                foreach (var x in fields)
+                {
+                    sb.AppendLine($"    {x.Name};");
+                }*/
+                foreach (var x in static_props)
+                {
+                    sb.Append($"    {x.PropertyType.GetTypeString()} {x.Name} {{ ");
+                    if (x.GetMethod != null) sb.Append("get; ");
+                    if (x.SetMethod != null) sb.Append("set; ");
+                    sb.AppendLine("}");
+                }
+                /*if (!Name.IsSealed && !Name.IsAbstract)
+                    foreach (var x in props)
+                {
+                    sb.Append($"    {x.Name} {{ ");
+                    if (x.GetMethod != null) sb.Append("get; ");
+                    if (x.SetMethod != null) sb.Append("set; ");
+                    sb.AppendLine("}");
+                }*/
+                foreach (var x in static_methods)
+                {
+                    if (x.Name.StartsWith("get_") || x.Name.StartsWith("set_")) continue;
+                    sb.Append($"    {x.ReturnType.GetTypeString()} {x.Name}(");
+                    sb.Append(x.GetParameters().ConvertAll(p => p.ParameterType.GetTypeString()).JoinIntoString(", "));
+                    sb.AppendLine(");");
+                }
+                /*if (!Name.IsSealed && !Name.IsAbstract)
+                    foreach (var x in methods)
+                {
+                    if (x.Name.StartsWith("get_") || x.Name.StartsWith("set_")) continue;
+                    sb.Append($"    {x.Name}(");
+                    sb.Append(x.GetParameters().ConvertAll(p => p.ParameterType.GetTypeString()).JoinIntoString(", "));
+                    sb.AppendLine(");");
+                }*/
+
+                sb.AppendLine("}");
+
+                return sb.ToString();
+            }
         }
 
         public override string Operator => ".";
@@ -29,7 +84,7 @@ namespace SLThree
         private Type nest_type;
         public object Create(ExecutionContext context)
         {
-            var left = Left.ToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Name}";
+            var left = Left.LexemToString().Replace(" ", "") + $".{Right.Cast<InvokeLexem>().Left}";
 
             if (left != null)
             {
@@ -47,13 +102,15 @@ namespace SLThree
 
         private bool counted_contextwrapcache2;
         private bool is_unwrap;
+        private bool is_upper;
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
 
             if (counted_contextwrapcache)
             {
-                return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+                if (is_upper) return (left as ExecutionContext.ContextWrap).pred.upper;
+                else return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
             {
@@ -67,14 +124,20 @@ namespace SLThree
                 {
                     if (Right is NameLexem predName)
                     {
-                        variable_name = predName.ToString().Replace(" ", "");
+                        if (predName.Name == "upper")
+                        {
+                            counted_contextwrapcache = true;
+                            is_upper = true;
+                            return pred.pred.upper;
+                        }
+                        variable_name = predName.LexemToString().Replace(" ", "");
                         counted_contextwrapcache = true;
                         return pred.pred.LocalVariables.GetValue(variable_name).Item1;
                     }
                     else if (Right is InvokeLexem invokeLexem)
                     {
                         counted_contextwrapcache2 = true;
-                        if (invokeLexem.Name?.Cast<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
+                        if (invokeLexem.Left?.TryCastRef<NameLexem>()?.Name == "unwrap" && invokeLexem.Arguments.Length == 0)
                         {
                             is_unwrap = true;
                             return pred.pred;
@@ -129,7 +192,7 @@ namespace SLThree
                     var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameLexem nameLexem2)
                     {
-                        other_context_name = Right.ToString().Replace(" ", "");
+                        other_context_name = Right.LexemToString().Replace(" ", "");
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
@@ -169,14 +232,14 @@ namespace SLThree
                         prop.SetValue(left, value);
                         return;
                     }
-                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.Name.GetTypeString()}\"", SourceContext);
+                    throw new RuntimeError($"Name \"{nameLexem.Name}\" not found in \"{type.GetTypeString()}\"", SourceContext);
                 }
             }
 
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
-        public override string ToString() => $"{Left}.{Right}";
+        public override string LexemToString() => $"{Left}.{Right}";
 
         public override object Clone()
         {

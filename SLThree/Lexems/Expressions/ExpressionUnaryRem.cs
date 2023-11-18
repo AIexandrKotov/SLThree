@@ -7,7 +7,7 @@ namespace SLThree
     public class ExpressionUnaryRem : ExpressionUnary
     {
         public override string Operator => "-";
-        public ExpressionUnaryRem(BaseLexem left, SourceContext context) : base(left, context) { }
+        public ExpressionUnaryRem(BaseLexem left, SourceContext context, bool priority = false) : base(left, context, priority) { }
         public ExpressionUnaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -31,7 +31,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryRem(Left.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionUnaryRem(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

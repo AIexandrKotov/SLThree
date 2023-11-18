@@ -8,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryMultiply : ExpressionBinary
     {
         public override string Operator => "*";
-        public ExpressionBinaryMultiply(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryMultiply(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryMultiply() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -46,7 +46,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryMultiply(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryMultiply(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

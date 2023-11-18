@@ -14,9 +14,13 @@ namespace SLThree
         {
             Left = left;
         }
+        public ExpressionUnary(BaseLexem left, SourceContext context, bool priority) : base(priority, context)
+        {
+            Left = left;
+        }
         public ExpressionUnary() : base() { }
 
         public abstract string Operator { get; }
-        public override string ToString() => $"{Operator}{Left?.ToString() ?? "null"}";
+        public override string LexemToString() => $"{Operator}{Left?.ToString() ?? "null"}";
     }
 }

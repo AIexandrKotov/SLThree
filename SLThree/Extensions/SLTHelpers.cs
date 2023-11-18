@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +31,13 @@ namespace SLThree.Extensions
 
         public static string GetTypeString(this Type t)
         {
+            if (t == type_long) return "i64";
+            if (t == type_double) return "f64";
+            if (t == type_ulong) return "u64";
+            if (t.IsTuple()) return "tuple";
+            if (t == type_list) return "list";
+            if (t == type_dict) return "dict";
+            if (t == type_array) return "array";
             if (t.IsGenericType)
                 return $"{t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last()}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             if (t == type_object) return "object";
@@ -37,29 +47,39 @@ namespace SLThree.Extensions
             if (t == type_ushort) return "u16";
             if (t == type_int) return "i32";
             if (t == type_uint) return "u32";
-            if (t == type_long) return "i64";
-            if (t == type_ulong) return "u64";
-            if (t == type_double) return "f64";
             if (t == type_float) return "f32";
             if (t == type_bool) return "bool";
             if (t == type_string) return "string";
             if (t == type_char) return "char";
             if (t == type_context) return "context";
+            if (t == type_void) return "void";
 
             else return t.FullName;
         }
 
         public static bool IsList(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == type_list;
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_list;
         }
         public static bool IsDictionary(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == type_dict;
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_dict;
         }
-        private static Type type_list = typeof(List<>);
-        private static Type type_dict = typeof(Dictionary<,>);
+        private static Dictionary<Type, bool> is_tuple_cache = new Dictionary<Type, bool>()
+        {
+            { typeof(ITuple), true },
+        };
+        public static bool IsTuple(this Type type)
+            => is_tuple_cache.TryGetValue(type, out var result)
+            ? result
+            : (is_tuple_cache[type] = type.GetInterfaces().Contains(type_tuple));
+        private static Type type_generic_list = typeof(List<>);
+        private static Type type_generic_dict = typeof(Dictionary<,>);
+        private static Type type_void = typeof(void);
 
+        /// <summary>
+        /// Only for compatibility with old REPLs
+        /// </summary>
         public static string GetTypeString(this string t)
         {
             if (t == "System.Object") return "object";
@@ -76,29 +96,67 @@ namespace SLThree.Extensions
             if (t == "System.Boolean") return "bool";
             if (t == "System.String") return "string";
             if (t == "System.Char") return "char";
+            if (t == "SLThree.ExecutionContext+ContextWrap") return "context";
+            if (t == "System.Void") return "void";
             else return t;
         }
-        public static Type ToType(this string s)
+        public static Type ToType(this string s, bool throwError = false)
         {
             switch (s)
             {
+                case "i64": return type_long;
+                case "f64": return type_double;
+                case "u64": return type_ulong;
+                case "string": return type_string;
+
+                case "i32": return type_int;
+                case "f32": return type_float;
                 case "u8": return type_byte;
                 case "i8": return type_sbyte;
                 case "i16": return type_short;
                 case "u16": return type_ushort;
-                case "i32": return type_int;
                 case "u32": return type_uint;
-                case "i64": return type_long;
-                case "u64": return type_ulong;
-                case "f64": return type_double;
-                case "f32": return type_float;
-                case "string": return type_string;
                 case "object": return type_object;
                 case "bool": return type_bool;
                 case "char": return type_char;
                 case "context": return type_context;
+                case "list": return type_list;
+                case "dict": return type_dict;
+                case "tuple": return type_tuple;
+                case "array": return type_array;
             }
-            return Type.GetType(s, false);
+            return GetTypeFromRegistredAssemblies(s, throwError);
+        }
+        private static readonly Dictionary<string, Type> founded_types = new Dictionary<string, Type>();
+        public static Type GetTypeFromRegistredAssemblies(this string s, bool throwError)
+        {
+            if (founded_types.TryGetValue(s, out var type)) return type;
+            else
+            {
+                foreach (var ass in TypeofLexem.RegistredAssemblies)
+                {
+                    var ret = ass.GetType(s, throwError);
+                    if (ret != null) return founded_types[s] = ret;
+                    else
+                    {
+                        foreach (var str in s.NestedVariations())
+                        {
+                            ret = ass.GetType(str, throwError);
+                            if (ret != null) return founded_types[s] = ret;
+                        }
+                    }
+                }
+            }
+            if (throwError) throw new Exception($"Type {s} not found");
+            return null;
+        }
+        private static IEnumerable<string> NestedVariations(this string s)
+        {
+            var ind = -1;
+            while ((ind = s.LastIndexOf('.')) != -1)
+            {
+                yield return s = s.Substring(0, ind) + "+" + s.Substring(ind + 1, s.Length - ind - 1);
+            }
         }
         private static Type type_bool = typeof(bool);
         private static Type type_string = typeof(string);
@@ -116,269 +174,66 @@ namespace SLThree.Extensions
         private static Type type_double = typeof(double);
         private static Type type_float = typeof(float);
         private static Type type_context = typeof(ExecutionContext.ContextWrap);
+
+        private static Type type_array = typeof(object[]);
+        private static Type type_list = typeof(List<object>);
+        private static Type type_dict = typeof(Dictionary<object, object>);
+        private static Type type_tuple = typeof(ITuple);
+
+        public static BaseLexem RaisePriority(this BaseLexem lexem)
+        {
+            lexem.PrioriryRaised = true;
+            return lexem;
+        }
+
+        public static BaseLexem DropPriority(this BaseLexem lexem)
+        {
+            lexem.PrioriryRaised = false;
+            return lexem;
+        }
+
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;
+
             if (casting_type == typeof(string))
-            {
                 return o.ToString();
+            if (casting_type == type_context)
+            {
+                if (o is Type st_type)
+                    return 
+                        st_type.IsAbstract && st_type.IsSealed
+                        ? new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
+                        : new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
+                else
+                    return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
             }
+            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             var type = o.GetType();
+            if (type == type_context)
+            {
+                return NonGenericWrapper.GetWrapper(casting_type).Unwrap(((ExecutionContext.ContextWrap)o).pred);
+            }
             if (casting_type.IsEnum)
             {
+                if (type == type_string) return Enum.Parse(casting_type, (string)o);
+                if (type == type_int) return Enum.ToObject(casting_type, (int)o);
                 if (type == type_byte) return Enum.ToObject(casting_type, (byte)o);
                 if (type == type_sbyte) return Enum.ToObject(casting_type, (sbyte)o);
                 if (type == type_ushort) return Enum.ToObject(casting_type, (ushort)o);
                 if (type == type_short) return Enum.ToObject(casting_type, (short)o);
                 if (type == type_uint) return Enum.ToObject(casting_type, (uint)o);
-                if (type == type_int) return Enum.ToObject(casting_type, (int)o);
                 if (type == type_ulong) return Enum.ToObject(casting_type, (ulong)o);
                 if (type == type_long) return Enum.ToObject(casting_type, (long)o);
-                if (type == type_string) return Enum.Parse(casting_type, (string)o);
-            }
-            if (type.IsEnum)
-            {
-                if (casting_type == type_byte) return (byte)o;
-                if (casting_type == type_sbyte) return (sbyte)o;
-                if (casting_type == type_ushort) return (ushort)o;
-                if (casting_type == type_short) return (short)o;
-                if (casting_type == type_uint) return (uint)o;
-                if (casting_type == type_int) return (int)o;
-                if (casting_type == type_ulong) return (ulong)o;
-                if (casting_type == type_long) return (long)o;
-            }
-            if (casting_type == type_char)
-            {
-                switch (o)
-                {
-                    case byte b: return (char)b;
-                    case sbyte b: return (char)b;
-                    case ushort b: return (char)b;
-                    case short b: return (char)b;
-                    case uint b: return (char)b;
-                    case int b: return (char)b;
-                    case ulong b: return (char)b;
-                    case long b: return (char)b;
-                    case float b: return (char)b;
-                    case double b: return (char)b;
-                    case string b_str:
-                        {
-                            if (string.IsNullOrEmpty(b_str)) return (char)0;
-                            else return b_str[0];
-                        }
-                }
-            }
-            else if (casting_type == type_byte)
-            {
-                switch (o)
-                {
-                    case byte b: return b;
-                    case sbyte b: return (byte)b;
-                    case ushort b: return (byte)b;
-                    case short b: return (byte)b;
-                    case uint b: return (byte)b;
-                    case int b: return (byte)b;
-                    case ulong b: return (byte)b;
-                    case long b: return (byte)b;
-                    case float b: return (byte)b;
-                    case double b: return (byte)b;
-                    case string b_str:
-                        {
-                            return byte.Parse(b_str);
-                        }
-                    case char b: return (byte)b;
-                }
-            }
-            else if (casting_type == type_sbyte)
-            {
-                switch (o)
-                {
-                    case byte b: return (sbyte)b;
-                    case sbyte b: return b;
-                    case ushort b: return (sbyte)b;
-                    case short b: return (sbyte)b;
-                    case uint b: return (sbyte)b;
-                    case int b: return (sbyte)b;
-                    case ulong b: return (sbyte)b;
-                    case long b: return (sbyte)b;
-                    case float b: return (sbyte)b;
-                    case double b: return (sbyte)b;
-                    case string b_str:
-                        {
-                            return sbyte.Parse(b_str);
-                        }
-                    case char b: return (sbyte)b;
-                }
-            }
-            else if (casting_type == type_ushort)
-            {
-                switch (o)
-                {
-                    case byte b: return (ushort)b;
-                    case sbyte b: return (ushort)b;
-                    case ushort b: return b;
-                    case short b: return (ushort)b;
-                    case uint b: return (ushort)b;
-                    case int b: return (ushort)b;
-                    case ulong b: return (ushort)b;
-                    case long b: return (ushort)b;
-                    case float b: return (ushort)b;
-                    case double b: return (ushort)b;
-                    case string b_str:
-                        {
-                            return ushort.Parse(b_str);
-                        }
-                    case char b: return (ushort)b;
-                }
-            }
-            else if (casting_type == type_short)
-            {
-                switch (o)
-                {
-                    case byte b: return (short)b;
-                    case sbyte b: return (short)b;
-                    case ushort b: return (short)b;
-                    case short b: return b;
-                    case uint b: return (short)b;
-                    case int b: return (short)b;
-                    case ulong b: return (short)b;
-                    case long b: return (short)b;
-                    case float b: return (short)b;
-                    case double b: return (short)b;
-                    case string b_str:
-                        {
-                            return short.Parse(b_str);
-                        }
-                    case char b: return (short)b;
-                }
-            }
-            else if (casting_type == type_uint)
-            {
-                switch (o)
-                {
-                    case byte b: return (uint)b;
-                    case sbyte b: return (uint)b;
-                    case ushort b: return (uint)b;
-                    case short b: return (uint)b;
-                    case uint b: return b;
-                    case int b: return (uint)b;
-                    case ulong b: return (uint)b;
-                    case long b: return (uint)b;
-                    case float b: return (uint)b;
-                    case double b: return (uint)b;
-                    case string b_str:
-                        {
-                            return uint.Parse(b_str);
-                        }
-                    case char b: return (uint)b;
-                }
-            }
-            else if (casting_type == type_int)
-            {
-                switch (o)
-                {
-                    case byte b: return (int)b;
-                    case sbyte b: return (int)b;
-                    case ushort b: return (int)b;
-                    case short b: return (int)b;
-                    case uint b: return (int)b;
-                    case int b: return b;
-                    case ulong b: return (int)b;
-                    case long b: return (int)b;
-                    case float b: return (int)b;
-                    case double b: return (int)b;
-                    case string b_str:
-                        {
-                            return int.Parse(b_str);
-                        }
-                    case char b: return (int)b;
-                }
-            }
-            else if (casting_type == type_ulong)
-            {
-                switch (o)
-                {
-                    case byte b: return (ulong)b;
-                    case sbyte b: return (ulong)b;
-                    case ushort b: return (ulong)b;
-                    case short b: return (ulong)b;
-                    case uint b: return (ulong)b;
-                    case int b: return (ulong)b;
-                    case ulong b: return b;
-                    case long b: return (ulong)b;
-                    case float b: return (ulong)b;
-                    case double b: return (ulong)b;
-                    case string b_str:
-                        {
-                            return ulong.Parse(b_str);
-                        }
-                    case char b: return (ulong)b;
-                }
-            }
-            else if (casting_type == type_long)
-            {
-                switch (o)
-                {
-                    case byte b: return (long)b;
-                    case sbyte b: return (long)b;
-                    case ushort b: return (long)b;
-                    case short b: return (long)b;
-                    case uint b: return (long)b;
-                    case int b: return (long)b;
-                    case ulong b: return (long)b;
-                    case long b: return b;
-                    case float b: return (long)b;
-                    case double b: return (long)b;
-                    case string b_str:
-                        {
-                            return long.Parse(b_str);
-                        }
-                    case char b: return (long)b;
-                }
-            }
-            else if (casting_type == type_float)
-            {
-                switch (o)
-                {
-                    case byte b: return (float)b;
-                    case sbyte b: return (float)b;
-                    case ushort b: return (float)b;
-                    case short b: return (float)b;
-                    case uint b: return (float)b;
-                    case int b: return (float)b;
-                    case ulong b: return (float)b;
-                    case long b: return (float)b;
-                    case float b: return b;
-                    case double b: return (float)b;
-                    case string b_str:
-                        {
-                            return float.Parse(b_str);
-                        }
-                    case char b: return (float)b;
-                }
-            }
-            else if (casting_type == type_double)
-            {
-                switch (o)
-                {
-                    case byte b: return (double)b;
-                    case sbyte b: return (double)b;
-                    case ushort b: return (double)b;
-                    case short b: return (double)b;
-                    case uint b: return (double)b;
-                    case int b: return (double)b;
-                    case ulong b: return (double)b;
-                    case long b: return (double)b;
-                    case float b: return (double)b;
-                    case double b: return b;
-                    case string b_str:
-                        {
-                            return double.Parse(b_str);
-                        }
-                    case char b: return (double)b;
-                }
             }
             return o;
+        }
+
+        public static bool IsType(this Type type, Type other)
+        {
+            if (type == other) return true;
+            if (other.IsAssignableFrom(type)) return true;
+            return false;
         }
     }
 }

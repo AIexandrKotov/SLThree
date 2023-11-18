@@ -1,0 +1,23 @@
+calc = (index) => {
+    step = 0;
+    while (index > 1) {
+        if (index % 2 == 0) {
+            index /= 2;step += 1;
+        }
+        else
+        {
+            index = (3 * index + 1) / 2;
+            step += 2;
+        }
+    }
+    return step;
+};
+max = 0;
+using linq;
+foreach (x in linq.range(1, 1000000)) {
+    e = calc(x);
+    if (e > max) {
+        max = e;
+    }
+}
+max;

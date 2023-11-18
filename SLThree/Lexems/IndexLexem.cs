@@ -99,7 +99,7 @@ namespace SLThree
             return value;
         }
 
-        public override string ToString() => $"{Lexem}[{Arguments.JoinIntoString(", ")}]";
+        public override string LexemToString() => $"{Lexem}[{Arguments.JoinIntoString(", ")}]";
 
         public override object Clone()
         {

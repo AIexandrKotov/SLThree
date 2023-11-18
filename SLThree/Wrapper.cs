@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.sys;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -185,9 +186,9 @@ namespace SLThree
                     return ret;
                 }
             }
-            else if (type.GetInterfaces().Contains(type_ituple))
+            else if (type.IsTuple())
             {
-                //todo supporting any-size tuples
+                return CreatorTuple.Create(linq.entuple((ITuple)o).ToArray());
             }
             return o;
         }
@@ -215,7 +216,8 @@ namespace SLThree
         protected Dictionary<string, FieldInfo> Fields = new Dictionary<string, FieldInfo>();
         protected readonly Dictionary<string, PropertyInfo> StaticProperties = new Dictionary<string, PropertyInfo>();
         protected readonly Dictionary<string, FieldInfo> StaticFields = new Dictionary<string, FieldInfo>();
-        protected readonly PropertyInfo InjectClassname = null;
+        protected readonly PropertyInfo InjectContextName = null;
+        protected readonly bool SupportedNameWrap;
         protected internal NonGenericWrapper(Type type)
         {
             this.type = type;
@@ -224,8 +226,8 @@ namespace SLThree
             var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
             foreach (var property in props)
             {
+                if (Attribute.IsDefined(property, typeof(WrapperContextNameAttribute))) InjectContextName = property;
                 if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                //else if (Attribute.IsDefined(property, typeof(WrappingInjectClassname))) InjectClassname = property;
                 else Properties[property.Name] = property;
             }
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
@@ -238,7 +240,7 @@ namespace SLThree
             foreach (var property in static_props)
             {
                 if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                //else if (Attribute.IsDefined(property, typeof(WrappingInjectClassname))) InjectClassname = property;
+                //else if (Attribute.IsDefined(property, typeof(WrappeContextNameAttribute))) InjectContextName = property;
                 else StaticProperties[property.Name] = property;
             }
             var static_fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
@@ -247,13 +249,18 @@ namespace SLThree
                 if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
                 else StaticFields[field.Name] = field;
             }
+            if (InjectContextName != null) SupportedNameWrap = InjectContextName.SetMethod != null;
         }
 
-
+        public string GetName(object obj)
+        {
+            if (InjectContextName != null) return (string)InjectContextName.GetValue(obj);
+            throw new ArgumentException($"Type {typename} doesn't have property with InjectContextName");
+        }
         public ExecutionContext Wrap(object obj)
         {
             var ret = new ExecutionContext();
-            ret.Name = GetWrappedContextName();
+            ret.Name = SupportedNameWrap ? InjectContextName.GetValue(obj).ToString() : GetWrappedContextName();
             foreach (var x in Properties)
                 ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
             foreach (var x in Fields)
@@ -339,6 +346,7 @@ namespace SLThree
         public object Unwrap(ExecutionContext context)
         {
             var ret = Activator.CreateInstance(type);
+            if (InjectContextName != null) InjectContextName.SetValue(ret, context.Name);
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
@@ -350,6 +358,14 @@ namespace SLThree
         public object SafeUnwrap(ExecutionContext context)
         {
             var ret = Activator.CreateInstance(type);
+            try
+            {
+                if (InjectContextName != null) InjectContextName.SetValue(ret, context.Name);
+            }
+            catch (Exception e)
+            {
+                context.Errors.Add(e);
+            }
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 try
@@ -393,12 +409,12 @@ namespace SLThree
         public WrapperSkipAttribute() { }
     }
 
-/*    /// <summary>
-    /// В это свойство будет вписано имя класса
+    /// <summary>
+    /// В это свойство типа string будет вписано имя контекста
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class WrappingInjectClassname : Attribute
+    public sealed class WrapperContextNameAttribute : Attribute
     {
-        public WrappingInjectClassname() { }
-    }*/
+        public WrapperContextNameAttribute() { }
+    }
 }

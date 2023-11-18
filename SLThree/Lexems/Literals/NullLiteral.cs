@@ -7,7 +7,7 @@ namespace SLThree
         public NullLiteral() : base() { }
         public NullLiteral(SourceContext context) : base(context) { }
 
-        public override string ToString() => "null";
+        public override string LexemToString() => "null";
 
         public override object GetValue(ExecutionContext context) => null;
 

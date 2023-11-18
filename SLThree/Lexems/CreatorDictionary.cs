@@ -21,7 +21,7 @@ namespace SLThree
             {
                 return new KeyValuePair<object, object>(Key.GetValue(context), Value.GetValue(context));
             }
-            public override string ToString() => $"{Key}: {Value}";
+            public override string LexemToString() => $"{Key}: {Value}";
             public override object Clone()
             {
                 return new Entry(Key.CloneCast(), Value.CloneCast(), SourceContext.CloneCast());
@@ -40,7 +40,7 @@ namespace SLThree
             return Entries.Select(x => (KeyValuePair<object, object>)x.GetValue(context)).ToDictionary(x => x.Key, x => x.Value);
         }
 
-        public override string ToString() => $"{{{Entries.JoinIntoString(", ")}}}";
+        public override string LexemToString() => $"{{{Entries.JoinIntoString(", ")}}}";
 
         public override object Clone()
         {

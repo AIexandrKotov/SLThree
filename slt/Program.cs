@@ -289,7 +289,8 @@ namespace slt
         public static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
-            if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
+            else if (value is Type type) value = type.GetTypeString();
+            else if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
             else if (LANG_030.Supports) value = LANG_030.GetChoosersOutput(value);
             return value;
         }
@@ -304,6 +305,24 @@ namespace slt
         #endregion
 
         #region Compiler and Interpreter
+        public static ExecutionContext InvokeFile(string filename, ExecutionContext context, Encoding encoding = null, bool show_result = true)
+        {
+            var parser = new SLThree.Parser();
+            var executionContext = context;
+            try
+            {
+                var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
+                var o = st.GetValue(executionContext);
+                if (show_result) OutAsOutput(o);
+            }
+            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
+            catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
+            catch (Exception e)
+            {
+                OutException(e);
+            }
+            return executionContext;
+        }
         public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
@@ -330,6 +349,7 @@ namespace slt
         {
             LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
             if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
+            if (LANG_050.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 5) LANG_050.Init();
         }
 
         #region REPL Commands
@@ -339,7 +359,8 @@ namespace slt
         {
             var local_usings = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
-                .ToDictionary(x => x.Key, x => (x.Value as MemberAccess.ClassAccess)?.Name?.FullName ?? "undefined");
+                .ToDictionary(x => x.Key, x => 
+                    ((x.Value as MemberAccess.ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
             if (local_usings.Count == 0) return;
             OutAsWarning($"--- CLASSES ---");
             var max_variable_name = table;
@@ -356,7 +377,7 @@ namespace slt
                 Console.ResetColor();
                 Console.Write(" as ");
                 Console.ForegroundColor = ConsoleColor.White;
-                var output = x.Key.Trim().GetTypeString();
+                var output = x.Key.Trim();
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -680,8 +701,8 @@ namespace slt
         private static bool REPLLoop;
         internal static ExecutionContext REPLContext;
         private static bool REPLPerfomance = false;
-        private static Stopwatch ParsingStopwatch;
-        private static Stopwatch ExecutinStopwatch;
+        private static Stopwatch ParsingStopwatch = new Stopwatch();
+        private static Stopwatch ExecutingStopwatch = new Stopwatch();
         public static void StartREPL(ExecutionContext myExecutionContext = null)
         {
             OutREPLInfo();
@@ -721,18 +742,18 @@ namespace slt
                         var st = REPLParser.ParseScript(code);
                         if (REPLPerfomance) ParsingStopwatch.Stop();
                         Console.ForegroundColor = ConsoleColor.Cyan;
-                        if (REPLPerfomance) ExecutinStopwatch = Stopwatch.StartNew();
+                        if (REPLPerfomance) ExecutingStopwatch = Stopwatch.StartNew();
                         REPLContext.PrepareToInvoke();
                         var value = st.GetValue(REPLContext);
-                        if (REPLPerfomance) ExecutinStopwatch.Stop();
+                        if (REPLPerfomance) ExecutingStopwatch.Stop();
                         cancelationToken = false;
                         Console.ResetColor();
                         OutAsOutput(value);
                         if (REPLPerfomance)
                         {
                             Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine($"Computed in {(ExecutinStopwatch.Elapsed + ParsingStopwatch.Elapsed).TotalMilliseconds} ms " +
-                                $"(Parse: {ParsingStopwatch.Elapsed.TotalMilliseconds} ms, Exec: {ExecutinStopwatch.Elapsed.TotalMilliseconds} ms)");
+                            Console.WriteLine($"Computed in {(ExecutingStopwatch.Elapsed + ParsingStopwatch.Elapsed).TotalMilliseconds} ms " +
+                                $"(Parse: {ParsingStopwatch.Elapsed.TotalMilliseconds} ms, Exec: {ExecutingStopwatch.Elapsed.TotalMilliseconds} ms)");
                             Console.ResetColor();
                         }
                     }

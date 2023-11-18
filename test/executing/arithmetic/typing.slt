@@ -1,0 +1,4 @@
+
+    ASSERT(self, ((1 / 2) is i64) as is);
+    ASSERT(self, ((1 / 2.0) is f64) as is);
+    ASSERT(self, ((1% + 2%) is f64) as is);

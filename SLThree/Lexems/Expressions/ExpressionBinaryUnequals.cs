@@ -8,7 +8,7 @@ namespace SLThree
     public class ExpressionBinaryUnequals : ExpressionBinary
     {
         public override string Operator => "!=";
-        public ExpressionBinaryUnequals(BaseLexem left, BaseLexem right, SourceContext context) : base(left, right, context) { }
+        public ExpressionBinaryUnequals(BaseLexem left, BaseLexem right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public ExpressionBinaryUnequals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -47,7 +47,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryUnequals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionBinaryUnequals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

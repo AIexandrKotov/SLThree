@@ -34,8 +34,9 @@ namespace SLThree
             }
             else
             {
-                ret = new ExecutionContext();
+                ret = new ExecutionContext(context);
                 ret.@this = DefinitionPlace;
+                ret.toplevel = ret.@this.pred?.toplevel;
                 cached_method_contextes.Add(this, ret);
             }
             ret.Name = contextName;

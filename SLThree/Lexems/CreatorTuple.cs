@@ -9,10 +9,23 @@ namespace SLThree
     public class CreatorTuple : BaseLexem
     {
         public BaseLexem[] Lexems;
+        public (ExecutionContext, bool, int)[] Caches;
         
         public CreatorTuple(BaseLexem[] lexems, SourceContext context) : base(context)
         {
             Lexems = lexems;
+            Caches = new (ExecutionContext, bool, int)[lexems.Length];
+        }
+
+        public void SetValue(ExecutionContext context, object right)
+        {
+            if (right is ITuple tuple)
+            {
+                var min = Math.Min(Lexems.Length, tuple.Length);
+                for (var i = 0; i < min; i++)
+                    ExpressionBinaryAssign.AssignToValue(context, Lexems[i], tuple[i], ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
+            }
+            else throw new RuntimeError("Right value must be tuple", SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)
@@ -20,19 +33,31 @@ namespace SLThree
             return Create(Lexems.ConvertAll(x => x.GetValue(context)));
         }
 
+        private static Type generic_vt8 = typeof(ValueTuple<,,,,,,,>);
+
+        private static Type[] objs7 = Enumerable.Repeat(typeof(object), 7).ToArray();
+        private static Type[] get_objs8(Type next) =>
+            objs7.Append(next).ToArray();
+
         public static ITuple Create(object[] objs, int index = 0)
         {
             switch (objs.Length - index)
             {
                 case 0: throw new ArgumentException("Zero length array in objs");
-                case 1: return new Tuple<object>(objs[index]);
-                case 2: return new Tuple<object, object>(objs[index], objs[index + 1]);
-                case 3: return new Tuple<object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2]);
-                case 4: return new Tuple<object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3]);
-                case 5: return new Tuple<object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4]);
-                case 6: return new Tuple<object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5]);
-                case 7: return new Tuple<object, object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6]);
-                default: return new Tuple<object, object, object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6], Create(objs, index + 7));
+                case 1: return new ValueTuple<object>(objs[index]);
+                case 2: return new ValueTuple<object, object>(objs[index], objs[index + 1]);
+                case 3: return new ValueTuple<object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2]);
+                case 4: return new ValueTuple<object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3]);
+                case 5: return new ValueTuple<object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4]);
+                case 6: return new ValueTuple<object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5]);
+                case 7: return new ValueTuple<object, object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6]);
+                default:
+                    {
+                        var rest = Create(objs, index + 7);
+                        return (ITuple)Activator.CreateInstance(generic_vt8.MakeGenericType(get_objs8(rest.GetType())),
+                            new object[8]
+                            { objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6], rest });
+                    }
             }
         }
         public static object[] ToArray(ITuple tuple)
@@ -42,7 +67,7 @@ namespace SLThree
                 ret[i] = tuple[i];
             return ret;
         }
-        public override string ToString() => $"({Lexems.JoinIntoString(", ")})";
+        public override string LexemToString() => $"({Lexems.JoinIntoString(", ")})";
 
         public override object Clone()
         {

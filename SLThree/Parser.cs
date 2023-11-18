@@ -23,5 +23,18 @@ namespace SLThree
         {
             throw exception;
         }
+        
+        private static BaseStatement CheckOnContextStatements(BaseStatement statement)
+        {
+            if (statement is ExpressionStatement expressionStatement)
+            {
+                if (expressionStatement.Lexem is ExpressionBinaryAssign)
+                    return statement;
+                throw new SyntaxError($"Expected assign expression, found {expressionStatement.Lexem.GetType().Name}", expressionStatement.Lexem.SourceContext);
+            }
+            if (statement is ContextStatement contextStatement)
+                return contextStatement;
+            throw new SyntaxError($"Expected assign expression, found {statement.GetType().Name}", statement.SourceContext);
+        }
     }
 }

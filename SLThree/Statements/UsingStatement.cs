@@ -16,31 +16,38 @@ namespace SLThree
         public static Dictionary<string, Type> SystemTypes { get; } = Assembly
             .GetExecutingAssembly()
             .GetTypes()
-            .Where(x => x.FullName.StartsWith("SLThree.sys.")).ToDictionary(x => x.Name, x => x);
+            .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x);
 
+        public UsingStatement() { }
         public UsingStatement(BaseLexem lexem, string name, SourceContext context) : base(context)
         {
-            Lexem = lexem;
-            Name = name;
-
-            var str = Lexem.ToString().Replace(" ", "");
-            if (SystemTypes.ContainsKey(str))
+            var type_name = lexem.ToString().Replace(" ", "");
+            if (SystemTypes.ContainsKey(type_name))
             {
-                any_type = new MemberAccess.ClassAccess(SystemTypes[str]);
+                Lexem = lexem;
+                Name = type_name;
+                any_type = new MemberAccess.ClassAccess(SystemTypes[type_name]);
             }
-            else any_type = new MemberAccess.ClassAccess(str.ToType());
+            else if (lexem is TypeofLexem tl)
+            {
+                Lexem = tl;
+                Name = name.Split('.').Last();
+                any_type = new MemberAccess.ClassAccess(tl.GetTypeofType());
+            }
+            else
+            {
+                Lexem = new TypeofLexem(lexem, context);
+                Name = name.Split('.').Last();
+                any_type = new MemberAccess.ClassAccess((Lexem as TypeofLexem).GetTypeofType());
+            }
         }
-        public UsingStatement(BaseLexem lexem, SourceContext context) : base(context)
+        public UsingStatement(BaseLexem lexem, BaseLexem name, SourceContext context) : this(lexem, name.ToString(), context)
         {
-            Lexem = lexem;
-            Name = Lexem.ToString().Split('.').Last().Replace(" ", "");
 
-            var str = Lexem.ToString().Replace(" ", "");
-            if (SystemTypes.ContainsKey(str))
-            {
-                any_type = new MemberAccess.ClassAccess(SystemTypes[str]);
-            }
-            else any_type = new MemberAccess.ClassAccess(str.ToType());
+        }
+        public UsingStatement(BaseLexem lexem, SourceContext context) : this(lexem, lexem.ToString().Replace(" ", ""), context)
+        {
+
         }
 
         private MemberAccess.ClassAccess any_type;
@@ -49,14 +56,20 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            
+            if (any_type.Name == null) throw new RuntimeError($"Type {Lexem.LexemToString()} not found", SourceContext);
             context.LocalVariables.SetValue(Name, any_type);
             return null;
         }
 
         public override object Clone()
         {
-            return new UsingStatement(Lexem.CloneCast(), Name.CloneCast(), SourceContext.CloneCast());
+            return new UsingStatement()
+            {
+                Lexem = Lexem.CloneCast(),
+                Name = Name.CloneCast(),
+                SourceContext = SourceContext.CloneCast(),
+                any_type = any_type
+            };
         }
     }
 }

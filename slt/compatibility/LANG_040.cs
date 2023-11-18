@@ -1,4 +1,5 @@
-﻿using SLThree;
+﻿using slt.sys;
+using SLThree;
 using SLThree.Extensions;
 using System;
 using System.Collections;
@@ -35,7 +36,7 @@ namespace slt
         public static void RegisterNewSystemTypes()
         {
             foreach (var x in Assembly.GetExecutingAssembly().GetTypes()
-                .Where(x => x.FullName.StartsWith("slt.sys.")).ToDictionary(x => x.Name, x => x))
+                .Where(x => x.FullName.StartsWith("slt.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x))
             {
                 SystemTypes.Add(x.Key, x.Value);
             }
@@ -94,15 +95,15 @@ namespace slt
                 if (IsIChanceChooserType(type))
                 {
                     var values = GET_ChanceChooser_Values(value);
-                    value = values.Count > 10
-                        ? $"({values.Take(10).Select(x => $"{x.Item1}: {ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")}...)"
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).Select(x => $"{x.Item1}: {ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")}...)"
                         : $"({values.Select(x => $"{x.Item1}: {ToDynamicPercents(x.Item2)}").JoinIntoString(" \\ ")})";
                 }
                 else if (IsIEqualchanceChooserType(type))
                 {
                     var values = GET_EqualchanceChooser_Values(value);
-                    value = values.Count > 10
-                        ? $"({values.Take(10).JoinIntoString(" \\ ")}...)"
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).JoinIntoString(" \\ ")}...)"
                         : $"({values.JoinIntoString(" \\ ")})";
                 }
             }

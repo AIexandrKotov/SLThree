@@ -23,7 +23,7 @@ namespace SLThree
             if (next.Length != 0) Name += $".{next}";
         }
 
-        public override string ToString() => Name;
+        public override string LexemToString() => Name;
 
         private ExecutionContext counted;
         private int variable_index;
