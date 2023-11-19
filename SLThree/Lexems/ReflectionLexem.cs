@@ -126,8 +126,8 @@ namespace SLThree
             if (Name != null)
             {
                 return PropertyMode
-                    ? (object)type.GetProperty(method_name)
-                    : type.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
+                    ? (object)type_obj.GetProperty(method_name)
+                    : type_obj.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
             }
             else return type_obj;
         }
