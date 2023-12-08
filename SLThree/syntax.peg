@@ -237,6 +237,8 @@ binary_1 <BaseLexem> -memoize
 
 binary_0 <BaseLexem> -memoize
     = left:binary_0 _ "as" _ "\\" { new CastLexem(left, new NameLexem("\\", state), state) }
+    / left:binary_0 _ "as" _required_ "@" _ refl:as_expr_right { new CastLexem(left, new ReflectionLexem(refl, refl.SourceContext), state) }
+    / left:binary_0 _ "as" _required_ "typeof" _ "(" _ tp:primary _ ")" { new CastLexem(left, new TypeofLexem(tp, tp.SourceContext), state) }
     / left:binary_0 _ "as" _required_ right:as_expr_right { new CastLexem(left, right, state) }
     / _ left:binary_min _ { left }
 

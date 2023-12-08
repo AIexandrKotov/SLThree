@@ -35,6 +35,7 @@ namespace SLThree
             {
                 var obj = Right.GetValue(context);
                 if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", Right.SourceContext);
+                if (obj is Type tp) return Left.GetValue(context).CastToType(tp);
                 return Left.GetValue(context).CastToType((obj as MemberAccess.ClassAccess).Name);
             }
 

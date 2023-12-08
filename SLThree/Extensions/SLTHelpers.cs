@@ -212,7 +212,14 @@ namespace SLThree.Extensions
             var type = o.GetType();
             if (type == type_context)
             {
-                return NonGenericWrapper.GetWrapper(casting_type).Unwrap(((ExecutionContext.ContextWrap)o).pred);
+                var wrapper = NonGenericWrapper.GetWrapper(casting_type);
+                if (casting_type.IsAbstract)
+                {
+                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ExecutionContext.ContextWrap)o).pred);
+                    else wrapper.UnwrapStatic(((ExecutionContext.ContextWrap)o).pred);
+                    return null;
+                }
+                else return wrapper.Unwrap(((ExecutionContext.ContextWrap)o).pred);
             }
             if (casting_type.IsEnum)
             {
