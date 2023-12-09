@@ -18,22 +18,22 @@ statement_ws <BaseStatement>
     / _ st:while_statement _ { st }
     / _ st:condition_statement _ { st }
     / _ st:block_statement _ { st }
-    / _ st:statement _ ";" { st }
-    / _ ";"+ _ { new StatementListStatement(new BaseStatement[0], state) }
+    / _ st:statement _ ";" _ { st }
+    / _ (";" _)+ { new StatementListStatement(new BaseStatement[0], state) }
     / _ st:statement _ { Panic<StatementListStatement>(new SyntaxError("Expected ;", state)) }
 
 statement <BaseStatement>
-    = _ st:return_statement _ { st }
-    / _ st:break_statement _ { st }
-    / _ st:continue_statement _ { st }
-    / _ st:using_statement _ { st }
-    / _ st:context_statement _ { st }
-    / _ st:condition_statement _ { st }
-    / _ st:switch_statement _  { st }
-    / _ st:foreach_statement _  { st }
-    / _ st:while_statement _  { st }
-    / _ st:block_statement _ { st }
-    / _ st:expr_statement _ { st }
+    = st:return_statement { st }
+    / st:break_statement { st }
+    / st:continue_statement { st }
+    / st:using_statement { st }
+    / st:context_statement { st }
+    / st:condition_statement { st }
+    / st:switch_statement { st }
+    / st:foreach_statement { st }
+    / st:while_statement { st }
+    / st:block_statement { st }
+    / st:expr_statement { st }
 
 using_statement <UsingStatement>
     = "using" _required_ ex: as_expr_right _ gens:generic_types _ "as" _required_ n:name { 
@@ -237,6 +237,8 @@ binary_1 <BaseLexem> -memoize
 
 binary_0 <BaseLexem> -memoize
     = left:binary_0 _ "as" _ "\\" { new CastLexem(left, new NameLexem("\\", state), state) }
+    / left:binary_0 _ "as" _required_ "@" _ refl:as_expr_right { new CastLexem(left, new ReflectionLexem(refl, refl.SourceContext), state) }
+    / left:binary_0 _ "as" _required_ "typeof" _ "(" _ tp:primary _ ")" { new CastLexem(left, new TypeofLexem(tp, tp.SourceContext), state) }
     / left:binary_0 _ "as" _required_ right:as_expr_right { new CastLexem(left, right, state) }
     / _ left:binary_min _ { left }
 
@@ -461,14 +463,14 @@ available_name <IList<string>>
 comment
     = "//" [^\r\n]*
 
-_required_ 
-    = [ \t\r\n]+ comment+ [ \t\r\n]* { " " }
-    / comment+ [ \t\r\n]* { " " }
+_required_
+    = [ \t]+ comment _ { " " }
+    / comment _ { " " }
     / [ \t\r\n]+ { " " }
 
 _
-    = [ \t\r\n]* comment+ [ \t\r\n]* { " " }
-    / comment+ [ \t\r\n]* { " " }
+    = [ \t]* comment _ { " " }
+    / comment _ { " " }
     / [ \t\r\n]* { " " }
 
-EOF = !. / c:. { Panic<string>(new UnexpectedError(c[0], state)) }
+EOF = !. / comment / c:. { Panic<string>(new UnexpectedError(c[0], state)) }
