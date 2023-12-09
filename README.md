@@ -39,4 +39,4 @@ end.
 | 1.0.0           | 0.2.0+          |
 
 ### Download
-[![stable](https://img.shields.io/badge/REPL_stable-1.1.0-00cc00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.4.0) [![stable](https://img.shields.io/badge/LANG_exp-0.5.1-ccaa00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.5.1)
+[![stable](https://img.shields.io/badge/REPL_stable-1.1.0-00cc00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.4.0) [![stable](https://img.shields.io/badge/LANG_exp-0.5.2-ccaa00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.5.2)
