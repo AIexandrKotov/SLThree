@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
+using SLThree.Extensions;
 
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
@@ -40,11 +41,36 @@ using System.Linq;
 [assembly: AssemblyFileVersion(SLTVersion.Version)]
 
 public static class SLTVersion {
+    public class Reflected
+    {
+        public int Major { get; private set; }
+        public int Minor { get; private set; }
+        public int Build { get; private set; }
+        public int Revision { get; private set; }
+        public DateTime LastUpdate { get; private set; }
+
+        public string Version { get; private set; }
+        public string VersionWithoutRevision { get; private set; }
+
+        public Reflected()
+        {
+            var slt_version = typeof(SLTVersion);
+            Major = int.Parse(slt_version.GetField("Major").GetValue(null).Cast<string>());
+            Minor = int.Parse(slt_version.GetField("Minor").GetValue(null).Cast<string>());
+            Build = int.Parse(slt_version.GetField("Build").GetValue(null).Cast<string>());
+            Revision = int.Parse(slt_version.GetField("Revision").GetValue(null).Cast<string>());
+            LastUpdate = new DateTime(slt_version.GetField("LastUpdate").GetValue(null).Cast<long>());
+
+            Version = Major + "." + Minor + "." + Build + "." + Revision;
+            VersionWithoutRevision = Major + "." + Minor + "." + Build;
+        }
+    }
+
     public const string Major = "0"; //vh
     public const string Minor = "5"; //vh
     public const string Build = "2"; //vh
-    public const string Revision = "1646"; //vh
-    public const long LastUpdate = 638378209561288627; //vh
+    public const string Revision = "1648"; //vh
+    public const long LastUpdate = 638378216733915244; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
