@@ -32,7 +32,6 @@ namespace SLThree.Extensions
             ret.Insert(0, item);
             return ret;
         }
-
         public static string ReplaceAll(this string str, IDictionary<string, string> replacer)
         {
             foreach (var x in replacer)
@@ -40,14 +39,11 @@ namespace SLThree.Extensions
             return str;
         }
 
-        public static T ToEnum<T>(this string s) where T : Enum => (T)Enum.Parse(typeof(T), s);
-
         public static IEnumerable<object> Enumerate(this IEnumerable enumerable)
         {
             foreach (var x in enumerable)
                 yield return x;
         }
-
         public static IEnumerable<object> Enumerate(this ITuple tuple)
         {
             for (var i = 0; i < tuple.Length; i++)
@@ -64,7 +60,6 @@ namespace SLThree.Extensions
             var comp = Comparer<TKey>.Default;
             return enumerable.Aggregate((min, x) => comp.Compare(selector(x), selector(min)) < 0 ? x : min);
         }
-
         public static T MaxBy<T, TKey>(this IEnumerable<T> enumerable, Func<T, TKey> selector)
         {
             var comp = Comparer<TKey>.Default;

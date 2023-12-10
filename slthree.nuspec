@@ -2,40 +2,25 @@
 <package >
   <metadata>
     <id>slthree</id>
-    <version>0.4.0</version>
+    <version>0.5.2.1</version>
     <authors>Kotov</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <!-- <icon>icon.png</icon> -->
     <description>SLThree script language library</description>
     <releaseNotes>
------- 0.4.0 Armavir update ------ [13.11.23]
-Language:
-    - Creating own contextes
-    - Operator \ (random choose, including with chances)
-    - used types in type cast
-    - Commentaries is working now
-    - Supporting recursive methods, naming and cloning methods by assign
-    - `self` is wrapped context now
-    - sys.linq (sys.* classes) class instead `linq` keywords
-    - fixed lazy of &amp;&amp; and ||
-    - Octal num literals
-Embedding
-    - Added NonGenericWrapper
+------ 0.5.2 Patch ------ [09.12.23]
+Bugfixes:
+    - Correct behaviour of comments
+    - x as typeof(T), x as @T
     </releaseNotes>
     <copyright>$copyright$</copyright>
-    <tags>language script-lang</tags>
-    <dependencies>
-      <group targetFramework=".NETFramework4.7.1">
-        <dependency id="Pegasus.Common" version="4.1.0.0" />
-      </group>
-    </dependencies>
+    <tags>language scripts script-lang</tags>
     <frameworkAssemblies>
         <frameworkAssembly assemblyName="System"  />
         <frameworkAssembly assemblyName="System.Core" />
     </frameworkAssemblies>
     <readme>doc\README.md</readme>
-    <repository type="git" url="https://github.com/AIexandrKotov/SLThree.git" branch="master" commit="bcfffeaf8be2dcde35b1387932dc0ecced408815" />
+    <repository type="git" url="https://github.com/AIexandrKotov/SLThree.git" branch="master" />
   </metadata>
   <files>
     <file src="SLThree\README.md" target="doc"/>
