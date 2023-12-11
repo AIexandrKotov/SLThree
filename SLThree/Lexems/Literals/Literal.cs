@@ -7,9 +7,15 @@ namespace SLThree
     public abstract class Literal : BaseLexem
     {
         public object Value;
-        public string RawRepresentation = "";
         public Literal() : base() { }
         public Literal(SourceContext context) : base(context) { }
+
+        private string rawRepresentation = "";
+        public string RawRepresentation { 
+            get => string.IsNullOrEmpty(rawRepresentation) ? Value.ToString() : rawRepresentation;
+            set => rawRepresentation = value; 
+        }
+
         public override string LexemToString() => RawRepresentation;
     }
 

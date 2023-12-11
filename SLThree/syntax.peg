@@ -92,9 +92,10 @@ condition_statement <BaseStatement>
 
 context_statement <BaseStatement>
     = "context" _required_ n:name _ ":" _ cast:as_expr_right _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, cast, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    // "context" _required_ n:name _ ":" _ cast:as_expr_right { new ContextStatement(n, cast, state) }
     / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
     / "context" _required_ n:name { new ContextStatement(n, state) }
+    / "context" _ ":" _ cast:as_expr_right _ "{" _ st:statement_list _ "}"{ new ContextStatement(null, cast, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    / "context" _ "{" _ st:statement_list _ "}"{ new ContextStatement(null, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
 
 expr_statement <ExpressionStatement> 
     = _ value:lexem _ { new ExpressionStatement(value, state) }

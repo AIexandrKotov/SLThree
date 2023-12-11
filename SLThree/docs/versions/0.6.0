@@ -1,4 +1,6 @@
 ------ 0.6.0 ------ [~.~.~]
 Language:
     - Indexators and IEnumerable for context
-    - 
+    - Anonymous context statement
+Bugfixes:
+    - Returning contextes from methods now works

@@ -30,12 +30,15 @@ namespace SLThree
             Cast = cast;
             Body = body;
 
-            name = Cast.ToString().Replace(" ", "");
-            mode = name == "\\" ? 2 : -1;
-            if (mode == -1)
+            if (cast != null)
             {
-                if (type == null) type = name.ToType();
-                if (type == null) mode = 0;
+                name = Cast.ToString().Replace(" ", "");
+                mode = name == "\\" ? 2 : -1;
+                if (mode == -1)
+                {
+                    if (type == null) type = name.ToType();
+                    if (type == null) mode = 0;
+                }
             }
         }
 
@@ -51,7 +54,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var wrap = new ExecutionContext.ContextWrap(new ExecutionContext(context));
-            wrap.pred.Name = Name.Name;
+            if (Name != null) wrap.pred.Name = Name.Name;
             object ret = wrap;
             if (HasBody)
             {
@@ -69,7 +72,8 @@ namespace SLThree
                 {
                     var obj = Cast.GetValue(context);
                     if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", SourceContext);
-                    ret = wrap.CastToType((obj as MemberAccess.ClassAccess).Name);
+                    if (obj is Type tp) ret = wrap.CastToType(tp);
+                    else ret = wrap.CastToType((obj as MemberAccess.ClassAccess).Name);
                 }
                 else
                 {

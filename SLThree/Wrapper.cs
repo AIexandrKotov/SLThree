@@ -252,6 +252,7 @@ namespace SLThree
             if (InjectContextName != null) SupportedNameWrap = InjectContextName.SetMethod != null;
         }
 
+        public bool HasName() => InjectContextName != null;
         public string GetName(object obj)
         {
             if (InjectContextName != null) return (string)InjectContextName.GetValue(obj);

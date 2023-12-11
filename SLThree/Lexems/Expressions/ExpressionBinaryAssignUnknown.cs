@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions.Cloning;
 using System.Linq;
+using System.Reflection;
 
 namespace SLThree
 {
@@ -14,26 +15,32 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var right = Left.GetValue(context);
-            if (right == null) throw new OperatorError(this, right?.GetType());
-            if (right is Method method)
+            if (right != null)
             {
-                if (method.Name.Any(is_invalid_name)) throw new RuntimeError($"{method.Name} is not valid name for variable", SourceContext);
-                context.LocalVariables.SetValue(method.Name, method);
-                return method;
+                if (right is Method method)
+                {
+                    context.LocalVariables.SetValue(method.Name, method);
+                    return method;
+                }
+                if (right is MethodInfo methodInfo)
+                {
+                    context.LocalVariables.SetValue(methodInfo.Name, methodInfo);
+                    return methodInfo;
+                }
+                if (right is ExecutionContext.ContextWrap wrap)
+                {
+                    context.LocalVariables.SetValue(wrap.pred.Name, wrap);
+                    return wrap;
+                }
+                NonGenericWrapper wrapper;
+                if ((wrapper = NonGenericWrapper.GetWrapper(right.GetType())).HasName())
+                {
+                    var name = wrapper.GetName(right);
+                    context.LocalVariables.SetValue(name, right);
+                    return right;
+                }
             }
-            else if (right is ExecutionContext.ContextWrap wrap)
-            {
-                if (wrap.pred.Name.Any(is_invalid_name)) throw new RuntimeError($"{wrap.pred.Name} is not valid name for variable", SourceContext);
-                context.LocalVariables.SetValue(wrap.pred.Name, wrap);
-                return wrap;
-            }
-            else
-            {
-                var name = NonGenericWrapper.GetWrapper(right.GetType()).GetName(right);
-                if (name.Any(is_invalid_name)) throw new RuntimeError($"{name} is not valid name for variable", SourceContext);
-                context.LocalVariables.SetValue(name, right);
-            }
-            throw new OperatorError(this, right?.GetType());
+            throw new OperatorError(this, right?.GetType() ?? Left.GetType());
         }
 
         public override object Clone()

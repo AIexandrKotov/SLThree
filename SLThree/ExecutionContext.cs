@@ -178,7 +178,7 @@ namespace SLThree
             
         }
 
-        public BaseStatement parse(string s) => new Parser().ParseScript(s);
+        public BaseStatement parse(string s) => Parser.This.ParseScript(s);
         public object eval(IExecutable executable) => executable.GetValue(this);
 
         public LocalVariablesContainer LocalVariables { get; set; } = new LocalVariablesContainer();
