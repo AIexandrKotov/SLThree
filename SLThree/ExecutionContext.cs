@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -63,7 +64,7 @@ namespace SLThree
 
         public ContextWrap @this;
 
-        public class ContextWrap
+        public class ContextWrap : IEnumerable<object>
         {
             public ExecutionContext pred;
 
@@ -118,6 +119,18 @@ namespace SLThree
             }
 
             public override string ToString() => ToShortString();
+
+            public object this[string index]
+            {
+                get => pred.LocalVariables.GetValue(index).Item1;
+                set => pred.LocalVariables.SetValue(index, value);
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return pred.LocalVariables.Variables.Where(x => x != null).GetEnumerator();
+            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         internal ExecutionContext PreviousContext;
