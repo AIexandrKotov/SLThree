@@ -50,6 +50,7 @@
     <Compile Include="compatibility\LANG_030.cs" />
     <Compile Include="compatibility\LANG_040.cs" />
     <Compile Include="compatibility\LANG_050.cs" />
+    <Compile Include="compatibility\LANG_060.cs" />
     <Compile Include="DocsIntergration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,6 +61,7 @@
     <EmbeddedResource Include="docs\help" />
     <EmbeddedResource Include="docs\versions\1.0.0" />
     <EmbeddedResource Include="docs\versions\1.1.0" />
+    <None Include="docs\versions\1.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SLThree\SLThree.csproj">

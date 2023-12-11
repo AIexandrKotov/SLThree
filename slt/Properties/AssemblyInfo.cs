@@ -38,10 +38,10 @@ using System.Runtime.InteropServices;
 public static class REPLVersion
 {
     public const string Major = "1"; //vh
-    public const string Minor = "1"; //vh
+    public const string Minor = "2"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "195"; //vh
-    public const long LastUpdate = 638355943959099032; //vh
+    public const string Revision = "197"; //vh
+    public const long LastUpdate = 638379139799342584; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;

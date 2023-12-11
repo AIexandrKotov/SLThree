@@ -349,7 +349,8 @@ namespace slt
         {
             LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
             if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
-            if (LANG_050.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 5) LANG_050.Init();
+            if (LANG_050.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor == 5) LANG_050.Init();
+            if (LANG_060.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 6) LANG_060.Init();
         }
 
         #region REPL Commands
