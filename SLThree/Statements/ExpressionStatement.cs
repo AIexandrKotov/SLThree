@@ -10,23 +10,23 @@ namespace SLThree
 {
     public class ExpressionStatement : BaseStatement
     {
-        public BaseLexem Lexem;
+        public BaseExpression Expression;
 
-        public ExpressionStatement(BaseLexem lexem, SourceContext context) : base(context)
+        public ExpressionStatement(BaseExpression expression, SourceContext context) : base(context)
         {
-            Lexem = lexem;
+            Expression = expression;
         }
-        public ExpressionStatement(BaseLexem lexem, Cursor cursor) : base(cursor)
+        public ExpressionStatement(BaseExpression expression, Cursor cursor) : base(cursor)
         {
-            Lexem = lexem;
+            Expression = expression;
         }
 
-        public override string ToString() => $"{Lexem}";
-        public override object GetValue(ExecutionContext context) => Lexem.GetValue(context);
+        public override string ToString() => $"{Expression}";
+        public override object GetValue(ExecutionContext context) => Expression.GetValue(context);
 
         public override object Clone()
         {
-            return new ExpressionStatement(Lexem.CloneCast(), SourceContext.CloneCast());
+            return new ExpressionStatement(Expression.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -6,27 +6,27 @@ namespace SLThree
 {
     public class ContextStatement : BaseStatement
     {
-        public NameLexem Name;
-        public BaseLexem Cast;
+        public NameExpression Name;
+        public BaseExpression Cast;
         public BaseStatement[] Body;
 
         public bool HasBody => Body.Length > 0;
 
-        public ContextStatement(NameLexem name, SourceContext context) : base(context)
+        public ContextStatement(NameExpression name, SourceContext context) : base(context)
         {
             Name = name;
             Body = new BaseStatement[0];
         }
 
-        public ContextStatement(NameLexem name, BaseStatement[] body, SourceContext context) : base(context)
+        public ContextStatement(NameExpression name, BaseStatement[] body, SourceContext context) : base(context)
         {
             Name = name;
             Body = body;
         }
 
-        public ContextStatement(NameLexem nameLexem, BaseLexem cast, BaseStatement[] body, SourceContext context) : base(context)
+        public ContextStatement(NameExpression nameExpression, BaseExpression cast, BaseStatement[] body, SourceContext context) : base(context)
         {
-            Name = nameLexem;
+            Name = nameExpression;
             Cast = cast;
             Body = body;
 
@@ -60,7 +60,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Body.Length; i++)
                 {
-                    if (Body[i] is ExpressionStatement es && es.Lexem is ExpressionBinaryAssign assign)
+                    if (Body[i] is ExpressionStatement es && es.Expression is ExpressionBinaryAssign assign)
                         assign.AssignValue(wrap.pred, assign.Left, assign.Right.GetValue(context));
                     else if (Body[i] is ContextStatement cs)
                         cs.GetValue(wrap.pred);

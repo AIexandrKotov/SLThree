@@ -12,14 +12,14 @@ namespace SLThree
 {
     public class ConditionStatement : BaseStatement
     {
-        public BaseLexem Condition { get; set; }
+        public BaseExpression Condition { get; set; }
         public BaseStatement[] Body { get; set; }
 
         public ConditionStatement() { }
-        public ConditionStatement(BaseLexem condition, StatementListStatement trueBlock, StatementListStatement falseBlock, Cursor cursor)
+        public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, Cursor cursor)
             : this(condition, trueBlock, falseBlock, new SourceContext(cursor)) { }
 
-        public ConditionStatement(BaseLexem condition, StatementListStatement trueBlock, StatementListStatement falseBlock, SourceContext context) : base(context)
+        public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, SourceContext context) : base(context)
         {
             Condition = condition;
             count = trueBlock.Statements.Length + falseBlock.Statements.Length;

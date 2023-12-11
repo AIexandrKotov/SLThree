@@ -16,37 +16,37 @@ namespace TestSuite
 
         private static bool current_assert = true;
         private static int current_assert_id = 1;
-        public static void Assert(ExecutionContext.ContextWrap context, BaseLexem lexem)
+        public static void Assert(ExecutionContext.ContextWrap context, BaseExpression expression)
         {
             try
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("");
                 Console.Write($"{current_assert_id++, 6}  ");
-                if (lexem.GetValue(context.pred).Cast<bool>())
+                if (expression.GetValue(context.pred).Cast<bool>())
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write($"SUCCESS ");
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($" {lexem}    ");
+                    Console.WriteLine($" {expression}    ");
                     Console.ForegroundColor = ConsoleColor.White;
-                    //Console.WriteLine($"at {lexem.SourceContext.ToStringWithoutFile()}");
+                    //Console.WriteLine($"at {expression.SourceContext.ToStringWithoutFile()}");
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write($" FAILED ");
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write($" at {lexem.SourceContext.ToStringWithoutFile()}  ");
+                    Console.Write($" at {expression.SourceContext.ToStringWithoutFile()}  ");
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"{lexem}");
-                    throw new RuntimeError("Assertion exception", lexem.SourceContext);
+                    Console.WriteLine($"{expression}");
+                    throw new RuntimeError("Assertion exception", expression.SourceContext);
                 }
             }
             catch (Exception e)
             {
                 current_assert = false;
-                ErrorLog.Add($"FAILED {lexem} as {lexem.SourceContext} ===> {e}");
+                ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {e}");
             }
         }
 
@@ -77,7 +77,7 @@ namespace TestSuite
             try
             {
                 var context = new ExecutionContext();
-                context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseLexem>)Assert).Method);
+                context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseExpression>)Assert).Method);
 
 
                 Parser.This.RunScript(File.ReadAllText(filename), filename, context);
@@ -153,7 +153,7 @@ namespace TestSuite
             Console.Title = "SLThree Test Suite";
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">>> SLThree Test Suite");
-            TypeofLexem.RegistredAssemblies.Add(typeof(Program).Assembly);
+            TypeofExpression.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());

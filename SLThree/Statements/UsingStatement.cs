@@ -10,7 +10,7 @@ namespace SLThree
 {
     public class UsingStatement : BaseStatement
     {
-        public BaseLexem Lexem;
+        public BaseExpression Expression;
         public string Name;
 
         public static Dictionary<string, Type> SystemTypes { get; } = Assembly
@@ -19,44 +19,44 @@ namespace SLThree
             .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x);
 
         public UsingStatement() { }
-        public UsingStatement(BaseLexem lexem, string name, SourceContext context) : base(context)
+        public UsingStatement(BaseExpression expression, string name, SourceContext context) : base(context)
         {
-            var type_name = lexem.ToString().Replace(" ", "");
+            var type_name = expression.ToString().Replace(" ", "");
             if (SystemTypes.ContainsKey(type_name))
             {
-                Lexem = lexem;
+                Expression = expression;
                 Name = type_name;
                 any_type = new MemberAccess.ClassAccess(SystemTypes[type_name]);
             }
-            else if (lexem is TypeofLexem tl)
+            else if (expression is TypeofExpression tl)
             {
-                Lexem = tl;
+                Expression = tl;
                 Name = name.Split('.').Last();
                 any_type = new MemberAccess.ClassAccess(tl.GetTypeofType());
             }
             else
             {
-                Lexem = new TypeofLexem(lexem, context);
+                Expression = new TypeofExpression(expression, context);
                 Name = name.Split('.').Last();
-                any_type = new MemberAccess.ClassAccess((Lexem as TypeofLexem).GetTypeofType());
+                any_type = new MemberAccess.ClassAccess((Expression as TypeofExpression).GetTypeofType());
             }
         }
-        public UsingStatement(BaseLexem lexem, BaseLexem name, SourceContext context) : this(lexem, name.ToString(), context)
+        public UsingStatement(BaseExpression expression, BaseExpression name, SourceContext context) : this(expression, name.ToString(), context)
         {
 
         }
-        public UsingStatement(BaseLexem lexem, SourceContext context) : this(lexem, lexem.ToString().Replace(" ", ""), context)
+        public UsingStatement(BaseExpression expression, SourceContext context) : this(expression, expression.ToString().Replace(" ", ""), context)
         {
 
         }
 
         private MemberAccess.ClassAccess any_type;
 
-        public override string ToString() => $"using {Lexem} as {Name}";
+        public override string ToString() => $"using {Expression} as {Name}";
 
         public override object GetValue(ExecutionContext context)
         {
-            if (any_type.Name == null) throw new RuntimeError($"Type {Lexem.LexemToString()} not found", SourceContext);
+            if (any_type.Name == null) throw new RuntimeError($"Type {Expression.ExpressionToString()} not found", SourceContext);
             context.LocalVariables.SetValue(Name, any_type);
             return null;
         }
@@ -65,7 +65,7 @@ namespace SLThree
         {
             return new UsingStatement()
             {
-                Lexem = Lexem.CloneCast(),
+                Expression = Expression.CloneCast(),
                 Name = Name.CloneCast(),
                 SourceContext = SourceContext.CloneCast(),
                 any_type = any_type

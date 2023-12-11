@@ -28,9 +28,9 @@ namespace SLThree
         {
             if (statement is ExpressionStatement expressionStatement)
             {
-                if (expressionStatement.Lexem is ExpressionBinaryAssign)
+                if (expressionStatement.Expression is ExpressionBinaryAssign)
                     return statement;
-                throw new SyntaxError($"Expected assign expression, found {expressionStatement.Lexem.GetType().Name}", expressionStatement.Lexem.SourceContext);
+                throw new SyntaxError($"Expected assign expression, found {expressionStatement.Expression.GetType().Name}", expressionStatement.Expression.SourceContext);
             }
             if (statement is ContextStatement contextStatement)
                 return contextStatement;

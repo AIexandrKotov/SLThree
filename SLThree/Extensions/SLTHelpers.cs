@@ -133,7 +133,7 @@ namespace SLThree.Extensions
             if (founded_types.TryGetValue(s, out var type)) return type;
             else
             {
-                foreach (var ass in TypeofLexem.RegistredAssemblies)
+                foreach (var ass in TypeofExpression.RegistredAssemblies)
                 {
                     var ret = ass.GetType(s, throwError);
                     if (ret != null) return founded_types[s] = ret;
@@ -180,16 +180,16 @@ namespace SLThree.Extensions
         private static Type type_dict = typeof(Dictionary<object, object>);
         private static Type type_tuple = typeof(ITuple);
 
-        public static BaseLexem RaisePriority(this BaseLexem lexem)
+        public static BaseExpression RaisePriority(this BaseExpression expression)
         {
-            lexem.PrioriryRaised = true;
-            return lexem;
+            expression.PrioriryRaised = true;
+            return expression;
         }
 
-        public static BaseLexem DropPriority(this BaseLexem lexem)
+        public static BaseExpression DropPriority(this BaseExpression expression)
         {
-            lexem.PrioriryRaised = false;
-            return lexem;
+            expression.PrioriryRaised = false;
+            return expression;
         }
 
         public static object CastToType(this object o, Type casting_type)

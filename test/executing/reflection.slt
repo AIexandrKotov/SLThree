@@ -1,8 +1,8 @@
 ASSERT(self, (@TestSuite.Program == @TestSuite.Program) as is);
-ASSERT(self, (@TestSuite.Program::Assert(context, SLThree.BaseLexem) == ASSERT) as is);
+ASSERT(self, (@TestSuite.Program::Assert(context, SLThree.BaseExpression) == ASSERT) as is);
 x = new context A {
     ASSERT = ASSERT;
-    OWN_ASSERT = @TestSuite.Program::Assert(context, SLThree.BaseLexem);
+    OWN_ASSERT = @TestSuite.Program::Assert(context, SLThree.BaseExpression);
     m1 = () => this.ASSERT;
     m2 = () => this.OWN_ASSERT;
 };

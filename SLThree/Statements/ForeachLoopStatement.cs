@@ -8,12 +8,12 @@ namespace SLThree
 {
     public class ForeachLoopStatement : BaseStatement
     {
-        public NameLexem Name { get; set; }
-        public BaseLexem Iterator { get; set; }
+        public NameExpression Name { get; set; }
+        public BaseExpression Iterator { get; set; }
         public BaseStatement[] LoopBody { get; set; }
 
         public ForeachLoopStatement() : base() { }
-        public ForeachLoopStatement(NameLexem name, BaseLexem iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public ForeachLoopStatement(NameExpression name, BaseExpression iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Name = name;
             Iterator = iterator;
