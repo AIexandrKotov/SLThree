@@ -41,7 +41,7 @@ namespace SLThree
                 if (right is ulong u2) return u1 == u2;
                 if (right is double d2) return u1 == d2;
             }
-            if (!context.fimp && left is IComparable)
+            if (left is IComparable)
                 return (left as IComparable).CompareTo(right) == 0;
             return ReferenceEquals(left, right);
         }
