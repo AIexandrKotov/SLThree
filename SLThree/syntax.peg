@@ -87,7 +87,8 @@ foreach_statement <BaseStatement>
     / "foreach" _ cond:expression { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 condition_statement <BaseStatement>
-    = "if" _ "(" cond:expression ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
+    = "if" _ "(" cond:expression ")" _ t:block_statement _ "else" _ cond_else:condition_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[1] {cond_else}, state), state) }
+    / "if" _ "(" cond:expression ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
     / "if" _ "(" cond:expression ")" _ t:block_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
 
 context_statement <BaseStatement>
