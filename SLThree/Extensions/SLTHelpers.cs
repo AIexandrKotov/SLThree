@@ -34,22 +34,27 @@ namespace SLThree.Extensions
             if (t == type_long) return "i64";
             if (t == type_double) return "f64";
             if (t == type_ulong) return "u64";
-            if (t.IsTuple()) return "tuple";
             if (t == type_list) return "list";
             if (t == type_dict) return "dict";
-            if (t.IsArray)
-                return t.GetArrayRank() == 1 ? $"array<{t.GetElementType().GetTypeString()}>" : $"array<{t.GetElementType().GetTypeString()}, {t.GetArrayRank()}>";
             if (t == type_array) return "array";
+            if (t.IsArray)
+                return t.GetArrayRank() == 1 ? $"array<{t.GetElementType().GetTypeString()}>" : $"array{t.GetArrayRank()}<{t.GetElementType().GetTypeString()}>";
+            if (t.IsGenericTypeDefinition)
+            {
+                var ct = t.GetGenericArguments().Length;
+                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last()}<{(ct > 1 ? new string(',', ct) : "")}>";
+            }
             if (t.IsGenericType)
             {
                 var generic_def = t.GetGenericTypeDefinition();
                 var name = string.Empty;
                 if (generic_def == type_generic_list) name = "list";
                 else if (generic_def == type_generic_dict) name = "dict";
+                else if (t.Name.StartsWith("ValueTuple")) name = "tuple";
                 else name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
                 return $"{name}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             }
-            if (t == type_object) return "object";
+            if (t == type_object) return "any";
             if (t == type_byte) return "u8";
             if (t == type_sbyte) return "i8";
             if (t == type_short) return "i16";
@@ -91,7 +96,7 @@ namespace SLThree.Extensions
         /// </summary>
         public static string GetTypeString(this string t)
         {
-            if (t == "System.Object") return "object";
+            if (t == "System.Object") return "any";
             if (t == "System.Byte") return "u8";
             if (t == "System.SByte") return "i8";
             if (t == "System.Int16") return "i16";
@@ -117,7 +122,6 @@ namespace SLThree.Extensions
                 case "f64": return type_double;
                 case "u64": return type_ulong;
                 case "string": return type_string;
-
                 case "i32": return type_int;
                 case "f32": return type_float;
                 case "u8": return type_byte;
@@ -125,7 +129,7 @@ namespace SLThree.Extensions
                 case "i16": return type_short;
                 case "u16": return type_ushort;
                 case "u32": return type_uint;
-                case "object": return type_object;
+                case "any": return type_object;
                 case "bool": return type_bool;
                 case "char": return type_char;
                 case "context": return type_context;
@@ -133,7 +137,14 @@ namespace SLThree.Extensions
                 case "list`1": return type_generic_list;
                 case "dict": return type_dict;
                 case "dict`2": return type_generic_dict;
-                case "tuple": return type_tuple;
+                case "tuple`1": return typeof(ValueTuple<>);
+                case "tuple`2": return typeof(ValueTuple<,>);
+                case "tuple`3": return typeof(ValueTuple<,,>);
+                case "tuple`4": return typeof(ValueTuple<,,,>);
+                case "tuple`5": return typeof(ValueTuple<,,,,>);
+                case "tuple`6": return typeof(ValueTuple<,,,,,>);
+                case "tuple`7": return typeof(ValueTuple<,,,,,,>);
+                case "tuple`8": return typeof(ValueTuple<,,,,,,,>);
                 case "array": return type_array;
             }
             return GetTypeFromRegistredAssemblies(s, throwError);

@@ -49,7 +49,10 @@
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="Exceptions\UnexpectedError.cs" />
     <Compile Include="ExecutionContext.cs" />
-    <Compile Include="Expressions\Refactoring\TypeNameExpression.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryReflection.cs" />
+    <Compile Include="Expressions\CreatorUsing.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryStaticReflection.cs" />
+    <Compile Include="Expressions\TypenameExpression.cs" />
     <Compile Include="Extensions\CloningExtensions.cs" />
     <Compile Include="Extensions\SLThreeExtensions.cs" />
     <Compile Include="Expressions\ChanceChooseExpression.cs" />

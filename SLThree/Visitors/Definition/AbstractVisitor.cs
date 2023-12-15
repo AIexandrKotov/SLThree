@@ -76,7 +76,7 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(CastExpression expression)
         {
             VisitExpression(expression.Left);
-            VisitExpression(expression.Right);
+            VisitExpression(expression.Type);
         }
         public virtual void VisitExpression(ChanceChooseExpression expression)
         {
@@ -150,8 +150,9 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(NewExpression expression)
         {
-            if (expression.MemberAccess != null) VisitExpression(expression.MemberAccess);
-            else VisitExpression(expression.InvokeExpression);
+            VisitExpression(expression.Typename);
+            for (var i = 0; i < expression.Arguments.Length; i++)
+                VisitExpression(expression.Arguments[i]);
         }
 
         public virtual void VisitExpression(TypeofExpression expression)

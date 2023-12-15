@@ -3,13 +3,13 @@ using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SLThree
 {
+
     public class TypeofExpression : BaseExpression
     {
         public static readonly List<Assembly> RegistredAssemblies = new List<Assembly>()

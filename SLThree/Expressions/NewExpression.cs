@@ -8,46 +8,27 @@ namespace SLThree
 {
     public class NewExpression : BaseExpression
     {
-        public InvokeExpression InvokeExpression;
-        public MemberAccess MemberAccess;
+        public TypenameExpression Typename;
+        public BaseExpression[] Arguments;
 
-        public NewExpression() : base() { }
-
-        public NewExpression(MemberAccess memberAccess, Cursor cursor) : base(cursor)
+        public NewExpression(TypenameExpression typename, BaseExpression[] arguments, SourceContext context) : base(context)
         {
-            MemberAccess = memberAccess;
+            Typename = typename;
+            Arguments = arguments;
         }
 
-        public NewExpression(InvokeExpression invokeExpression, Cursor cursor) : base(cursor)
-        {
-            InvokeExpression = invokeExpression;
-        }
+        public NewExpression(TypenameExpression typename, SourceContext context) : this(typename, new BaseExpression[0], context) { }
 
-        public override string ExpressionToString() => $"new {MemberAccess}";
+        public override string ExpressionToString() => $"new {Typename}({Arguments.JoinIntoString(", ")})";
 
-        private bool counted_name;
-        private string invk_name;
         public override object GetValue(ExecutionContext context)
         {
-            if (MemberAccess != null) return MemberAccess.Create(context);
-            else
-            {
-                if (!counted_name)
-                {
-                    invk_name = InvokeExpression.Left.ExpressionToString();
-                    counted_name = true;
-                }
-                return Activator.CreateInstance(
-                context.LocalVariables.GetValue(invk_name).Item1.Cast<MemberAccess.ClassAccess>().Name,
-                InvokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
-            }
+            return Activator.CreateInstance(Typename.GetValue(context).Cast<Type>(), Arguments.ConvertAll(x => x.GetValue(context)));
         }
 
-        public override object Clone() => new NewExpression()
+        public override object Clone()
         {
-            MemberAccess = MemberAccess.CloneCast(),
-            InvokeExpression = InvokeExpression.CloneCast(),
-            SourceContext = SourceContext.CloneCast(),
-        };
+            return new NewExpression(Typename.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
+        }
     }
 }

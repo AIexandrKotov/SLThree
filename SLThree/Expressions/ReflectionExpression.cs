@@ -10,133 +10,61 @@ using static SLThree.SwitchStatement;
 
 namespace SLThree
 {
+
     public class ReflectionExpression : BaseExpression
     {
-        public BaseExpression From;
-        public BaseExpression Name;
-        public ReflectionExpression[] Types;
-        public bool PropertyMode;
-
-        public bool from_is_generic;
-        public ReflectionExpression[] FromGenericArguments;
-
-        public ReflectionExpression(BaseExpression from, ReflectionExpression[] from_generic, BaseExpression nameExpression, ReflectionExpression[] types, SourceContext context)
-            : this(from, nameExpression, types, context)
-        {
-            from_is_generic = true;
-            FromGenericArguments = from_generic;
-        }
-        public ReflectionExpression(BaseExpression from, ReflectionExpression[] from_generic, BaseExpression nameExpression, SourceContext context)
-            : this(from, nameExpression, context)
-        {
-            from_is_generic = true;
-            FromGenericArguments = from_generic;
-        }
-        public ReflectionExpression(BaseExpression from, ReflectionExpression[] from_generic, SourceContext context)
-            : this(from, context)
-        {
-            from_is_generic = true;
-            FromGenericArguments = from_generic;
-        }
-
-        public ReflectionExpression(BaseExpression from, BaseExpression nameExpression, ReflectionExpression[] types, SourceContext context) : base(context)
-        {
-            From = from;
-            Name = nameExpression;
-            Types = types;
-
-            method_name = nameExpression.ExpressionToString().Replace(" ", "");
-            PropertyMode = false;
-
-            init_mode();
-        }
-
-        public ReflectionExpression(BaseExpression from, BaseExpression nameExpression, SourceContext context) : base(context)
-        {
-            From = from;
-            Name = nameExpression;
-
-            method_name = nameExpression.ExpressionToString().Replace(" ", "");
-            PropertyMode = true;
-
-            init_mode();
-        }
-        public ReflectionExpression(BaseExpression from, SourceContext context) : base(context)
-        {
-            From = from;
-            Name = null;
-
-            init_mode();
-        }
-
-        private void init_mode()
-        {
-            name = From.ExpressionToString().Replace(" ", "");
-            mode = name == "\\" ? 2 : (name == "is" ? 1 : -1);
-            if (mode == -1)
-            {
-                if (type == null) type = name.ToType();
-                if (type == null) mode = 0;
-            }
-        }
+        public BaseExpression Left;
+        public NameExpression Right;
+        public TypenameExpression[] MethodGenericArguments;
+        public TypenameExpression[] MethodArguments;
 
 
-        public override string ExpressionToString()
-        {
-            if (Name != null)
-            {
-                if (PropertyMode)
-                {
-                    return $"@{From}::{Name}";
-                }
-                else
-                {
-                    if (from_is_generic)
-                    {
-                        return $"@{From}<{FromGenericArguments.JoinIntoString(", ")}>::{Name}({Types.Select(x => x.ToString() ?? "undefined").JoinIntoString(", ")})";
-                    }
-                    else
-                    {
-                        return $"@{From}::{Name}({Types.Select(x => x.ToString() ?? "undefined").JoinIntoString(", ")})";
-                    }
-                }
-            }
-            else return $"@{From}";
-        }
-
-        public int mode = 0; // -1 - predefined, 0 - find type
         private string name;
-        private string method_name;
-        private Type type;
+
+        //Left::Right<MethodGenericArguments>(MethodArguments)
+        //Left::Right(MethodArguments)
+        //Left::Right
+
+        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodGenericArguments, TypenameExpression[] methodArguments, SourceContext context) : base(context)
+        {
+            Left = left;
+            Right = right;
+            MethodGenericArguments = methodGenericArguments;
+            MethodArguments = methodArguments;
+            name = Right.ToString();
+        }
+
+        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodArguments, SourceContext context) : this(left, right, null, methodArguments, context) { }
+
+        public ReflectionExpression(BaseExpression left, NameExpression right, SourceContext context) : this(left, right, null, null, context) { }
+
         public override object GetValue(ExecutionContext context)
         {
-            Type type_obj = null;
-            if (mode == -1)
+            var left = Left.GetValue(context).Cast<Type>();
+            if (MethodArguments == null)
             {
-                type_obj = type;
+                var field = left.GetField(name);
+                if (field != null) return field;
+                var property = left.GetProperty(name);
+                if (property != null) return property;
             }
-            if (mode == 0)
+            else
             {
-                var obj = From.GetValue(context);
-                //if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", From.SourceContext);
-                type_obj = obj is MemberAccess.ClassAccess maca ? maca.Name : (obj is Type t ? t : null);
-                if (type_obj == null) throw new RuntimeError($"Type \"{name}\" not found", From.SourceContext);
+                var method = left.GetMethod(name, MethodArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                if (MethodGenericArguments != null) method.MakeGenericMethod(MethodGenericArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                return method;
             }
-
-            if (Name != null)
-            {
-                return PropertyMode
-                    ? (object)type_obj.GetProperty(method_name)
-                    : type_obj.GetMethod(method_name, Types.ConvertAll(x => (Type)x.GetValue(context)));
-            }
-            else return type_obj;
+            throw new RuntimeError($"{this} not found", SourceContext);
         }
 
         public override object Clone()
         {
-            return PropertyMode
-                ? new ReflectionExpression(From.CloneCast(), Name.CloneCast(), Types.CloneArray(), SourceContext.CloneCast())
-                : new ReflectionExpression(From.CloneCast(), Name.CloneCast(), SourceContext.CloneCast());
+            return new ReflectionExpression(Left.CloneCast(), Right.CloneCast(), MethodGenericArguments?.CloneArray(), MethodArguments?.CloneArray(), SourceContext.CloneCast());
+        }
+
+        public override string ExpressionToString()
+        {
+            return $"{Left}::{Right}{(MethodGenericArguments == null ? "" : $"<{MethodGenericArguments.JoinIntoString(", ")}>")}{(MethodArguments == null ? "" : $"({MethodArguments.JoinIntoString(", ")})")}";
         }
     }
 }

@@ -10,66 +10,35 @@ namespace SLThree
 {
     public class UsingStatement : BaseStatement
     {
-        public BaseExpression Expression;
-        public string Name;
-
         public static Dictionary<string, Type> SystemTypes { get; } = Assembly
             .GetExecutingAssembly()
             .GetTypes()
             .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x);
 
-        public UsingStatement() { }
-        public UsingStatement(BaseExpression expression, string name, SourceContext context) : base(context)
-        {
-            var type_name = expression.ToString().Replace(" ", "");
-            if (SystemTypes.ContainsKey(type_name))
-            {
-                Expression = expression;
-                Name = type_name;
-                any_type = new MemberAccess.ClassAccess(SystemTypes[type_name]);
-            }
-            else if (expression is TypeofExpression tl)
-            {
-                Expression = tl;
-                Name = name.Split('.').Last();
-                any_type = new MemberAccess.ClassAccess(tl.GetTypeofType());
-            }
-            else
-            {
-                Expression = new TypeofExpression(expression, context);
-                Name = name.Split('.').Last();
-                any_type = new MemberAccess.ClassAccess((Expression as TypeofExpression).GetTypeofType());
-            }
-        }
-        public UsingStatement(BaseExpression expression, BaseExpression name, SourceContext context) : this(expression, name.ToString(), context)
-        {
+        public NameExpression Alias;
+        public CreatorUsing Using;
 
-        }
-        public UsingStatement(BaseExpression expression, SourceContext context) : this(expression, expression.ToString().Replace(" ", ""), context)
+        public UsingStatement(NameExpression alias, CreatorUsing usingBody, SourceContext context) : base(context)
         {
-
+            Alias = alias;
+            Using = usingBody;
         }
 
-        private MemberAccess.ClassAccess any_type;
+        public UsingStatement(CreatorUsing @using, SourceContext context) : this(null, @using, context) { }
 
-        public override string ToString() => $"using {Expression} as {Name}";
+        public override string ToString() => $"using {Using.Type}";
 
         public override object GetValue(ExecutionContext context)
         {
-            if (any_type.Name == null) throw new RuntimeError($"Type {Expression.ExpressionToString()} not found", SourceContext);
-            context.LocalVariables.SetValue(Name, any_type);
+            var @using = Using.GetValue(context).Cast<MemberAccess.ClassAccess>();
+            var name = Alias == null ? @using.Name.Name : Alias.Name;
+            context.LocalVariables.SetValue(name, @using);
             return null;
         }
 
         public override object Clone()
         {
-            return new UsingStatement()
-            {
-                Expression = Expression.CloneCast(),
-                Name = Name.CloneCast(),
-                SourceContext = SourceContext.CloneCast(),
-                any_type = any_type
-            };
+            return new UsingStatement(Using.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

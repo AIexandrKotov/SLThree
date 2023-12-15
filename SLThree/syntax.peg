@@ -36,15 +36,8 @@ statement <BaseStatement>
     / st:expression_statement { st }
 
 using_statement <UsingStatement>
-    = "using" _required_ ex: as_expression_right _ gens:generic_types _ "as" _required_ n:name { 
-        new UsingStatement(new TypeofExpression(ex, gens.Select(x => new TypeofExpression(x, state)).ToArray(), state), n.Name, state)
-    }
-    / "using" _required_ ex: as_expression_right _ gens:generic_types {
-        new UsingStatement(new TypeofExpression(ex, gens.Select(x => new TypeofExpression(x, state)).ToArray(), state), ex, state)
-    }
-    / "using" _required_ ex: as_expression_right  _required_ "as" _required_ n:name { new UsingStatement(ex, n.Name, state) }
-    / "using" _required_ ex: as_expression_right { new UsingStatement(ex, ex, state) }
-    / "using" _required_ expr:expression { Panic<UsingStatement>(new SyntaxError("Wrong using statement", state)) }
+    = "using" _required_ t_name:typename _required_ "as" _required_ n:name { new UsingStatement(n, new CreatorUsing(t_name, state), state) }
+    / "using" _required_ t_name:typename { new UsingStatement(new CreatorUsing(t_name, state), state) }
 
 return_statement <ReturnStatement>
     = "return" _ expr:expression { new ReturnStatement(expr, state) }
@@ -92,11 +85,30 @@ condition_statement <BaseStatement>
     / "if" _ "(" cond:expression ")" _ t:block_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
 
 context_statement <BaseStatement>
-    = "context" _required_ n:name _ ":" _ cast:as_expression_right _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, cast, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new ContextStatement(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "context" _required_ n:name { new ContextStatement(n, state) }
-    / "context" _ ":" _ cast:as_expression_right _ "{" _ st:statement_list _ "}"{ new ContextStatement(null, cast, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "context" _ "{" _ st:statement_list _ "}"{ new ContextStatement(null, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
+    = "context" _required_ n:name _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
+        new ContextStatement(new CreatorContext(n, t, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state), state)
+    }
+    / "context" _required_ n:name _ ":" _ t:typename {
+        new ContextStatement(new CreatorContext(n, t, state), state)
+    }
+    / "context" _required_ n:name _  "{" _ st:statement_list _ "}" {
+        new ContextStatement(new CreatorContext(n, null, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state), state)
+    }
+    / "context" _required_ n:name  {
+        new ContextStatement(new CreatorContext(n, state), state)
+    }
+    / "context" _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
+        new ContextStatement(new CreatorContext(null, t, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state), state)
+    }
+    / "context" _ ":" _ t:typename {
+        new ContextStatement(new CreatorContext(t, state), state)
+    }
+    / "context" _  "{" _ st:statement_list _ "}" {
+        new ContextStatement(new CreatorContext(st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state), state)
+    }
+    / "context" {
+        new ContextStatement(new CreatorContext(state), state)
+    }
 
 expression_statement <ExpressionStatement> 
     = _ value:expression _ { new ExpressionStatement(value, state) }
@@ -119,11 +131,34 @@ binary_9 <BaseExpression> -memoize
     / left:lambda_left _ "=>" _ right:lambda_right { new LambdaExpression(new InvokeExpression(null, left.Item2, state), right, left.Item1, state) }
     / ternary_0
 
+using_creator <CreatorUsing>
+    = "new" _required_ "using" _required_ t_name:typename { new CreatorUsing(t_name, state) }
+
 context_creator <CreatorContext>
-    = "new" _required_ "context" _ "{" _ st:statement_list _ "}" { new CreatorContext(st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "new" _required_ "context" _required_ n:name _ "{" _ st:statement_list _ "}"{ new CreatorContext(n, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state) }
-    / "new" _required_ "context" _required_ n:name { new CreatorContext(n, state) }
-    / "new" _required_ "context" { new CreatorContext(state) }
+    = "new" _required_ "context" _required_ n:name _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
+        new CreatorContext(n, t, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state)
+    }
+    / "new" _required_ "context" _required_ n:name _ ":" _ t:typename {
+        new CreatorContext(n, t, state)
+    }
+    / "new" _required_ "context" _required_ n:name _  "{" _ st:statement_list _ "}" {
+        new CreatorContext(n, null, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state)
+    }
+    / "new" _required_ "context" _required_ n:name  {
+        new CreatorContext(n, state)
+    }
+    / "new" _required_ "context" _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
+        new CreatorContext(null, t, st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state)
+    }
+    / "new" _required_ "context" _ ":" _ t:typename {
+        new CreatorContext(t, state)
+    }
+    / "new" _required_ "context" _  "{" _ st:statement_list _ "}" {
+        new CreatorContext(st.Statements.ToArray().ConvertAll(x => CheckOnContextStatements(x)), state)
+    }
+    / "new" _required_ "context" {
+        new CreatorContext(state)
+    }
 
 context_statements <StatementListStatement>
     = st:context_allowed_statement* { new StatementListStatement(st, state) }
@@ -190,7 +225,7 @@ binary_5 <BaseExpression> -memoize
 binary_4 <BaseExpression> -memoize
     = left:binary_4 _ "==" _ right:binary_3 { new ExpressionBinaryEquals(left, right, state) }
     / left:binary_4 _ "!=" _ right:binary_3 { new ExpressionBinaryUnequals(left, right, state) }
-    / left:binary_4 _ "is" _required_ right:binary_3 { new ExpressionBinaryIs(left, right, state) }
+    / left:binary_4 _ "is" _required_ right:typename { new ExpressionBinaryIs(left, right, state) }
     / binary_3
 
 lambda_left <ValueTuple<IList<string>, BaseExpression[]>>
@@ -238,10 +273,22 @@ binary_1 <BaseExpression> -memoize
     / binary_0
 
 binary_0 <BaseExpression> -memoize
-    = left:binary_0 _ "as" _ "\\" { new CastExpression(left, new NameExpression("\\", state), state) }
-    / left:binary_0 _ "as" _required_ "@" _ refl:as_expression_right { new CastExpression(left, new ReflectionExpression(refl, refl.SourceContext), state) }
-    / left:binary_0 _ "as" _required_ "typeof" _ "(" _ tp:primary _ ")" { new CastExpression(left, new TypeofExpression(tp, tp.SourceContext), state) }
-    / left:binary_0 _ "as" _required_ right:as_expression_right { new CastExpression(left, right, state) }
+    = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, state) }
+    / left:binary_0 _ "::" _ right:name _ "<" _ gen_args:typename_list _ ">" _ "(" _ args:typename_list _ ")" {
+        new ReflectionExpression(left, right, gen_args.ToArray(), args.ToArray(), state)
+    }
+    / left:binary_0 _ "::" _ right:name _ "<" _ gen_args:typename_list _ ">" _ "(" _ ")" {
+        new ReflectionExpression(left, right, gen_args.ToArray(), new TypenameExpression[0], state)
+    }
+    / left:binary_0 _ "::" _ right:name _ "(" _ args:typename_list _ ")" {
+        new ReflectionExpression(left, right, null, args.ToArray(), state)
+    }
+    / left:binary_0 _ "::" _ right:name  _ "(" _ ")" {
+        new ReflectionExpression(left, right, null, new TypenameExpression[0], state)
+    }
+    / left:binary_0 _ "::" _ right:name  {
+        new ReflectionExpression(left, right, state)
+    }
     / _ left:binary_min _ { left }
 
 binary_min <BaseExpression>
@@ -256,29 +303,19 @@ unary <BaseExpression>
     / "-" _ left:binary_min { new ExpressionUnaryRem(left, state) }
     / "~" _ left:binary_min { new ExpressionUnaryBitNot(left, state) }
     / "!" _ left:binary_min { new ExpressionUnaryNot(left, state) }
+    / "@@" _ left:typename { new ExpressionUnaryStaticReflection(left, state) }
+    / "@" _ left:typename { new ExpressionUnaryReflection(left, state) }
     / primary
 
-as_expression_right <BaseExpression> -memoize
-    = left:as_expression_right _ "." _ right:name { new MemberAccess(left, right, state) }
-    / special
-    / name
-
 primary <BaseExpression> -memoize
-    //= "@" _ left:as_expression_right _ gens:generic_types _ "::" _ invk:invoke_expression { new ReflectionExpression(left, gens.Select(x => new ReflectionExpression(x, x.SourceContext)).ToArray(), invk.Left, invk.Arguments.ConvertAll(x => new ReflectionExpression(x, x.SourceContext)), state) }
-    // "@" _ left:as_expression_right _ gens:generic_types _ "::" _ prop:name { new ReflectionExpression(left, gens.Select(x => new ReflectionExpression(x, x.SourceContext)).ToArray(), prop, state) }
-    // "@" _ left:as_expression_right _ gens:generic_types { new ReflectionExpression(left, gens.Select(x => new ReflectionExpression(x, x.SourceContext)).ToArray(), state) }
-    = "@" _ left:as_expression_right _ "::" _ invk:invoke_expression { new ReflectionExpression(left, invk.Left, invk.Arguments.ConvertAll(x => new ReflectionExpression(x, x.SourceContext)), state) }
-    / "@" _ left:as_expression_right _ "::" _ prop:name { new ReflectionExpression(left, prop, state) }
-    / "@" _ left:as_expression_right { new ReflectionExpression(left, state) }
-    / "typeof" _ "(" _ left:primary _ gens:generic_types _ ")" { new TypeofExpression(left, gens.Select(x => new TypeofExpression(x, x.SourceContext)).ToArray(), state) }
-    / "typeof" _ "(" _ left:primary _ ")" { new TypeofExpression(left, state) }
-    / left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    = left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
     / left:primary _ "." _ right:invoke_expression { new MemberAccess(left, right, state) }
     / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
     / context_creator
-    / "new" _required_ right:invoke_expression { new NewExpression(right as InvokeExpression, state) }
-    / "new" _required_ right:primary { new NewExpression(right as MemberAccess, state) }
+    / using_creator
+    / "new" _required_ right:typename _ "(" _ args:arguments_list _ ")" { new NewExpression(right, args.ToArray(), state) }
+    / "new" _required_ right:typename _ "(" _ ")" { new NewExpression(right, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
     / "(" _ left:expression _ ")" _ "." _ right:invoke_expression { new MemberAccess(left.RaisePriority(), right, state) }
     / "(" _ left:expression _ ")" _ "." _ right:name { new MemberAccess(left.RaisePriority(), right, state) }
@@ -293,6 +330,22 @@ primary <BaseExpression> -memoize
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+typename_list <IList<TypenameExpression>>
+    = first:typename _ last:typename_other* { last.AddAndRet(first) }
+    / tn:typename { new TypenameExpression[1] {tn} }
+
+typename_other <TypenameExpression>
+    = "," _ x:typename _ { x }
+
+typename <TypenameExpression>
+    = t_node:typename_node _ "<" _ t_list:typename_list _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }
+    / t_node:typename_node { new TypenameExpression(t_node, state) }
+
+typename_node <BaseExpression> -memoize
+    = left:typename_node _ "." _ right:name { new MemberAccess(left, right, state) }
+    / special
+    / name
 
 dictionary_creator <BaseExpression>
     = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
