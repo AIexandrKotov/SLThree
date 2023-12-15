@@ -37,9 +37,18 @@ namespace SLThree.Extensions
             if (t.IsTuple()) return "tuple";
             if (t == type_list) return "list";
             if (t == type_dict) return "dict";
+            if (t.IsArray)
+                return t.GetArrayRank() == 1 ? $"array<{t.GetElementType().GetTypeString()}>" : $"array<{t.GetElementType().GetTypeString()}, {t.GetArrayRank()}>";
             if (t == type_array) return "array";
             if (t.IsGenericType)
-                return $"{t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last()}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
+            {
+                var generic_def = t.GetGenericTypeDefinition();
+                var name = string.Empty;
+                if (generic_def == type_generic_list) name = "list";
+                else if (generic_def == type_generic_dict) name = "dict";
+                else name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
+                return $"{name}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
+            }
             if (t == type_object) return "object";
             if (t == type_byte) return "u8";
             if (t == type_sbyte) return "i8";
@@ -121,7 +130,9 @@ namespace SLThree.Extensions
                 case "char": return type_char;
                 case "context": return type_context;
                 case "list": return type_list;
+                case "list`1": return type_generic_list;
                 case "dict": return type_dict;
+                case "dict`2": return type_generic_dict;
                 case "tuple": return type_tuple;
                 case "array": return type_array;
             }

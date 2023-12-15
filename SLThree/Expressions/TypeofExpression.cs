@@ -31,22 +31,30 @@ namespace SLThree
         public TypeofExpression(BaseExpression type, TypeofExpression[] generics, SourceContext context) : base(context)
         {
             Typename = type;
-            if (this.type == null) this.type = (Typename.ExpressionToString().Replace(" ", "") + "`" + generics.Length.ToString() ).ToType();
+            var str = Typename.ExpressionToString().Replace(" ", "") + "`" + generics.Length.ToString();
+            is_array = str == "array`1";
+            if (this.type == null) this.type = (str).ToType();
             is_generic = true;
             GenericArguments = generics;
             generic_types = GenericArguments.ConvertAll(x => x.type);
         }
 
-        public override string ExpressionToString() => is_generic ? $"typeof({Typename}<{generic_types.JoinIntoString(", ")}>)" : $"typeof({Typename})";
+        public override string ExpressionToString() => 
+            is_generic ? $"typeof({Typename}<{generic_types.JoinIntoString(", ")}>)" : $"typeof({Typename})";
 
         private Type type;
         private bool is_generic;
+        private bool is_array;
         private Type[] generic_types;
-        public Type GetTypeofType() => is_generic ? type.MakeGenericType(generic_types) : type;
+        public Type GetTypeofType() => 
+            is_array ? generic_types[0].MakeArrayType() : 
+            is_generic ? type.MakeGenericType(generic_types) : type;
 
         public override object GetValue(ExecutionContext context)
         {
-            return is_generic ? type.MakeGenericType(generic_types) : type;
+            return
+                is_array ? generic_types[0].MakeArrayType() :
+                is_generic ? type.MakeGenericType(generic_types) : type;
         }
 
         public override object Clone()
@@ -57,7 +65,8 @@ namespace SLThree
                     Typename = Typename.CloneCast(),
                     generic_types = generic_types.ReferenceCopy(),
                     SourceContext = SourceContext.CloneCast(),
-                    type = type
+                    type = type,
+                    is_array = is_array,
                 } 
                 : new TypeofExpression()
                 {

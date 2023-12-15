@@ -1,4 +1,4 @@
-﻿using SLThree.Extensions;
+﻿    using SLThree.Extensions;
 using SLThree.sys;
 using System;
 using System.Collections;
@@ -40,7 +40,7 @@ namespace SLThree
                 ret[i] = tuple[i];
             return ret;
         }
-        protected static object UnwrapCast(Type type_to_cast, object o)
+        internal static object UnwrapCast(Type type_to_cast, object o)
         {
             if (type_to_cast.IsArray && o is object[] obj_array)
             {
@@ -125,9 +125,9 @@ namespace SLThree
                     return ret;
                 }
             }
-            return o;
+            return o.CastToType(type_to_cast);
         }
-        protected static object WrapCast(object o)
+        internal static object WrapCast(object o)
         {
             if (o == null) return null;
             var type = o.GetType();

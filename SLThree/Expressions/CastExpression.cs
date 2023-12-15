@@ -29,14 +29,14 @@ namespace SLThree
         {
             if (mode == -1)
             {
-                return Left.GetValue(context).CastToType(type);
+                return WrappersTypeSetting.UnwrapCast(type, Left.GetValue(context));
             }
             if (mode == 0)
             {
                 var obj = Right.GetValue(context);
                 if (obj == null) throw new RuntimeError($"Type \"{name}\" not found", Right.SourceContext);
-                if (obj is Type tp) return Left.GetValue(context).CastToType(tp);
-                return Left.GetValue(context).CastToType((obj as MemberAccess.ClassAccess).Name);
+                if (obj is Type tp) return WrappersTypeSetting.UnwrapCast(tp,  Left.GetValue(context));
+                return WrappersTypeSetting.UnwrapCast((obj as MemberAccess.ClassAccess).Name, Left.GetValue(context));
             }
 
             if (mode == 1) return Left.DropPriority();

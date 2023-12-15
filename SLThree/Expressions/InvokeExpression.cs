@@ -1,6 +1,7 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,8 @@ namespace SLThree
         }
 
         public override string ExpressionToString() => $"{Left}({Arguments.JoinIntoString(", ")})";
+
+        private Func<object[], object[]> implicit_cached;
 
         /*private bool get_counted_name;
         private string get_name;*/

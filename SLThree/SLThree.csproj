@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="Exceptions\UnexpectedError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Expressions\Refactoring\TypeNameExpression.cs" />
     <Compile Include="Extensions\CloningExtensions.cs" />
     <Compile Include="Extensions\SLThreeExtensions.cs" />
     <Compile Include="Expressions\ChanceChooseExpression.cs" />
@@ -57,36 +58,36 @@
     <Compile Include="Expressions\CreatorArray.cs" />
     <Compile Include="Expressions\CastExpression.cs" />
     <Compile Include="Expressions\CreatorDictionary.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryAnd.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryAssign.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryAssignUnknown.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryBitAnd.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryBitOr.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryBitXor.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryIs.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryOr.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionTernary.cs" />
-    <Compile Include="Expressions\Expressions\MemberAccess.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryEquals.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryGreaterThan.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryGreaterThanEquals.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryLessThan.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryLessThanEquals.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryMod.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryUnequals.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionUnaryAdd.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionUnaryBitNot.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionUnaryNot.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionUnaryRem.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryAnd.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryAssign.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryAssignUnknown.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryBitAnd.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryBitOr.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryBitXor.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryIs.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryOr.cs" />
+    <Compile Include="Expressions\Operators\ExpressionTernary.cs" />
+    <Compile Include="Expressions\Operators\MemberAccess.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryEquals.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryGreaterThan.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryGreaterThanEquals.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryLessThan.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryLessThanEquals.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryMod.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryUnequals.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryAdd.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryBitNot.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryNot.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnaryRem.cs" />
     <Compile Include="Extensions\GenericExtensions.cs" />
     <Compile Include="Extensions\SLTHelpers.cs" />
     <Compile Include="Keyword.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryDivide.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryMultiply.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryAdd.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinary.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionBinaryRem.cs" />
-    <Compile Include="Expressions\Expressions\ExpressionUnary.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryDivide.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryMultiply.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryAdd.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinary.cs" />
+    <Compile Include="Expressions\Operators\ExpressionBinaryRem.cs" />
+    <Compile Include="Expressions\Operators\ExpressionUnary.cs" />
     <Compile Include="Expressions\IndexExpression.cs" />
     <Compile Include="Expressions\InterpolatedString.cs" />
     <Compile Include="Expressions\InvokeExpression.cs" />
@@ -166,6 +167,7 @@
   <ItemGroup>
     <EmbeddedResource Include="docs\versions\0.3.0" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pegasus.4.1.0\build\Pegasus.targets" Condition="Exists('..\packages\Pegasus.4.1.0\build\Pegasus.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
