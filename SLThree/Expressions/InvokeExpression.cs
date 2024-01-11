@@ -3,6 +3,7 @@ using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -63,7 +64,7 @@ namespace SLThree
         private MethodInfo founded;
         public object GetValue(ExecutionContext context, object obj)
         {
-            var key = Left.ExpressionToString().Replace(" ", "");
+            var key = Left.Cast<NameExpression>().Name;
 
             if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
 
@@ -76,6 +77,7 @@ namespace SLThree
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
+                if (founded == null) throw new RuntimeError($"Method {key}({Arguments.Select(x => "_").JoinIntoString(", ")}) not found", SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)

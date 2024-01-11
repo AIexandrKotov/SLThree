@@ -153,7 +153,7 @@ namespace TestSuite
             Console.Title = "SLThree Test Suite";
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">>> SLThree Test Suite");
-            TypeofExpression.RegistredAssemblies.Add(typeof(Program).Assembly);
+            SLThree.sys.slt.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());

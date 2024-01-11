@@ -29,7 +29,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             if (normal) return WrappersTypeSetting.UnwrapCast(Type.GetValue(context).Cast<Type>(), Left.GetValue(context));
-            else if (as_is) return Left;
+            else if (as_is) return Left.DropPriority();
             else
             {
                 if (Left is EqualchanceChooseExpression ecc) return ecc.GetChooser(context);

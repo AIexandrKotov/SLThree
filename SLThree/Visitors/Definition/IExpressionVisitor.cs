@@ -9,6 +9,7 @@
         void VisitExpression(CreatorArray expression);
         void VisitExpression(CreatorDictionary expression);
         void VisitExpression(CreatorTuple expression);
+        void VisitExpression(CreatorUsing expression);
         void VisitExpression(EqualchanceChooseExpression expression);
         void VisitExpression(IndexExpression expression);
         void VisitExpression(InterpolatedString expression);
@@ -16,7 +17,8 @@
         void VisitExpression(LambdaExpression expression);
         void VisitExpression(NameExpression expression);
         void VisitExpression(NewExpression expression);
-        void VisitExpression(TypeofExpression expression);
+        void VisitExpression(ReflectionExpression expression);
+        void VisitExpression(TypenameExpression expression);
 
         void VisitExpression(Literal expression);
         void VisitExpression(ExpressionUnary expression);

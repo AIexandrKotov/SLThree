@@ -311,17 +311,13 @@ unary <BaseExpression>
 primary <BaseExpression> -memoize
     = left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
-    / left:primary _ "." _ right:invoke_expression { new MemberAccess(left, right, state) }
-    / left:primary _ "." _ right:name { new MemberAccess(left, right, state) }
+    / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
+    / "(" _ x:expression _ ")" { x.RaisePriority() }
     / context_creator
     / using_creator
     / "new" _required_ right:typename _ "(" _ args:arguments_list _ ")" { new NewExpression(right, args.ToArray(), state) }
     / "new" _required_ right:typename _ "(" _ ")" { new NewExpression(right, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
-    / "(" _ left:expression _ ")" _ "." _ right:invoke_expression { new MemberAccess(left.RaisePriority(), right, state) }
-    / "(" _ left:expression _ ")" _ "." _ right:name { new MemberAccess(left.RaisePriority(), right, state) }
-    / "(" _ x:expression _ ")" { x.RaisePriority() }
-    / invoke_expression
     / tuple_creator
     / dictionary_creator
     / list_creator
@@ -331,6 +327,12 @@ primary <BaseExpression> -memoize
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+access_right <BaseExpression> -memoize
+    = left:name _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    / left:name _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
+    / right:access_right { right }
+    / right:name { right }
 
 typename_list <IList<TypenameExpression>>
     = first:typename _ last:typename_other* { last.AddAndRet(first) }
@@ -366,12 +368,6 @@ tuple_creator <BaseExpression>
 list_creator <BaseExpression>
     = "[" _ args:arguments_list _ "]" { new CreatorArray(args.ToArray(), state) }
     / "[" _ "]" { new CreatorArray(new BaseExpression[0], state) }
-
-invoke_expression <InvokeExpression> -memoize
-    = left:invoke_expression _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
-    / left:invoke_expression _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
-    / left:name _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
-    / left:name _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
 
 generic_types <IList<BaseExpression>>
     = "<" _ l:names_arguments_list _ ">" { l }
@@ -461,7 +457,7 @@ identifier <BaseExpression>
     = name
 
 keyword
-    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof" / "context"
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof" / "context" / "self" / "upper" / "this" / "global"
 
 name <NameExpression>
     = first:available_name { new NameExpression(first.JoinIntoString(""), state) }

@@ -227,6 +227,14 @@ namespace SLThree.sys
 
         public static string jts(IEnumerable<object> objects, string str) => objects.JoinIntoString(str);
         public static string jts(IEnumerable<object> objects) => objects.JoinIntoString(" ");
+
+        public static object @foreach(IEnumerable<object> objects, Method method)
+        {
+            var ret = default(object);
+            foreach (var x in objects)
+                ret = method.GetValue(new object[1] { x });
+            return ret;
+        }
     }
 #pragma warning restore IDE1006 // Стили именования
 }

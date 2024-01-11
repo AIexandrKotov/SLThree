@@ -123,7 +123,6 @@
     <Compile Include="Expressions\Literals\DoubleLiteral.cs" />
     <Compile Include="Expressions\BaseExpression.cs" />
     <Compile Include="Expressions\Literals\ULongLiteral.cs" />
-    <Compile Include="Expressions\TypeofExpression.cs" />
     <Compile Include="Methods\RecursiveMethod.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />

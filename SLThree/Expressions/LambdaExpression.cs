@@ -25,7 +25,7 @@ namespace SLThree
                 {
                     Method = new RecursiveMethod()
                     {
-                        Name = "anon_method",
+                        Name = "$method",
                         ParamNames = Left.Arguments.Select(x => (x as NameExpression).Name).ToArray(),
                         Statements = Right,
                         imp = Modificators.Contains("implicit"),
@@ -35,7 +35,7 @@ namespace SLThree
                 {
                     Method = new Method()
                     {
-                        Name = "anon_method",
+                        Name = "$method",
                         ParamNames = Left.Arguments.Select(x => (x as NameExpression).Name).ToArray(),
                         Statements = Right,
                         imp = Modificators.Contains("implicit"),

@@ -1,0 +1,22 @@
+plus = left => new context {
+    left = left;
+    with_right = right => this.left + right;
+}.with_right;
+mins = left => new context {
+    left = left;
+    with_right = right => this.left - right;
+}.with_right;
+mult = left => new context {
+    left = left;
+    with_right = right => this.left * right;
+}.with_right;
+divi = left => new context {
+    left = left;
+    with_right = right => this.left / right;
+}.with_right;
+
+ASSERT(self, (x = y = 4 == 4) as is);
+ASSERT(self, (plus(x)(y) == x + y) as is);
+ASSERT(self, (mins(x)(y) == x - y) as is);
+ASSERT(self, (mult(x)(y) == x * y) as is);
+ASSERT(self, (divi(x)(y) == x / y) as is);

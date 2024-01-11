@@ -155,7 +155,7 @@ namespace SLThree.Extensions
             if (founded_types.TryGetValue(s, out var type)) return type;
             else
             {
-                foreach (var ass in TypeofExpression.RegistredAssemblies)
+                foreach (var ass in sys.slt.RegistredAssemblies)
                 {
                     var ret = ass.GetType(s, throwError);
                     if (ret != null) return founded_types[s] = ret;

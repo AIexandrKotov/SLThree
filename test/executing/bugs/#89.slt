@@ -1,0 +1,2 @@
+i32_alias = new using i32;
+ASSERT(self, (1 as i32_alias is i32) as is);

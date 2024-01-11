@@ -90,7 +90,7 @@ namespace SLThree
                         if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //recursive");
                         else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
                     }
-                    else sb.AppendLine(Decoration(x.Value).ToString() + ";");
+                    else sb.AppendLine(Decoration(x.Value)?.ToString() ?? "null" + ";");
                 }
                 index -= 1;
                 sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");
@@ -135,7 +135,7 @@ namespace SLThree
 
         internal ExecutionContext PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
-        internal readonly ContextWrap wrap;
+        public readonly ContextWrap wrap;
         internal ContextWrap upper;
         internal ExecutionContext toplevel { get => upper?.pred; set => upper = new ContextWrap(value); }
 

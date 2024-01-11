@@ -1,6 +1,9 @@
 ------ 0.6.0 Rybinsk Update ------ [~.~.~]
 Language:
+    - Typing refactoring
     - Indexators and IEnumerable for context
     - Anonymous context statement
+    - else if
 Bugfixes:
     - Returning contextes from methods now works
+    - Fixed x.y(a, b)(c, d) case where x is class access
