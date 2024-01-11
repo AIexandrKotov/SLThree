@@ -4,7 +4,7 @@ Language:
     - Indexators and IEnumerable for context
     - Anonymous context statement
     - Null coalescing operator (a ?? b)
-    - else if
+    - single statements, else if
 Bugfixes:
     - Returning contextes from methods now works
     - Fixed x.y(a, b)(c, d) case where x is class access

@@ -13,28 +13,31 @@ statement_list <StatementListStatement>
     / st:statement { new StatementListStatement(new BaseStatement[1] {st}, state) }
 
 statement_ws <BaseStatement>
-    = _ st:context_statement _ { st }
-    / _ st:switch_statement _ { st }
-    / _ st:foreach_statement _ { st }
-    / _ st:while_statement _ { st }
-    / _ st:condition_statement _ { st }
-    / _ st:block_statement _ { st }
-    / _ st:statement _ ";" _ { st }
+    = _ st:statement_wspaced _ { st }
     / _ (";" _)+ { new StatementListStatement(new BaseStatement[0], state) }
     / _ st:statement _ { Panic<StatementListStatement>(new SyntaxError("Expected ;", state)) }
 
+statement_wspaced <BaseStatement>
+    = context_statement
+    / switch_statement
+    / foreach_statement
+    / while_statement
+    / condition_statement
+    / block_statement
+    / st:statement _ ";" { st }
+
 statement <BaseStatement>
-    = st:return_statement { st }
-    / st:break_statement { st }
-    / st:continue_statement { st }
-    / st:using_statement { st }
-    / st:context_statement { st }
-    / st:condition_statement { st }
-    / st:switch_statement { st }
-    / st:foreach_statement { st }
-    / st:while_statement { st }
-    / st:block_statement { st }
-    / st:expression_statement { st }
+    = return_statement
+    / break_statement
+    / continue_statement
+    / using_statement
+    / context_statement
+    / condition_statement
+    / switch_statement
+    / foreach_statement
+    / while_statement
+    / block_statement
+    / expression_statement
 
 using_statement <UsingStatement>
     = "using" _required_ t_name:typename _required_ "as" _required_ n:name { new UsingStatement(n, new CreatorUsing(t_name, state), state) }
@@ -61,19 +64,21 @@ case_node <SwitchStatement.Node>
     / _ "case" _ expr:expression _ ":" _ st:statement _ ";" _ { new SwitchStatement.Node(expr, st, false) }
     / _ "case" _ expr:expression _ ":" _ { new SwitchStatement.Node(expr, null, true) }
 
+single_or_block <StatementListStatement>
+    = s:statement_wspaced { new StatementListStatement(new BaseStatement[1]{s}, state) }
+    / block:block_statement { block }
+
 block_statement <StatementListStatement>
     = "{" _ st:statement_list _ "}" { st }
     / "{" _ st:statement_list _ { Panic<StatementListStatement>(new SyntaxError("Unclosed block", state)) }
 
 while_statement <BaseStatement>
-    = "while" _ "(" _ cond:expression _ ")" _ body:block_statement { new WhileLoopStatement(cond, body, state) }
-
-    / "while" _ "(" _ cond:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("While body must be in { }", state)) }
+    = "while" _ "(" _ cond:expression _ ")" _ body:single_or_block { new WhileLoopStatement(cond, body, state) }
     / "while" _ "(" _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Empty loop head", state)) }
     / "while" _ cond:expression { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 foreach_statement <BaseStatement>
-    = "foreach" _ "(" _ n:name _ "in" _ iter:expression _ ")" _ body:block_statement { new ForeachLoopStatement(n, iter, body, state) }
+    = "foreach" _ "(" _ n:name _ "in" _ iter:expression _ ")" _ body:single_or_block { new ForeachLoopStatement(n, iter, body, state) }
     
     / "foreach" _ "(" _ n:name _ "in" _ iter:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach body must be in { }", state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
@@ -81,9 +86,8 @@ foreach_statement <BaseStatement>
     / "foreach" _ cond:expression { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 condition_statement <BaseStatement>
-    = "if" _ "(" cond:expression ")" _ t:block_statement _ "else" _ cond_else:condition_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[1] {cond_else}, state), state) }
-    / "if" _ "(" cond:expression ")" _ t:block_statement _ "else" _ f:block_statement { new ConditionStatement(cond, t, f, state) }
-    / "if" _ "(" cond:expression ")" _ t:block_statement { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
+    = "if" _ "(" _ cond:expression _ ")" _ t:single_or_block _ "else" _ f:single_or_block { new ConditionStatement(cond, t, f, state) }
+    / "if" _ "(" _ cond:expression _ ")" _ t:single_or_block { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
 
 context_statement <BaseStatement>
     = "context" _required_ n:name _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
@@ -517,16 +521,16 @@ available_name <IList<string>>
     = value:([a-zA-Z_] [a-zA-Z0-9_]*)+ { value }
 
 comment
-    = "//" [^\r\n]*
+    = "//" ([^\r\n]*)
 
 _required_
     = [ \t]+ comment _ { " " }
     / comment _ { " " }
     / [ \t\r\n]+ { " " }
 
-_
-    = [ \t]* comment _ { " " }
-    / comment _ { " " }
-    / [ \t\r\n]* { " " }
+_ -memoize
+    = _ comment _ { "" }
+    / [ \t]* comment _ { "" }
+    / [ \t\r\n]* { "" }
 
 EOF = !. / comment / c:. { Panic<string>(new UnexpectedError(c[0], state)) }
