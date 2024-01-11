@@ -3,3 +3,6 @@ For LANG 0.6.0+:
     - Supporting
 For LANG 0.5.0+:
     - Allow `using repl;`
+For LANG 0.3.0+:
+    - Fixing context output recursion
+      in lists, tuples and dictionaries

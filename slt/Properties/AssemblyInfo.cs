@@ -40,8 +40,8 @@ public static class REPLVersion
     public const string Major = "1"; //vh
     public const string Minor = "2"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "197"; //vh
-    public const long LastUpdate = 638379139799342584; //vh
+    public const string Revision = "198"; //vh
+    public const long LastUpdate = 638405899783279361; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
