@@ -14,6 +14,7 @@ statement_list <StatementListStatement>
 
 statement_ws <BaseStatement>
     = _ st:statement_wspaced _ { st }
+    / _ st:block_statement _ { st }
     / _ (";" _)+ { new StatementListStatement(new BaseStatement[0], state) }
     / _ st:statement _ { Panic<StatementListStatement>(new SyntaxError("Expected ;", state)) }
 
@@ -23,7 +24,6 @@ statement_wspaced <BaseStatement>
     / foreach_statement
     / while_statement
     / condition_statement
-    / block_statement
     / st:statement _ ";" { st }
 
 statement <BaseStatement>
@@ -36,8 +36,8 @@ statement <BaseStatement>
     / switch_statement
     / foreach_statement
     / while_statement
-    / block_statement
     / expression_statement
+    / block_statement
 
 using_statement <UsingStatement>
     = "using" _required_ t_name:typename _required_ "as" _required_ n:name { new UsingStatement(n, new CreatorUsing(t_name, state), state) }
@@ -321,13 +321,13 @@ primary <BaseExpression> -memoize
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
     / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
+    / dictionary_creator
     / context_creator
     / using_creator
     / "new" _required_ right:typename _ "(" _ args:arguments_list _ ")" { new NewExpression(right, args.ToArray(), state) }
     / "new" _required_ right:typename _ "(" _ ")" { new NewExpression(right, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
     / tuple_creator
-    / dictionary_creator
     / list_creator
     / name_literal
     / special
