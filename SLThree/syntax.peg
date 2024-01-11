@@ -6,6 +6,7 @@
 
 file <BaseStatement> 
     = "#SLT#" _ v:statement_list _ EOF { v }
+    / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, state) }
 
 statement_list <StatementListStatement>
     = st:statement_ws* { new StatementListStatement(st, state) }

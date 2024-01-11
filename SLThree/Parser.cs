@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,13 @@ namespace SLThree
     public partial class Parser
     {
         public static readonly Parser This = new Parser();
+
+        public BaseExpression ParseExpression(string s) => Parse("#EXPR# " + s).Cast<ExpressionStatement>().Expression;
+        public object EvalExpression(string s, ExecutionContext context = null)
+        {
+            if (context == null) context = new ExecutionContext();
+            return ParseExpression(s).GetValue(context);
+        }
 
         public BaseStatement ParseScript(string s, string filename = null) => Parse("#SLT# " + s, filename);
         public ExecutionContext RunScript(string s, string filename = null, ExecutionContext context = null)
