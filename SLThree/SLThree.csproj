@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\OperatorError.cs" />
     <Compile Include="Exceptions\UnexpectedError.cs" />
     <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Expressions\NullCoalescingExpression.cs" />
     <Compile Include="Expressions\Operators\ExpressionUnaryReflection.cs" />
     <Compile Include="Expressions\CreatorUsing.cs" />
     <Compile Include="Expressions\Operators\ExpressionUnaryStaticReflection.cs" />

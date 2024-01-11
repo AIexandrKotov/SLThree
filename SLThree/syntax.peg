@@ -175,6 +175,10 @@ ternary_0 <BaseExpression> -memoize
 binary_8 <BaseExpression> -memoize
     = chance_choose_expression
     / equalchance_choose_expression
+    / null_coalescing
+
+null_coalescing <BaseExpression>
+    = left:binary_7 _ "??" _ right:null_coalescing { new NullCoalescingExpression(left, right, state) }
     / binary_7
     
 //-------------------------------

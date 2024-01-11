@@ -1,8 +1,9 @@
------- 0.6.0 Rybinsk Update ------ [~.~.~]
+------ 0.6.0 Surgut Update ------ [~.~.~]
 Language:
     - Typing refactoring
     - Indexators and IEnumerable for context
     - Anonymous context statement
+    - Null coalescing operator (a ?? b)
     - else if
 Bugfixes:
     - Returning contextes from methods now works
