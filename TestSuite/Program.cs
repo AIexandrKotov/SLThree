@@ -16,6 +16,11 @@ namespace TestSuite
 
         private static bool current_assert = true;
         private static int current_assert_id = 1;
+        public static void Log(object o)
+        {
+            ErrorLog.Add(o.ToString());
+        }
+
         public static void Assert(ExecutionContext.ContextWrap context, BaseExpression expression)
         {
             try
@@ -78,7 +83,7 @@ namespace TestSuite
             {
                 var context = new ExecutionContext();
                 context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseExpression>)Assert).Method);
-
+                context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 
                 Parser.This.RunScript(File.ReadAllText(filename), filename, context);
                 return current_assert;

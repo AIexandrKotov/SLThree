@@ -1,5 +1,6 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -71,7 +72,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            throw new NotImplementedException();
+            return new CreatorTuple(Expressions.CloneArray(), SourceContext.CloneCast());
         }
     }
 }

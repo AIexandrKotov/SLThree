@@ -19,6 +19,7 @@ namespace SLThree
             {
                 Name = name;
             }
+
             public override string ToString()
             {
                 var sb = new StringBuilder();

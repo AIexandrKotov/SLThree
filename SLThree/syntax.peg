@@ -178,9 +178,9 @@ ternary_0 <BaseExpression> -memoize
 
 binary_8 <BaseExpression> -memoize
     = range_choose_expression
-    / boolean_choose_expression
     / chance_choose_expression
     / equalchance_choose_expression
+    / boolean_choose_expression
     / null_coalescing
 
 null_coalescing <BaseExpression>
@@ -327,6 +327,7 @@ unary <BaseExpression>
 primary <BaseExpression> -memoize
     = left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
+    / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
     / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / dictionary_creator
@@ -334,7 +335,7 @@ primary <BaseExpression> -memoize
     / using_creator
     / "new" _required_ right:typename _ "(" _ args:arguments_list _ ")" { new NewExpression(right, args.ToArray(), state) }
     / "new" _required_ right:typename _ "(" _ ")" { new NewExpression(right, state) }
-    / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
+    / array_creator
     / tuple_creator
     / list_creator
     / name_literal
@@ -367,7 +368,7 @@ typename_node <BaseExpression> -memoize
     / name
 
 dictionary_creator <BaseExpression>
-    = "{" _ etrs:dictionary_entries _ "}" { new CreatorDictionary(etrs.ToArray(), state) }
+    = "{" _ etrs:dictionary_entries _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
     / "{" _ "}" { new CreatorDictionary(new CreatorDictionary.Entry[0], state) }
 
 dictionary_entries <IList<CreatorDictionary.Entry>>
@@ -379,11 +380,14 @@ dictionary_entry <CreatorDictionary.Entry>
     = left:primary _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) }
 
 tuple_creator <BaseExpression>
-    = "(" _ args:arguments_list _ ")" { new CreatorTuple(args.ToArray(), state) }
+    = "(" _ args:arguments_list _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
 
 list_creator <BaseExpression>
-    = "[" _ args:arguments_list _ "]" { new CreatorArray(args.ToArray(), state) }
-    / "[" _ "]" { new CreatorArray(new BaseExpression[0], state) }
+    = "[" _ args:arguments_list _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
+    / "[" _ "]" { new CreatorList(new BaseExpression[0], state) }
+
+array_creator <BaseExpression>
+    = "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorArray(tp, size, state) }
 
 generic_types <IList<BaseExpression>>
     = "<" _ l:names_arguments_list _ ">" { l }

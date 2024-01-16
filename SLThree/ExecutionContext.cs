@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -89,6 +90,16 @@ namespace SLThree
                     {
                         if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //recursive");
                         else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
+                    }
+                    else if (x.Value is MemberAccess.ClassAccess ca)
+                    {
+                        var first = false;
+                        foreach (var line in ca.ToString().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (first) sb.Append("    ");
+                            sb.AppendLine(line);
+                            first = true;
+                        }
                     }
                     else sb.AppendLine(Decoration(x.Value)?.ToString() ?? "null" + ";");
                 }

@@ -6,7 +6,7 @@
 
         void VisitExpression(CastExpression expression);
         void VisitExpression(ChanceChooseExpression expression);
-        void VisitExpression(CreatorArray expression);
+        void VisitExpression(CreatorList expression);
         void VisitExpression(CreatorDictionary expression);
         void VisitExpression(CreatorTuple expression);
         void VisitExpression(CreatorUsing expression);

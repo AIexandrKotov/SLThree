@@ -19,9 +19,9 @@ namespace SLThree
             UpperBound = upper;
         }
 
-        public override string ExpressionToString() => $"\\ {LowerBound}..{UpperBound} \\"; 
+        public override string ExpressionToString() => $"{LowerBound}..{UpperBound}";
 
-        private RangeChooser rc = new RangeChooser(0, 2);
+        private RangeChooser rc = new RangeChooser(0, 1);
 
         public override object GetValue(ExecutionContext context)
         {

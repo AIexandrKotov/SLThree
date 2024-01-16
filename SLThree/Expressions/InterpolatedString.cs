@@ -27,7 +27,7 @@ namespace SLThree
             Value = sb.ToString();
         }
 
-        public override string ExpressionToString() => string.Format(Value, Expressions.ConvertAll(x => x.ExpressionToString()));
+        public override string ExpressionToString() => $"$\"{string.Format(Value, Expressions.ConvertAll(x => $"{{{x.ExpressionToString()}}}"))}\"";
 
         public override object GetValue(ExecutionContext context)
         {

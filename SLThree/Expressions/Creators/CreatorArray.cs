@@ -1,29 +1,31 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 using System.Linq;
 
 namespace SLThree
 {
     public class CreatorArray : BaseExpression
     {
-        public BaseExpression[] Expressions;
+        public TypenameExpression ArrayType;
+        public BaseExpression Size;
 
-        public CreatorArray(BaseExpression[] expressions, SourceContext context) : base(context)
+        public CreatorArray(TypenameExpression arrayType, BaseExpression size, SourceContext context) : base(context)
         {
-            Expressions = expressions;
+            ArrayType = arrayType;
+            Size = size;
         }
 
         public override object GetValue(ExecutionContext context)
         {
-            return Expressions.ConvertAll(x => x.GetValue(context)).ToList();
+            return Array.CreateInstance(ArrayType.GetValue(context).Cast<Type>(), Size.GetValue(context).CastToType(typeof(int)).Cast<int>());
         }
 
-        public override string ExpressionToString() => $"[{Expressions.JoinIntoString(", ")}]";
+        public override string ExpressionToString() => $"new {ArrayType}[{Size}]";
 
         public override object Clone()
         {
-            return new CreatorArray(Expressions.CloneArray(), SourceContext);
+            return new CreatorArray(ArrayType.CloneCast(), Size.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Expressions\Choosers\IChooserExpression.cs" />
     <Compile Include="Expressions\Choosers\BooleanChooseExpression.cs" />
     <Compile Include="Expressions\Choosers\RangeChooseExpression.cs" />
+    <Compile Include="Expressions\Creators\CreatorArray.cs" />
     <Compile Include="Expressions\NullCoalescingExpression.cs" />
     <Compile Include="Expressions\Operators\ExpressionUnaryReflection.cs" />
     <Compile Include="Expressions\Creators\CreatorUsing.cs" />
@@ -62,7 +63,7 @@
     <Compile Include="Expressions\Choosers\ChanceChooseExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorContext.cs" />
     <Compile Include="Expressions\Choosers\EqualchanceChooseExpression.cs" />
-    <Compile Include="Expressions\Creators\CreatorArray.cs" />
+    <Compile Include="Expressions\Creators\CreatorList.cs" />
     <Compile Include="Expressions\CastExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorDictionary.cs" />
     <Compile Include="Expressions\Operators\ExpressionBinaryAnd.cs" />

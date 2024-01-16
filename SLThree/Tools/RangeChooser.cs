@@ -25,7 +25,7 @@ namespace System.Collections
         public long Choose()
         {
             RandomNumberGenerator.GetBytes(buffer);
-            return Math.Abs(BitConverter.ToInt64(buffer, 0) % (UpperBound - LowerBound)) + LowerBound;
+            return Math.Abs(BitConverter.ToInt64(buffer, 0) % (UpperBound - LowerBound + 1)) + LowerBound;
         }
 
         object IChooser.Choose()

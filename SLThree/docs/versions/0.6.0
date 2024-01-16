@@ -3,10 +3,14 @@ Language:
     - Typing refactoring
     - Indexators and IEnumerable for context
     - Anonymous context statement
+    - Array constructor
     - Range `\a..b\` and bool `\33%\` choosers
     - Null coalescing operator `a ?? b`
+    - last comma ignoring in creators
     - single statements, else if
     - Common interface for choosers
 Bugfixes:
-    - Returning contextes from methods now works
+    - Returning contextes and tuples from methods now works
+    - Fixed raws of string and char
     - Fixed `x.y(a, b)(c, d)` case where x is class access
+    - Fixed `(x)[y]`
