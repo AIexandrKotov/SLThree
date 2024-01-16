@@ -32,8 +32,7 @@ namespace SLThree
             else if (as_is) return Left.DropPriority();
             else
             {
-                if (Left is EqualchanceChooseExpression ecc) return ecc.GetChooser(context);
-                else if (Left is ChanceChooseExpression cc) return cc.GetChooser(context);
+                if (Left is IChooserExpression chooser) return chooser.GetChooser(context);
                 throw new RuntimeError($"{Left?.GetType().GetTypeString() ?? "null"} is not a chooser", Left.SourceContext);
             }
         }

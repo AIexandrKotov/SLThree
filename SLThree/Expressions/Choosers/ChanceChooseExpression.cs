@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class ChanceChooseExpression : BaseExpression
+    public class ChanceChooseExpression : BaseExpression, IChooserExpression
     {
         public static readonly Random Random = new Random();
 
@@ -21,7 +21,7 @@ namespace SLThree
             Chooser = elements;
         }
 
-        public ChanceChooser<object> GetChooser(ExecutionContext context)
+        public object GetChooser(ExecutionContext context)
         {
             return new ChanceChooser<object>(Chooser.Select(
                 x => (x.Item1.GetValue(context), 

@@ -116,7 +116,7 @@ context_statement <BaseStatement>
     }
 
 expression_statement <ExpressionStatement> 
-    = _ value:expression _ { new ExpressionStatement(value, state) }
+    = value:expression { new ExpressionStatement(value, state) }
 
 expression <BaseExpression>
     = binary_9
@@ -177,7 +177,9 @@ ternary_0 <BaseExpression> -memoize
     / binary_8
 
 binary_8 <BaseExpression> -memoize
-    = chance_choose_expression
+    = range_choose_expression
+    / boolean_choose_expression
+    / chance_choose_expression
     / equalchance_choose_expression
     / null_coalescing
 
@@ -188,6 +190,12 @@ null_coalescing <BaseExpression>
 //-------------------------------
 // SUGAR SUGAR SUGAR SUGAR SUGAR
 //-------------------------------
+
+boolean_choose_expression <BooleanChooseExpression>
+    = "\\" _ expr:expression _ "\\" { new BooleanChooseExpression(expr, state) }
+
+range_choose_expression <RangeChooseExpression>
+    = "\\" _ lower:expression _ ".." _ upper:expression _ "\\" { new RangeChooseExpression(lower, upper, state) }
 
 chance_choose_expression <ChanceChooseExpression>
     = ecce:chance_choose_elements { new ChanceChooseExpression(ecce, state) }

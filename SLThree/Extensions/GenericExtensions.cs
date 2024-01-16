@@ -65,5 +65,10 @@ namespace SLThree.Extensions
             var comp = Comparer<TKey>.Default;
             return enumerable.Aggregate((max, x) => comp.Compare(selector(x), selector(max)) > 0 ? x : max);
         }
+
+        public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input, Func<TIn, TOut> selector)
+            => new ChanceChooser<TOut>(input.Values.Select(x => (selector(x.Item1), x.Item2)).ToArray());
+        public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input) where TOut: TIn
+            => new ChanceChooser<TOut>(input.Values.Select(x => ((TOut)x.Item1, x.Item2)).ToArray());
     }
 }

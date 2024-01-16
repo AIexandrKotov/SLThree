@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class EqualchanceChooseExpression : BaseExpression
+    public class EqualchanceChooseExpression : BaseExpression, IChooserExpression
     {
         public static readonly Random Random = new Random();
 
@@ -21,7 +21,7 @@ namespace SLThree
             Chooser = new EqualchanceChooser<BaseExpression>(elements);
         }
 
-        public EqualchanceChooser<object> GetChooser(ExecutionContext context)
+        public object GetChooser(ExecutionContext context)
         {
             return new EqualchanceChooser<object>(Chooser.Values.Select(x => x.GetValue(context)).ToArray());
         }
