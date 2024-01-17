@@ -21,6 +21,8 @@ namespace slt
         {
             if (value is ExecutionContext.ContextWrap wrap)
                 return $"context {wrap.pred.Name}";
+            if (value is null)
+                return "null";
             else return value;
         }
 
