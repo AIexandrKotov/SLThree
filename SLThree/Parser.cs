@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,31 @@ namespace SLThree
             var ret = context ?? new ExecutionContext();
             parsed.GetValue(ret);
             return ret;
+        }
+
+        private class InjectorVisitor : AbstractVisitor
+        {
+            private bool done;
+            private BaseExpression Addition;
+            public InjectorVisitor(BaseExpression addition)
+            {
+                Addition = addition;
+            }
+            public override void VisitExpression(InvokeExpression expression)
+            {
+                if (done) return;
+                var old_args = expression.Arguments;
+                expression.Arguments = new BaseExpression[old_args.Length + 1];
+                old_args.CopyTo(expression.Arguments, 1);
+                expression.Arguments[0] = Addition;
+                done = true;
+            }
+        }
+
+        private static BaseExpression InjectFirst(BaseExpression left, BaseExpression right)
+        {
+            new InjectorVisitor(left).VisitExpression(right);
+            return right;
         }
 
         private static T Panic<T>(SLTException exception)

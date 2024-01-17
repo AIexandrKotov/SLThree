@@ -53,6 +53,7 @@
     <Compile Include="Expressions\Choosers\BooleanChooseExpression.cs" />
     <Compile Include="Expressions\Choosers\RangeChooseExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorArray.cs" />
+    <Compile Include="Expressions\Creators\CreatorRange.cs" />
     <Compile Include="Expressions\NullCoalescingExpression.cs" />
     <Compile Include="Expressions\Operators\ExpressionUnaryReflection.cs" />
     <Compile Include="Expressions\Creators\CreatorUsing.cs" />

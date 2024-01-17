@@ -10,8 +10,8 @@ namespace SLThree
     {
         public static readonly Random Random = new Random();
 
-        public BaseExpression LowerBound { get; set; }
-        public BaseExpression UpperBound { get; set; }
+        public BaseExpression LowerBound;
+        public BaseExpression UpperBound;
 
         public RangeChooseExpression(BaseExpression lower, BaseExpression upper, SourceContext context) : base(context)
         {

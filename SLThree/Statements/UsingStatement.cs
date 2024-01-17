@@ -26,13 +26,22 @@ namespace SLThree
 
         public UsingStatement(CreatorUsing @using, SourceContext context) : this(null, @using, context) { }
 
-        public override string ToString() => $"using {Using.Type}";
+        public override string ToString() => $"using {Using.Type} as {Alias}";
 
         public override object GetValue(ExecutionContext context)
         {
             var @using = Using.GetValue(context).Cast<MemberAccess.ClassAccess>();
-            var name = Alias == null ? @using.Name.Name : Alias.Name;
-            context.LocalVariables.SetValue(name, @using);
+            if (Alias == null)
+            {
+                var type_name = @using.Name.GetTypeString();
+                var name = type_name.Contains(".") ? @using.Name.Name : type_name;
+                context.LocalVariables.SetValue(name, @using);
+            }
+            else
+            {
+                var name = Alias.Name;
+                context.LocalVariables.SetValue(name, @using);
+            }
             return null;
         }
 

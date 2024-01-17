@@ -78,9 +78,9 @@ while_statement <BaseStatement>
     / "while" _ cond:expression { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 foreach_statement <BaseStatement>
-    = "foreach" _ "(" _ n:name _ "in" _ iter:expression _ ")" _ body:single_or_block { new ForeachLoopStatement(n, iter, body, state) }
+    = "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ body:single_or_block { new ForeachLoopStatement(n, iter, body, state) }
     
-    / "foreach" _ "(" _ n:name _ "in" _ iter:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach body must be in { }", state)) }
+    / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach body must be in { }", state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
     / "foreach" _ "(" _ ")" _ statement? { Panic<BaseStatement>(new SyntaxError("Empty loop head", state)) }
     / "foreach" _ cond:expression { Panic<BaseStatement>(new SyntaxError("Loop head must be in ( )", state)) }
@@ -123,6 +123,7 @@ expression <BaseExpression>
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
+    / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / "?" _ "=" _ right:binary_9 { new ExpressionBinaryAssignUnknown(right, state) }
     / left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
     / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
@@ -177,8 +178,8 @@ ternary_0 <BaseExpression> -memoize
     / binary_8
 
 binary_8 <BaseExpression> -memoize
-    = range_choose_expression
-    / chance_choose_expression
+    // range_choose_expression
+    = chance_choose_expression
     / equalchance_choose_expression
     / boolean_choose_expression
     / null_coalescing
@@ -192,10 +193,10 @@ null_coalescing <BaseExpression>
 //-------------------------------
 
 boolean_choose_expression <BooleanChooseExpression>
-    = "\\" _ expr:expression _ "\\" { new BooleanChooseExpression(expr, state) }
+    = "\\" _ expr:binary_7 _ "\\" { new BooleanChooseExpression(expr, state) }
 
 range_choose_expression <RangeChooseExpression>
-    = "\\" _ lower:expression _ ".." _ upper:expression _ "\\" { new RangeChooseExpression(lower, upper, state) }
+    = "\\" _ lower:binary_7 _ ".." _ upper:binary_7 _ "\\" { new RangeChooseExpression(lower, upper, state) }
 
 chance_choose_expression <ChanceChooseExpression>
     = ecce:chance_choose_elements { new ChanceChooseExpression(ecce, state) }
@@ -329,6 +330,7 @@ primary <BaseExpression> -memoize
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
     / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
+    / lower:primary _ ".." _ upper:primary { new CreatorRange(lower, upper, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / dictionary_creator
     / context_creator

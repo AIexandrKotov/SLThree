@@ -1,9 +1,12 @@
 ------ 0.6.0 Surgut Update ------ [~.~.~]
 Language:
+    - Pipe operator `|>`
     - Typing refactoring
     - Indexators and IEnumerable for context
     - Anonymous context statement
     - Array constructor
+    - Range expression `x..y`
+    - Foreach variable now supports all assigns
     - Range `\a..b\` and bool `\33%\` choosers
     - Null coalescing operator `a ?? b`
     - last comma ignoring in creators
@@ -14,3 +17,5 @@ Bugfixes:
     - Fixed raws of string and char
     - Fixed `x.y(a, b)(c, d)` case where x is class access
     - Fixed `(x)[y]`
+Deleted:
+    - [Temporary] \a..b\ chooser

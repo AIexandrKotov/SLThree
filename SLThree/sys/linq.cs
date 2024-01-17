@@ -203,6 +203,11 @@ namespace SLThree.sys
             foreach (var x in enumerable)
                 yield return x;
         }
+        public static IEnumerable<object> as_tuples(System.Collections.IDictionary dictionary)
+        {
+            foreach (var x in dictionary.Keys)
+                yield return (x, dictionary[x]);
+        }
 
         public static IEnumerable<object> skip(IEnumerable<object> objects, long count) => objects.Skip((int)count);
         public static IEnumerable<object> take(IEnumerable<object> objects, long count) => objects.Take((int)count);
