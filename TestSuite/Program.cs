@@ -101,11 +101,11 @@ namespace TestSuite
             }
         }
 
-        static string removable_parsing = Path.GetFullPath("..\\test\\parsing\\");
+        static string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\test\\parsing\\");
         public static void ParsingTests()
         {
             Console.WriteLine(">>> Parsing Tests");
-            foreach (var filename in Directory.GetFiles("..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\parsing\\" : "..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
             {
                 if (ParseTest(filename))
                 {
@@ -122,11 +122,11 @@ namespace TestSuite
             }
         }
 
-        static string removable_executing = Path.GetFullPath("..\\test\\executing\\");
+        static string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\test\\executing\\");
         public static void ExecutingTests()
         {
             Console.WriteLine(">>> Executing Tests");
-            foreach (var filename in Directory.GetFiles("..\\test\\executing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\executing\\" : "..\\test\\executing", "*.slt", SearchOption.AllDirectories))
             {
                 Console.WriteLine($">>> {Path.GetFullPath(filename).Replace(removable_executing, "")}");
                 if (ExecTest(filename))
@@ -153,11 +153,15 @@ namespace TestSuite
             
         }
 
+        private static bool from_solution = false;
+
         public static int Main(string[] args)
         {
             Console.Title = "SLThree Test Suite";
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">>> SLThree Test Suite");
+            if (args.Contains("--from-solution"))
+                from_solution = true;
             SLThree.sys.slt.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();

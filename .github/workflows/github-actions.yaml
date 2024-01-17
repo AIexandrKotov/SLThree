@@ -1,0 +1,33 @@
+name: Test SLThree
+ 
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      name: Checkout Code
+      
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.2
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      
+    - name: Restore NuGet Packages
+      run: nuget restore SLThree.sln
+      
+    - name: Build
+      run: msbuild SLThree.sln /p:Configuration=Release /p:DeployOnBuild=false
+      
+    - name: Tests
+      run: bin/TestSuite.exe --from-solution
