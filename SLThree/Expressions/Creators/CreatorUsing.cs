@@ -23,6 +23,8 @@ namespace SLThree
 
         public override string ExpressionToString() => $"new using {Type}";
 
+        public string GetTypenameWithoutGenerics() => Type.Typename.ToString();
+
         public override object GetValue(ExecutionContext context)
         {
             if (system != null) return system;

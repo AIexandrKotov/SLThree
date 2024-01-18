@@ -53,8 +53,8 @@ namespace SLThree.Embedding
         private static void Reference(string assembly)
         {
             var ass = Assembly.LoadFrom(assembly);
-            if (!slt.RegistredAssemblies.Contains(ass))
-                slt.RegistredAssemblies.Add(ass);
+            if (!slt.registred.Contains(ass))
+                slt.registred.Add(ass);
         }
 
         private static BaseStatement ParseFile(string filename)

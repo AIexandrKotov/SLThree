@@ -10,10 +10,8 @@ namespace SLThree
 {
     public class UsingStatement : BaseStatement
     {
-        public static Dictionary<string, Type> SystemTypes { get; } = Assembly
-            .GetExecutingAssembly()
-            .GetTypes()
-            .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x);
+        //todo only for compatibility
+        public static Dictionary<string, Type> SystemTypes { get; } = sys.slt.sys_types;
 
         public NameExpression Alias;
         public CreatorUsing Using;
@@ -31,17 +29,14 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var @using = Using.GetValue(context).Cast<MemberAccess.ClassAccess>();
+            string name;
             if (Alias == null)
             {
-                var type_name = @using.Name.GetTypeString();
-                var name = type_name.Contains(".") ? @using.Name.Name : type_name;
-                context.LocalVariables.SetValue(name, @using);
+                var type_name = Using.GetTypenameWithoutGenerics();
+                name = type_name.Contains(".") ? @using.Name.Name : type_name;
             }
-            else
-            {
-                var name = Alias.Name;
-                context.LocalVariables.SetValue(name, @using);
-            }
+            else name = Alias.Name;
+            context.LocalVariables.SetValue(name, @using);
             return null;
         }
 

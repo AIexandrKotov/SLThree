@@ -11,7 +11,7 @@ namespace slt
         private static FieldInfo slt_RegistredAssemblies;
         internal static void Init()
         {
-            slt_RegistredAssemblies = Program.SLThreeAssembly.GetType("SLThree.sys.slt").GetField("RegistredAssemblies");
+            slt_RegistredAssemblies = Program.SLThreeAssembly.GetType("SLThree.sys.slt").GetField("registred");
             slt_RegistredAssemblies.GetValue(null).Cast<List<Assembly>>().Add(typeof(LANG_060).Assembly);
         }
     }
