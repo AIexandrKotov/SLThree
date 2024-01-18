@@ -2,7 +2,7 @@ global.calc = (index) => {
     step = 0;
     while (index > 1) {
         if (index % 2 == 0) {
-            index /= 2;step += 1;
+            index /= 2; step += 1;
         }
         else
         {
@@ -13,4 +13,4 @@ global.calc = (index) => {
     return step;
 };
 using linq;
-max = linq.max(linq.range(0, 1000000), x => global.calc(x));
+max = 0..1000000 |> linq.max(x => global.calc(x));

@@ -18,25 +18,29 @@ namespace SLThree
             UpperBound = upperBound;
         }
 
+        public struct DoubleRange 
+        {
+
+        }
         public struct RangeEnumerator : IEnumerable<object>
         {
-            long lower;
-            long upper;
+            public long Lower;
+            public long Upper;
 
             public RangeEnumerator(long lower, long upper)
             {
-                this.lower = lower;
-                this.upper = upper;
+                this.Lower = lower;
+                this.Upper = upper;
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
             public IEnumerator<object> GetEnumerator()
             {
-                for (var i = lower; i <= upper; i++)
+                for (var i = Lower; i <= Upper; i++)
                     yield return i;
             }
 
-            public override string ToString() => $"{lower}..{upper}";
+            public override string ToString() => $"{Lower}..{Upper}";
         }
 
         public override object GetValue(ExecutionContext context)

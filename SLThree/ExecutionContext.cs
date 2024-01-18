@@ -147,8 +147,8 @@ namespace SLThree
         internal ExecutionContext PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
         public readonly ContextWrap wrap;
-        internal ContextWrap upper;
-        internal ExecutionContext toplevel { get => upper?.pred; set => upper = new ContextWrap(value); }
+        internal ContextWrap super;
+        internal ExecutionContext toplevel { get => super?.pred; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
         {

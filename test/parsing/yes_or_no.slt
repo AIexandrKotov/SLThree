@@ -1,4 +1,0 @@
-using console;
-while (console.readln() != "0") {
-    console.writeln("да" \ "нет");
-}

@@ -4,6 +4,7 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
+
     public class UnaryAdd : UnaryOperator
     {
         public override string Operator => "+";

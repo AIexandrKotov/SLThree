@@ -178,53 +178,12 @@ ternary_0 <BaseExpression> -memoize
     / binary_8
 
 binary_8 <BaseExpression> -memoize
-    // range_choose_expression
-    = chance_choose_expression
-    / equalchance_choose_expression
-    / boolean_choose_expression
+    = lower:binary_8 _ ".." _ upper:binary_8 { new CreatorRange(lower, upper, state) }
     / null_coalescing
 
 null_coalescing <BaseExpression>
     = left:binary_7 _ "??" _ right:null_coalescing { new NullCoalescingExpression(left, right, state) }
     / binary_7
-    
-//-------------------------------
-// SUGAR SUGAR SUGAR SUGAR SUGAR
-//-------------------------------
-
-boolean_choose_expression <BooleanChooseExpression>
-    = "\\" _ expr:binary_7 _ "\\" { new BooleanChooseExpression(expr, state) }
-
-range_choose_expression <RangeChooseExpression>
-    = "\\" _ lower:binary_7 _ ".." _ upper:binary_7 _ "\\" { new RangeChooseExpression(lower, upper, state) }
-
-chance_choose_expression <ChanceChooseExpression>
-    = ecce:chance_choose_elements { new ChanceChooseExpression(ecce, state) }
-
-chance_choose_elements <IList<ValueTuple<BaseExpression, BaseExpression>>>
-    = first:chance_choose_element _ other:chance_choose_other_element+ { other.AddAndRet(first) }
-
-chance_choose_other_element <ValueTuple<BaseExpression, BaseExpression>>
-    = "\\" _ expr:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseExpression, BaseExpression>(expr, c) }
-
-chance_choose_element <ValueTuple<BaseExpression, BaseExpression>>
-    = expr:binary_7 _ ":" _ c:binary_7 { new ValueTuple<BaseExpression, BaseExpression>(expr, c) }
-
-equalchance_choose_expression <EqualchanceChooseExpression>
-    = ecce:equalchance_choose_elements { new EqualchanceChooseExpression(ecce, state) }
-
-equalchance_choose_elements <IList<BaseExpression>>
-    = first:equalchance_choose_element _ other:equalchance_choose_other_element+ { other.AddAndRet(first) }
-
-equalchance_choose_other_element <BaseExpression>
-    = ("\\" _ expr:binary_7 _ ) { expr }
-
-equalchance_choose_element <BaseExpression>
-    = binary_7
-    
-//-------------------------------
-// SUGAR SUGAR SUGAR SUGAR SUGAR
-//-------------------------------
 
 binary_7 <BaseExpression> -memoize
     = left:binary_7 _ "||" _ right:binary_6 { new BinaryOr(left, right, state) }
@@ -321,6 +280,9 @@ unary <BaseExpression>
     / "-" _ left:binary_min { new UnaryRem(left, state) }
     / "~" _ left:binary_min { new UnaryBitNot(left, state) }
     / "!" _ left:binary_min { new UnaryNot(left, state) }
+    / "^" _ left:binary_min { new UnaryChoose(left, state) }
+    / "*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, state) }
+    / "*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
     / "@" _ left:typename { new UnaryReflection(left, state) }
     / primary
@@ -330,7 +292,6 @@ primary <BaseExpression> -memoize
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
     / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
-    / lower:primary _ ".." _ upper:primary { new CreatorRange(lower, upper, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / dictionary_creator
     / context_creator
@@ -416,6 +377,7 @@ name_literal <BaseExpression>
 
 special <BaseExpression>
     = "global" { new GlobalLiteral(state) }
+    / "super" { new SuperLiteral(state) }
     / "upper" { new UpperLiteral(state) }
     / "this" { new ThisLiteral(state) }
     / "self" { new SelfLiteral(state) }

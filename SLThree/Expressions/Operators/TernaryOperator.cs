@@ -21,9 +21,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var cond = Condition.GetValue(context);
-            var left = Left.GetValue(context);
-            var right = Right.GetValue(context);
-            return (bool)cond ? left : right;
+            return (bool)cond ? Left.GetValue(context) : Right.GetValue(context);
         }
 
         public override string ExpressionToString() => $"{Condition} ? {Left} : {Right}";

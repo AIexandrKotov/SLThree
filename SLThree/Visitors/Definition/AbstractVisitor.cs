@@ -52,7 +52,6 @@ namespace SLThree.Visitors
             switch (expression)
             {
                 case CastExpression expr: VisitExpression(expr); return;
-                case ChanceChooseExpression expr: VisitExpression(expr); return;
                 case MemberAccess expr: VisitExpression(expr); return;
                 case TernaryOperator expr: VisitExpression(expr); return;
                 case BinaryOperator expr: VisitExpression(expr); return;
@@ -64,13 +63,15 @@ namespace SLThree.Visitors
                 case InvokeExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
                 case IndexExpression expr: VisitExpression(expr); return;
-                case EqualchanceChooseExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
                 case CreatorDictionary expr: VisitExpression(expr); return;
                 case CreatorList expr: VisitExpression(expr); return;
                 case CreatorUsing expr: VisitExpression(expr); return;
                 case ReflectionExpression expr: VisitExpression(expr); return;
                 case TypenameExpression expr: VisitExpression(expr); return;
+                case CreatorArray expr: VisitExpression(expr); return;
+                case CreatorContext expr: VisitExpression(expr); return;
+                case CreatorRange expr: VisitExpression(expr); return;
             }
             Executables.Remove(expression);
         }
@@ -79,14 +80,6 @@ namespace SLThree.Visitors
         {
             VisitExpression(expression.Left);
             VisitExpression(expression.Type);
-        }
-        public virtual void VisitExpression(ChanceChooseExpression expression)
-        {
-            foreach (var x in expression.Chooser)
-            {
-                VisitExpression(x.Item1);
-                VisitExpression(x.Item2);
-            }
         }
         public virtual void VisitExpression(CreatorList expression)
         {
@@ -106,13 +99,6 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(CreatorTuple expression)
         {
             foreach (var x in expression.Expressions)
-            {
-                VisitExpression(x);
-            }
-        }
-        public virtual void VisitExpression(EqualchanceChooseExpression expression)
-        {
-            foreach (var x in expression.Chooser)
             {
                 VisitExpression(x);
             }
@@ -292,6 +278,26 @@ namespace SLThree.Visitors
         public virtual void VisitStatement(ContinueStatement statement)
         {
 
+        }
+
+        public void VisitExpression(CreatorArray expression)
+        {
+            VisitExpression(expression.ArrayType);
+            VisitExpression(expression.Size);
+        }
+
+        public void VisitExpression(CreatorContext expression)
+        {
+            if (expression.Typecast != null) VisitExpression(expression.Typecast);
+            if (expression.Body != null)
+                foreach (var x in expression.Body)
+                    VisitStatement(x);
+        }
+
+        public void VisitExpression(CreatorRange expression)
+        {
+            VisitExpression(expression.LowerBound);
+            VisitExpression(expression.UpperBound);
         }
     }
 }

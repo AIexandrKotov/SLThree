@@ -1,6 +1,7 @@
 ﻿using SLThree.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Contexts;
@@ -13,6 +14,7 @@ namespace SLThree.sys
 #pragma warning disable IDE1006 // Стили именования
     public static class linq
     {
+
         internal static MemberAccess.ClassAccess LinqAccess = new MemberAccess.ClassAccess(typeof(linq));
         public static IEnumerable<object> range(long end)
         {

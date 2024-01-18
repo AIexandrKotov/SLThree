@@ -103,6 +103,7 @@ namespace SLThree
 
         private bool counted_contextwrapcache2;
         private bool is_unwrap;
+        private bool is_super;
         private bool is_upper;
         public override object GetValue(ExecutionContext context)
         {
@@ -110,7 +111,8 @@ namespace SLThree
 
             if (counted_contextwrapcache)
             {
-                if (is_upper) return (left as ExecutionContext.ContextWrap).pred.upper;
+                if (is_super) return (left as ExecutionContext.ContextWrap).pred.super;
+                else if (is_upper) return (left as ExecutionContext.ContextWrap).pred.PreviousContext.wrap;
                 else return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
@@ -125,11 +127,17 @@ namespace SLThree
                 {
                     if (Right is NameExpression predName)
                     {
-                        if (predName.Name == "upper")
+                        if (predName.Name == "super")
+                        {
+                            counted_contextwrapcache = true;
+                            is_super = true;
+                            return pred.pred.super;
+                        }
+                        else if (predName.Name == "upper")
                         {
                             counted_contextwrapcache = true;
                             is_upper = true;
-                            return pred.pred.upper;
+                            return pred.pred.PreviousContext.wrap;
                         }
                         variable_name = predName.ExpressionToString().Replace(" ", "");
                         counted_contextwrapcache = true;

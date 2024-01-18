@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    internal class NullCoalescingExpression : BinaryOperator
+    public class NullCoalescingExpression : BinaryOperator
     {
         public override string Operator => "??";
         public NullCoalescingExpression(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SLThree
 {
-    public class StringLiteral : Literal<string>, IChooserExpression
+    public class StringLiteral : Literal<string>
     {
         public StringLiteral(string value, Cursor cursor) : base(value, $"\"{value}\"", cursor) { }
         public StringLiteral() : base() { }
@@ -13,10 +13,5 @@ namespace SLThree
             Value = Value,
             SourceContext = SourceContext.CloneCast()
         };
-
-        public object GetChooser(ExecutionContext context)
-        {
-            return new EqualchanceChooser<char>(RawRepresentation.ToCharArray());
-        }
     }
 }
