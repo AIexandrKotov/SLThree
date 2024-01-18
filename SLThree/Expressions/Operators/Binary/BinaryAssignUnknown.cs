@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace SLThree
 {
-    public class ExpressionBinaryAssignUnknown : ExpressionUnary
+    public class BinaryAssignUnknown : UnaryOperator
     {
         public override string Operator => "? =";
-        public ExpressionBinaryAssignUnknown(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
-        public ExpressionBinaryAssignUnknown() : base() { }
+        public BinaryAssignUnknown(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public BinaryAssignUnknown() : base() { }
 
         private static bool is_invalid_name(char x) => !(x == '_' || (x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'));
 
@@ -45,7 +45,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryAssignUnknown(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryAssignUnknown(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

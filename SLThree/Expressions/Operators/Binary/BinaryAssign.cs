@@ -5,11 +5,11 @@ using System.Threading;
 
 namespace SLThree
 {
-    public class ExpressionBinaryAssign : ExpressionBinary
+    public class BinaryAssign : BinaryOperator
     {
         public override string Operator => "=";
-        public ExpressionBinaryAssign(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryAssign() : base() { }
+        public BinaryAssign(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryAssign() : base() { }
         private ExecutionContext counted_invoked;
         private bool is_name_expr;
         private int variable_index;
@@ -125,7 +125,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryAssign(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryAssign(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

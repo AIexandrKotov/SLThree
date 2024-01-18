@@ -2,9 +2,9 @@
 
 namespace SLThree
 {
-    public class ExpressionUnaryStaticReflection : ExpressionUnary
+    public class UnaryStaticReflection : UnaryOperator
     {
-        public ExpressionUnaryStaticReflection(BaseExpression left, SourceContext context) : base(left, context)
+        public UnaryStaticReflection(BaseExpression left, SourceContext context) : base(left, context)
         {
         }
 
@@ -17,7 +17,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryReflection(Left, SourceContext);
+            return new UnaryReflection(Left, SourceContext);
         }
     }
 }

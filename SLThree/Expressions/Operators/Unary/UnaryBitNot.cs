@@ -4,11 +4,11 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionUnaryBitNot : ExpressionUnary
+    public class UnaryBitNot : UnaryOperator
     {
         public override string Operator => "~";
-        public ExpressionUnaryBitNot(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
-        public ExpressionUnaryBitNot() : base() { }
+        public UnaryBitNot(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryBitNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -31,7 +31,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryBitNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryBitNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

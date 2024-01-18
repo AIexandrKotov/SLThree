@@ -1,8 +1,8 @@
 ﻿namespace SLThree
 {
-    public class ExpressionUnaryReflection : ExpressionUnary
+    public class UnaryReflection : UnaryOperator
     {
-        public ExpressionUnaryReflection(BaseExpression left, SourceContext context) : base(left, context)
+        public UnaryReflection(BaseExpression left, SourceContext context) : base(left, context)
         {
         }
 
@@ -15,7 +15,7 @@
 
         public override object Clone()
         {
-            return new ExpressionUnaryReflection(Left, SourceContext);
+            return new UnaryReflection(Left, SourceContext);
         }
     }
 }

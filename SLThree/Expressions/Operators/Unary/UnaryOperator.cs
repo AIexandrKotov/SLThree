@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public abstract class ExpressionUnary : BaseExpression
+    public abstract class UnaryOperator : BaseExpression
     {
         public BaseExpression Left;
-        public ExpressionUnary(BaseExpression left, SourceContext context) : base(context)
+        public UnaryOperator(BaseExpression left, SourceContext context) : base(context)
         {
             Left = left;
         }
-        public ExpressionUnary(BaseExpression left, SourceContext context, bool priority) : base(priority, context)
+        public UnaryOperator(BaseExpression left, SourceContext context, bool priority) : base(priority, context)
         {
             Left = left;
         }
-        public ExpressionUnary() : base() { }
+        public UnaryOperator() : base() { }
 
         public abstract string Operator { get; }
         public override string ExpressionToString() => $"{Operator}{Left?.ToString() ?? "null"}";

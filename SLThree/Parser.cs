@@ -62,7 +62,7 @@ namespace SLThree
         {
             if (statement is ExpressionStatement expressionStatement)
             {
-                if (expressionStatement.Expression is ExpressionBinaryAssign)
+                if (expressionStatement.Expression is BinaryAssign)
                     return statement;
                 throw new SyntaxError($"Expected assign expression, found {expressionStatement.Expression.GetType().Name}", expressionStatement.Expression.SourceContext);
             }

@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class ExpressionBinaryRem : ExpressionBinary
+    public class BinaryRem : BinaryOperator
     {
         public override string Operator => "-";
-        public ExpressionBinaryRem(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryRem() : base() { }
+        public BinaryRem(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -51,7 +51,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryRem(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryRem(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

@@ -4,11 +4,11 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionBinaryMod : ExpressionBinary
+    public class BinaryMod : BinaryOperator
     {
         public override string Operator => "%";
-        public ExpressionBinaryMod(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryMod() : base() { }
+        public BinaryMod(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryMod() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -45,7 +45,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

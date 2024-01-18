@@ -4,11 +4,11 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionUnaryNot : ExpressionUnary
+    public class UnaryAdd : UnaryOperator
     {
-        public override string Operator => "!";
-        public ExpressionUnaryNot(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
-        public ExpressionUnaryNot() : base() { }
+        public override string Operator => "+";
+        public UnaryAdd(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -22,7 +22,9 @@ namespace SLThree
             }
             switch (left)
             {
-                case bool b: return !b;
+                case long v: return +v;
+                case ulong v: return +v;
+                case double v: return +v;
             }
             context.Errors.Add(new OperatorError(this, left?.GetType()));
             return null;
@@ -30,7 +32,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryAdd(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

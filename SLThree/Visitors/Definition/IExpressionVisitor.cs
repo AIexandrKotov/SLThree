@@ -21,9 +21,9 @@
         void VisitExpression(TypenameExpression expression);
 
         void VisitExpression(Literal expression);
-        void VisitExpression(ExpressionUnary expression);
-        void VisitExpression(ExpressionBinary expression);
-        void VisitExpression(ExpressionTernary expression);
+        void VisitExpression(UnaryOperator expression);
+        void VisitExpression(BinaryOperator expression);
+        void VisitExpression(TernaryOperator expression);
 
         void VisitExpression(MemberAccess expression);
     }

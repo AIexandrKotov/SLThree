@@ -39,7 +39,7 @@ namespace SLThree
             foreach (var x in iterator)
             {
                 if (is_name_expr) context.LocalVariables.SetValue(variable_index, x);
-                else ExpressionBinaryAssign.AssignToValue(context, Left, x, ref last_context, ref is_name_expr, ref variable_index);
+                else BinaryAssign.AssignToValue(context, Left, x, ref last_context, ref is_name_expr, ref variable_index);
                 for (var i = 0; i < count; i++)
                 {
                     ret = LoopBody[i].GetValue(context);

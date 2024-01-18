@@ -54,9 +54,9 @@ namespace SLThree.Visitors
                 case CastExpression expr: VisitExpression(expr); return;
                 case ChanceChooseExpression expr: VisitExpression(expr); return;
                 case MemberAccess expr: VisitExpression(expr); return;
-                case ExpressionTernary expr: VisitExpression(expr); return;
-                case ExpressionBinary expr: VisitExpression(expr); return;
-                case ExpressionUnary expr: VisitExpression(expr); return;
+                case TernaryOperator expr: VisitExpression(expr); return;
+                case BinaryOperator expr: VisitExpression(expr); return;
+                case UnaryOperator expr: VisitExpression(expr); return;
                 case Literal expr: VisitExpression(expr); return;
                 case NewExpression expr: VisitExpression(expr); return;
                 case NameExpression expr: VisitExpression(expr); return;
@@ -162,18 +162,18 @@ namespace SLThree.Visitors
             
         }
 
-        public virtual void VisitExpression(ExpressionUnary expression)
+        public virtual void VisitExpression(UnaryOperator expression)
         {
             VisitExpression(expression.Left);
         }
 
-        public virtual void VisitExpression(ExpressionBinary expression)
+        public virtual void VisitExpression(BinaryOperator expression)
         {
             VisitExpression(expression.Left);
             VisitExpression(expression.Right);
         }
 
-        public virtual void VisitExpression(ExpressionTernary expression)
+        public virtual void VisitExpression(TernaryOperator expression)
         {
             VisitExpression(expression.Condition);
             VisitExpression(expression.Left);

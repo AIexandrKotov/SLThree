@@ -5,11 +5,11 @@ using System;
 
 namespace SLThree
 {
-    public class ExpressionBinaryAdd : ExpressionBinary
+    public class BinaryAdd : BinaryOperator
     {
         public override string Operator => "+";
-        public ExpressionBinaryAdd(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryAdd() : base() { }
+        public BinaryAdd(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -46,7 +46,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryAdd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryAdd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

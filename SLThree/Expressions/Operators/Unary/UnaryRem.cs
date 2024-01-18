@@ -4,11 +4,11 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionUnaryRem : ExpressionUnary
+    public class UnaryRem : UnaryOperator
     {
         public override string Operator => "-";
-        public ExpressionUnaryRem(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
-        public ExpressionUnaryRem() : base() { }
+        public UnaryRem(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -31,7 +31,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionUnaryRem(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryRem(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

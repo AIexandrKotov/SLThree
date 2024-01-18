@@ -5,11 +5,11 @@ using System;
 
 namespace SLThree
 {
-    public class ExpressionBinaryDivide : ExpressionBinary
+    public class BinaryDivide : BinaryOperator
     {
         public override string Operator => "/";
-        public ExpressionBinaryDivide(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryDivide() : base() { }
+        public BinaryDivide(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryDivide() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -46,7 +46,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryDivide(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryDivide(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

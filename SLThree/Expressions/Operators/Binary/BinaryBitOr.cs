@@ -4,12 +4,12 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionBinaryBitOr : ExpressionBinary
+    public class BinaryBitOr : BinaryOperator
     {
         public override string Operator => "|";
-        public ExpressionBinaryBitOr(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryBitOr(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
 
-        public ExpressionBinaryBitOr() : base() { }
+        public BinaryBitOr() : base() { }
 
 
         public override object GetValue(ExecutionContext context)
@@ -41,7 +41,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

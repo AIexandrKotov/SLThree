@@ -4,9 +4,9 @@ using System;
 
 namespace SLThree
 {
-    public class ExpressionBinaryIs : ExpressionBinary
+    public class BinaryIs : BinaryOperator
     {
-        public ExpressionBinaryIs(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context)
+        public BinaryIs(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context)
         {
 
         }
@@ -20,7 +20,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryIs(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new BinaryIs(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

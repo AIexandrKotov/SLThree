@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace SLThree
 {
-    public class MemberAccess : ExpressionBinary
+    public class MemberAccess : BinaryOperator
     {
         public class ClassAccess
         {

@@ -3,7 +3,7 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionTernary : BaseExpression
+    public class TernaryOperator : BaseExpression
     {
         public string Operator => "?:";
 
@@ -11,13 +11,13 @@ namespace SLThree
         public BaseExpression Left;
         public BaseExpression Right;
         
-        public ExpressionTernary(BaseExpression cond, BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(priority, context)
+        public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(priority, context)
         {
             Condition = cond;
             Left = left;
             Right = right;
         }
-        public ExpressionTernary() : base() { }
+        public TernaryOperator() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             var cond = Condition.GetValue(context);
@@ -30,7 +30,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionTernary(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new TernaryOperator(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

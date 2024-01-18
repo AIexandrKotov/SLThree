@@ -6,11 +6,11 @@ using static SLThree.SwitchStatement;
 
 namespace SLThree
 {
-    public class ExpressionBinaryEquals : ExpressionBinary
+    public class BinaryEquals : BinaryOperator
     {
         public override string Operator => "==";
-        public ExpressionBinaryEquals(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryEquals() : base() { }
+        public BinaryEquals(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryEquals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -48,7 +48,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

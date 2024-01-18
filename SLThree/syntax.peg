@@ -124,16 +124,16 @@ expression <BaseExpression>
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
-    / "?" _ "=" _ right:binary_9 { new ExpressionBinaryAssignUnknown(right, state) }
-    / left:binary_7 _ "=" _ right:binary_9 { new ExpressionBinaryAssign(left, right, state) }
-    / left:binary_7 _ "+=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryAdd(left, right, state), state) }
-    / left:binary_7 _ "-=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryRem(left, right, state), state) }
-    / left:binary_7 _ "*=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryMultiply(left, right, state), state) }
-    / left:binary_7 _ "/=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryDivide(left, right, state), state) }
-    / left:binary_7 _ "%=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryMod(left, right, state), state) }
-    / left:binary_7 _ "&=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitAnd(left, right, state), state) }
-    / left:binary_7 _ "|=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitOr(left, right, state), state) }
-    / left:binary_7 _ "^=" _ right:binary_9 { new ExpressionBinaryAssign(left, new ExpressionBinaryBitXor(left, right, state), state) }
+    / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, state) }
+    / left:binary_7 _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
+    / left:binary_7 _ "+=" _ right:binary_9 { new BinaryAssign(left, new BinaryAdd(left, right, state), state) }
+    / left:binary_7 _ "-=" _ right:binary_9 { new BinaryAssign(left, new BinaryRem(left, right, state), state) }
+    / left:binary_7 _ "*=" _ right:binary_9 { new BinaryAssign(left, new BinaryMultiply(left, right, state), state) }
+    / left:binary_7 _ "/=" _ right:binary_9 { new BinaryAssign(left, new BinaryDivide(left, right, state), state) }
+    / left:binary_7 _ "%=" _ right:binary_9 { new BinaryAssign(left, new BinaryMod(left, right, state), state) }
+    / left:binary_7 _ "&=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitAnd(left, right, state), state) }
+    / left:binary_7 _ "|=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitOr(left, right, state), state) }
+    / left:binary_7 _ "^=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitXor(left, right, state), state) }
     / left:lambda_left _ "=>" _ right:lambda_right { new LambdaExpression(new InvokeExpression(null, left.Item2, state), right, left.Item1, state) }
     / ternary_0
 
@@ -174,7 +174,7 @@ context_allowed_statement <BaseStatement>
     = _ st:statement _ ";" _ { CheckOnContextStatements(st) }
 
 ternary_0 <BaseExpression> -memoize
-    = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new ExpressionTernary(cond, t, f, state) }
+    = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new TernaryOperator(cond, t, f, state) }
     / binary_8
 
 binary_8 <BaseExpression> -memoize
@@ -227,23 +227,23 @@ equalchance_choose_element <BaseExpression>
 //-------------------------------
 
 binary_7 <BaseExpression> -memoize
-    = left:binary_7 _ "||" _ right:binary_6 { new ExpressionBinaryOr(left, right, state) }
+    = left:binary_7 _ "||" _ right:binary_6 { new BinaryOr(left, right, state) }
     / binary_6
 
 binary_6 <BaseExpression> -memoize
-    = left:binary_6 _ "&&" _ right:binary_5 { new ExpressionBinaryAnd(left, right, state) }
+    = left:binary_6 _ "&&" _ right:binary_5 { new BinaryAnd(left, right, state) }
     / binary_5
 
 binary_5 <BaseExpression> -memoize
-    = left:binary_5 _ "&" _ right:binary_4 { new ExpressionBinaryBitAnd(left, right, state) }
-    / left:binary_5 _ "^" _ right:binary_4 { new ExpressionBinaryBitXor(left, right, state) }
-    / left:binary_5 _ "|" _ right:binary_4 { new ExpressionBinaryBitOr(left, right, state) }
+    = left:binary_5 _ "&" _ right:binary_4 { new BinaryBitAnd(left, right, state) }
+    / left:binary_5 _ "^" _ right:binary_4 { new BinaryBitXor(left, right, state) }
+    / left:binary_5 _ "|" _ right:binary_4 { new BinaryBitOr(left, right, state) }
     / binary_4
 
 binary_4 <BaseExpression> -memoize
-    = left:binary_4 _ "==" _ right:binary_3 { new ExpressionBinaryEquals(left, right, state) }
-    / left:binary_4 _ "!=" _ right:binary_3 { new ExpressionBinaryUnequals(left, right, state) }
-    / left:binary_4 _ "is" _required_ right:typename { new ExpressionBinaryIs(left, right, state) }
+    = left:binary_4 _ "==" _ right:binary_3 { new BinaryEquals(left, right, state) }
+    / left:binary_4 _ "!=" _ right:binary_3 { new BinaryUnequals(left, right, state) }
+    / left:binary_4 _ "is" _required_ right:typename { new BinaryIs(left, right, state) }
     / binary_3
 
 lambda_left <ValueTuple<IList<string>, BaseExpression[]>>
@@ -273,21 +273,21 @@ implicit_keyword
     = s:"implicit" { s }
 
 binary_3 <BaseExpression> -memoize
-    = left:binary_3 _ ">=" _ right:binary_2 { new ExpressionBinaryGreaterThanEquals(left, right, state) }
-    / left:binary_3 _ "<=" _ right:binary_2 { new ExpressionBinaryLessThanEquals(left, right, state) }
-    / left:binary_3 _ ">" _ right:binary_2 { new ExpressionBinaryGreaterThan(left, right, state) }
-    / left:binary_3 _ "<" _ right:binary_2 { new ExpressionBinaryLessThan(left, right, state) }
+    = left:binary_3 _ ">=" _ right:binary_2 { new BinaryGreaterThanEquals(left, right, state) }
+    / left:binary_3 _ "<=" _ right:binary_2 { new BinaryLessThanEquals(left, right, state) }
+    / left:binary_3 _ ">" _ right:binary_2 { new BinaryGreaterThan(left, right, state) }
+    / left:binary_3 _ "<" _ right:binary_2 { new BinaryLessThan(left, right, state) }
     / binary_2
 
 binary_2 <BaseExpression> -memoize
-    = left:binary_2 _ "+" _ right:binary_1 { new ExpressionBinaryAdd(left, right, state) }
-    / left:binary_2 _ "-" _ right:binary_1 { new ExpressionBinaryRem(left, right, state) }
+    = left:binary_2 _ "+" _ right:binary_1 { new BinaryAdd(left, right, state) }
+    / left:binary_2 _ "-" _ right:binary_1 { new BinaryRem(left, right, state) }
     / binary_1
 
 binary_1 <BaseExpression> -memoize
-    = left:binary_1 _ "*" _ right:binary_0 { new ExpressionBinaryMultiply(left, right, state) }
-    / left:binary_1 _ "/" _ right:binary_0 { new ExpressionBinaryDivide(left, right, state) }
-    / left:binary_1 _ "%" _ right:binary_0 { new ExpressionBinaryMod(left, right, state) }
+    = left:binary_1 _ "*" _ right:binary_0 { new BinaryMultiply(left, right, state) }
+    / left:binary_1 _ "/" _ right:binary_0 { new BinaryDivide(left, right, state) }
+    / left:binary_1 _ "%" _ right:binary_0 { new BinaryMod(left, right, state) }
     / binary_0
 
 binary_0 <BaseExpression> -memoize
@@ -313,16 +313,16 @@ binary_min <BaseExpression>
     = unary
 
 unary <BaseExpression>
-    = "+" _ left:binary_min { new ExpressionUnaryAdd(left, state) }
+    = "+" _ left:binary_min { new UnaryAdd(left, state) }
     / i8:("-" _ ([0-9_]+ ("i8"))) { new SByteLiteral(sbyte.Parse(i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), i8, state) }
     / i16:("-" _ ([0-9_]+ ("i16"))) { new ShortLiteral(short.Parse(i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, state) }
     / i32:("-" _ ([0-9_]+ ("i32"))) { new IntLiteral(int.Parse(i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), i32, state) }
     / i64:("-" _ ([0-9_]+ ("i64"))) { new LongLiteral(long.Parse(i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, state) }
-    / "-" _ left:binary_min { new ExpressionUnaryRem(left, state) }
-    / "~" _ left:binary_min { new ExpressionUnaryBitNot(left, state) }
-    / "!" _ left:binary_min { new ExpressionUnaryNot(left, state) }
-    / "@@" _ left:typename { new ExpressionUnaryStaticReflection(left, state) }
-    / "@" _ left:typename { new ExpressionUnaryReflection(left, state) }
+    / "-" _ left:binary_min { new UnaryRem(left, state) }
+    / "~" _ left:binary_min { new UnaryBitNot(left, state) }
+    / "!" _ left:binary_min { new UnaryNot(left, state) }
+    / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
+    / "@" _ left:typename { new UnaryReflection(left, state) }
     / primary
 
 primary <BaseExpression> -memoize

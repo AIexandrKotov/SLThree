@@ -4,11 +4,12 @@ using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class ExpressionBinaryBitAnd : ExpressionBinary
+    public class BinaryBitXor : BinaryOperator
     {
-        public override string Operator => "&";
-        public ExpressionBinaryBitAnd(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public ExpressionBinaryBitAnd() : base() { }
+        public override string Operator => "^";
+        public BinaryBitXor(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+
+        public BinaryBitXor() : base() { }
         public override object GetValue(ExecutionContext context)
         {
             object left;
@@ -23,14 +24,14 @@ namespace SLThree
                 left = Left.GetValue(context).CastToMax();
                 right = Right.GetValue(context).CastToMax();
             }
-            if (left is bool b1 && right is bool b2) return b1 & b2;
+            if (left is bool b1 && right is bool b2) return b1 ^ b2;
             else if (left is long i1)
             {
-                if (right is long i2) return i1 & i2;
+                if (right is long i2) return i1 ^ i2;
             }
             else if (left is ulong u1)
             {
-                if (right is ulong u2) return u1 & u2;
+                if (right is ulong u2) return u1 ^ u2;
             }
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;
@@ -38,7 +39,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ExpressionBinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryBitXor(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }

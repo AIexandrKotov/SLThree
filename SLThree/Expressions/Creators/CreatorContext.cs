@@ -46,7 +46,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Body.Length; i++)
                 {
-                    if (Body[i] is ExpressionStatement es && es.Expression is ExpressionBinaryAssign assign)
+                    if (Body[i] is ExpressionStatement es && es.Expression is BinaryAssign assign)
                         assign.AssignValue(ret, assign.Left, assign.Right.GetValue(context));
                     else if (Body[i] is ContextStatement cs)
                         cs.GetValue(ret);
