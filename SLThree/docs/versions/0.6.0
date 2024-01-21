@@ -1,24 +1,22 @@
------- 0.6.0 Surgut Update ------ [~.~.~]
+------ 0.6.0 Functionalization Update ------ [~.~.~]
 Language:
-    - Pipe operator `|>`
-    - Typing refactoring
-    - Indexators and IEnumerable for context
-    - New choosers syntax (^*)
-    - Anonymous context statement
-    - Array constructor
-    - Range expression `x..y`
-    - Foreach variable now supports all assigns
-    - Null coalescing operator `a ?? b`
+    - Pipe operator `x |> y()`
     - try-catch-finally statement
+    - Null conditional operators `x?.y`, `x?[y]`, `x?()`
+    - Null coalescing operator `a ?? b`
     - Safe expression `err -? a`
+    - Range expression `x..y`
+    - New choosers syntax `^x..y`, `*[x, y]`
+    - Array constructor `new T[size]`
     - last comma ignoring in creators
-    - upper->super, new special context `upper`
-    - single statements, else if
-    - Common interface for choosers
-    - Removed `as chooser`
+    - uniformity of new context and context statement
+    - Typing refactoring (similar `T`s in `new T`, `as T`, `is T`, etc.)
+    - Foreach expression now supports `x[y]`, `(x, y)`, `x.y`
+    - Indexators for context `self["varname"]`, IEnumerable implementation
+    - `upper`->`super`, new special context `upper` (previous context)
+    - single statements `if/while/etc. (...) statement;` (including else if)
 Bugfixes:
     - Returning contextes and tuples from methods now works
     - Fixed lazy of ternary operator
     - Fixed raws of string and char
     - Fixed `x.y(a, b)(c, d)` case where x is class access
-    - Fixed `(x)[y]`

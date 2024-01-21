@@ -14,14 +14,22 @@ namespace SLThree
     {
         public BaseExpression Left;
         public BaseExpression[] Arguments;
+        private bool null_conditional;
+
 
         public InvokeExpression(BaseExpression name, BaseExpression[] arguments, SourceContext context) : base(context)
         {
             Left = name;
             Arguments = arguments;
         }
+        public InvokeExpression(BaseExpression name, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        {
+            Left = name;
+            Arguments = arguments;
+            this.null_conditional = null_conditional;
+        }
 
-        public override string ExpressionToString() => $"{Left}({Arguments.JoinIntoString(", ")})";
+        public override string ExpressionToString() => $"{Left}{(null_conditional?"?":"")}({Arguments.JoinIntoString(", ")})";
 
         private Func<object[], object[]> implicit_cached;
 
@@ -31,7 +39,11 @@ namespace SLThree
         {
             var o = Left.GetValue(context);
 
-            if (o == null) throw new RuntimeError($"Method {Left}(_) not found", SourceContext);
+            if (o == null)
+            {
+                if (null_conditional) return null;
+                throw new RuntimeError($"Method {Left}(_) not found", SourceContext);
+            }
 
             if (o is Method method)
             {
@@ -92,7 +104,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new InvokeExpression(Left.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
+            return new InvokeExpression(Left.CloneCast(), Arguments.CloneArray(), null_conditional, SourceContext.CloneCast());
         }
     }
 }

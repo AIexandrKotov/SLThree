@@ -306,9 +306,13 @@ unary <BaseExpression>
     / primary
 
 primary <BaseExpression> -memoize
-    = left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    = left:primary _ "?(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), true, state) }
+    / left:primary _ "(" _ args:arguments_list _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    / left:primary _ "?(" _ ")" { new InvokeExpression(left, new BaseExpression[0], true, state) }
     / left:primary _ "(" _ ")" { new InvokeExpression(left, new BaseExpression[0], state) }
+    / left:primary _ "?[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
     / left:primary _ "[" _ args:arguments_list _ "]" { new IndexExpression(left, args.ToArray(), state) }
+    / left:primary _ "?." _ right:access_right { new MemberAccess(left, right, true, state) }
     / left:primary _ "." _ right:access_right { new MemberAccess(left, right, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / dictionary_creator

@@ -78,25 +78,15 @@ namespace SLThree
 
         public override string Operator => ".";
         public MemberAccess(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context) { }
+        public MemberAccess(BaseExpression left, BaseExpression right, bool null_conditional, SourceContext context) : base(left, right, context) {
+            this.null_conditional = null_conditional;
+        }
         public MemberAccess() : base() { }
 
         private FieldInfo field;
         private PropertyInfo prop;
         private Type nest_type;
-        public object Create(ExecutionContext context)
-        {
-            var left = Left.ExpressionToString().Replace(" ", "") + $".{Right.Cast<InvokeExpression>().Left}";
-
-            if (left != null)
-            {
-                if (Right is InvokeExpression invokeExpression)
-                {
-                    return Activator.CreateInstance(left.ToType(), invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
-                }
-            }
-
-            throw new OperatorError(this, left?.GetType(), Right?.GetType());
-        }
+        private bool null_conditional;
 
         private bool counted_contextwrapcache;
         private string variable_name;
@@ -175,7 +165,7 @@ namespace SLThree
                     return invokeExpression.GetValue(context, left);
                 }
             }
-
+            else if (null_conditional) return null;
             
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
@@ -244,15 +234,16 @@ namespace SLThree
                     throw new RuntimeError($"Name \"{nameExpression.Name}\" not found in \"{type.GetTypeString()}\"", SourceContext);
                 }
             }
+            else if (null_conditional) return;
 
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
-        public override string ExpressionToString() => $"{Left}.{Right}";
+        public override string ExpressionToString() => $"{Left}{(null_conditional ? "?" : "")}.{Right}";
 
         public override object Clone()
         {
-            return new MemberAccess(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            return new MemberAccess(Left.CloneCast(), Right.CloneCast(), null_conditional, SourceContext.CloneCast());
         }
     }
 }

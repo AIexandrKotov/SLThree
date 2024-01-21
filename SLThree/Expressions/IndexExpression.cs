@@ -12,11 +12,18 @@ namespace SLThree
     {
         public BaseExpression Expression;
         public BaseExpression[] Arguments;
+        private bool null_conditional;
 
         public IndexExpression(BaseExpression expression, BaseExpression[] arguments, SourceContext context) : base(context)
         {
             Expression = expression;
             Arguments = arguments;
+        }
+        public IndexExpression(BaseExpression expression, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        {
+            Expression = expression;
+            Arguments = arguments;
+            this.null_conditional = null_conditional;
         }
 
         private int Mode = 0; // 1 - array, 2 - list, 3 - tuple, 4 - any
@@ -53,7 +60,11 @@ namespace SLThree
         {
             var o = Expression.GetValue(context);
 
-            if (o == null) return null;
+            if (o == null)
+            {
+                if (null_conditional) return null;
+                throw new RuntimeError($"{Expression} was null", SourceContext);
+            }
 
             if (Mode == 0)
             {
@@ -103,7 +114,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new IndexExpression(Expression.CloneCast(), Arguments.CloneArray(), SourceContext.CloneCast());
+            return new IndexExpression(Expression.CloneCast(), Arguments.CloneArray(), null_conditional, SourceContext.CloneCast());
         }
     }
 }
