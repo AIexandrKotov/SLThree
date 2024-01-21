@@ -13,14 +13,16 @@ namespace SLThree
         public BaseStatement[] LoopBody { get; set; }
 
         public ForeachLoopStatement() : base() { }
-        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(context)
         {
             Left = left;
             Iterator = iterator;
-            LoopBody = cycleBody.Statements.ToArray();
+            LoopBody = cycleBody;
             count = LoopBody.Length;
             is_name_expr = Left is NameExpression;
         }
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementListStatement cycleBody, SourceContext context) 
+            : this(left, iterator, cycleBody.Statements.ToArray(), context) { }
 
         private bool is_name_expr;
         private ExecutionContext last_context;
@@ -55,14 +57,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ForeachLoopStatement()
-            {
-                Left = Left.CloneCast(),
-                Iterator = Iterator.CloneCast(),
-                LoopBody = LoopBody.CloneArray(),
-                SourceContext = SourceContext.CloneCast(),
-                count = count
-            };
+            return new ForeachLoopStatement(Left.CloneCast(), Iterator.CloneCast(), LoopBody.CloneArray(), SourceContext.CloneCast());
         }
     }
 }

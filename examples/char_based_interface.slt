@@ -1,5 +1,4 @@
-out_help = () => 
-{
+out_help = () => {
     using console;
     console.writeln("0 - Выйти");
     console.writeln("h - Вывести ещё раз");
@@ -7,12 +6,14 @@ out_help = () =>
     console.writeln($"a - Заполнить a (Сейчас: {global.a})");
     console.writeln($"b - Заполнить b (Сейчас: {global.b})");
 };
-read = str =>
-{
+read = str => {
     using slt;
     using console;
     console.write(str);
-    return slt.eval(console.readln());
+    try {
+        return slt.eval(console.readln());
+    }
+    catch (err) return err.GetType().Name;
 };
 
 using console;

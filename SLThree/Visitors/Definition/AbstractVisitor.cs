@@ -214,6 +214,7 @@ namespace SLThree.Visitors
                 case StatementListStatement st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
+                case TryStatement st: VisitStatement(st); return;
             }
             Executables.Remove(statement);
         }
@@ -280,13 +281,13 @@ namespace SLThree.Visitors
 
         }
 
-        public void VisitExpression(CreatorArray expression)
+        public virtual void VisitExpression(CreatorArray expression)
         {
             VisitExpression(expression.ArrayType);
             VisitExpression(expression.Size);
         }
 
-        public void VisitExpression(CreatorContext expression)
+        public virtual void VisitExpression(CreatorContext expression)
         {
             if (expression.Typecast != null) VisitExpression(expression.Typecast);
             if (expression.Body != null)
@@ -294,10 +295,22 @@ namespace SLThree.Visitors
                     VisitStatement(x);
         }
 
-        public void VisitExpression(CreatorRange expression)
+        public virtual void VisitExpression(CreatorRange expression)
         {
             VisitExpression(expression.LowerBound);
             VisitExpression(expression.UpperBound);
+        }
+
+        public virtual void VisitStatement(TryStatement statement)
+        {
+            for (var i = 0; i < statement.TryBody.Length; i++)
+                VisitStatement(statement.TryBody[i]);
+            if (statement.CatchVariable != null)
+                VisitExpression(statement.CatchVariable);
+            for (var i = 0; i < statement.CatchBody.Length; i++)
+                VisitStatement(statement.CatchBody[i]);
+            for (var i = 0; i < statement.FinallyBody.Length; i++)
+                VisitStatement(statement.FinallyBody[i]);
         }
     }
 }

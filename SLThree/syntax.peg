@@ -24,6 +24,7 @@ statement_wspaced <BaseStatement>
     / foreach_statement
     / while_statement
     / condition_statement
+    / try_statement
     / st:statement _ ";" { st }
 
 statement <BaseStatement>
@@ -36,6 +37,7 @@ statement <BaseStatement>
     / switch_statement
     / foreach_statement
     / while_statement
+    / try_statement
     / expression_statement
     / block_statement
 
@@ -88,6 +90,21 @@ foreach_statement <BaseStatement>
 condition_statement <BaseStatement>
     = "if" _ "(" _ cond:expression _ ")" _ t:single_or_block _ "else" _ f:single_or_block { new ConditionStatement(cond, t, f, state) }
     / "if" _ "(" _ cond:expression _ ")" _ t:single_or_block { new ConditionStatement(cond, t, new StatementListStatement(new BaseStatement[0], state), state) }
+
+try_statement <BaseStatement>
+    = "try" _ try_body:block_statement _ 
+      "catch" _ "(" _ catch_var:expression _ ")" _ catch_body:single_or_block _
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, catch_var, catch_body, finally_body, state) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ catch_body:block_statement _
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, null     , catch_body, finally_body, state) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ "(" _ catch_var:expression _ ")" _ catch_body:single_or_block   { new TryStatement(try_body, catch_var, catch_body, null        , state) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ catch_body:block_statement                                      { new TryStatement(try_body, null     , catch_body, null        , state) }
+    / "try" _ try_body:block_statement _ 
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, null     , null      , finally_body, state) }
+    / "try" _ try_body:block_statement                                          { new TryStatement(try_body, null     , null      , null        , state) }
 
 context_statement <BaseStatement>
     = "context" _required_ n:name _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
@@ -182,7 +199,8 @@ binary_8 <BaseExpression> -memoize
     / null_coalescing
 
 null_coalescing <BaseExpression>
-    = left:binary_7 _ "??" _ right:null_coalescing { new NullCoalescingExpression(left, right, state) }
+    = left:binary_7 _ "-?" _ right:null_coalescing { new SafeExpression(left, right, state) }
+    / left:binary_7 _ "??" _ right:null_coalescing { new NullCoalescing(left, right, state) }
     / binary_7
 
 binary_7 <BaseExpression> -memoize
@@ -441,7 +459,7 @@ identifier <BaseExpression>
     = name
 
 keyword
-    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof" / "context" / "self" / "upper" / "this" / "global"
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof" / "context" / "self" / "upper" / "this" / "global" / "super" / "try" / "catch" / "finally"
 
 name <NameExpression>
     = first:available_name { new NameExpression(first.JoinIntoString(""), state) }

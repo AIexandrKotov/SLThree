@@ -53,7 +53,8 @@
     <Compile Include="Expressions\Creators\CreatorRange.cs" />
     <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
     <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
-    <Compile Include="Expressions\Operators\Binary\NullCoalescingExpression.cs" />
+    <Compile Include="Expressions\Operators\Binary\NullCoalescing.cs" />
+    <Compile Include="Expressions\Operators\Binary\SafeExpression.cs" />
     <Compile Include="Expressions\Operators\Unary\UnaryChoose.cs" />
     <Compile Include="Expressions\Operators\Unary\UnaryGetChooser.cs" />
     <Compile Include="Expressions\Operators\Unary\UnaryReflection.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Expressions\Creators\CreatorTuple.cs" />
     <Compile Include="Expressions\ReflectionExpression.cs" />
     <Compile Include="Statements\ContextStatement.cs" />
+    <Compile Include="Statements\TryStatement.cs" />
     <Compile Include="sys\console.cs" />
     <Compile Include="sys\linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />

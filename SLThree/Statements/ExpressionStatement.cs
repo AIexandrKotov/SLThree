@@ -16,10 +16,6 @@ namespace SLThree
         {
             Expression = expression;
         }
-        public ExpressionStatement(BaseExpression expression, Cursor cursor) : base(cursor)
-        {
-            Expression = expression;
-        }
 
         public override string ToString() => $"{Expression}";
         public override object GetValue(ExecutionContext context) => Expression.GetValue(context);

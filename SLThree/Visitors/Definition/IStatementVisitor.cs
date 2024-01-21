@@ -12,6 +12,7 @@
         void VisitStatement(ReturnStatement statement);
         void VisitStatement(StatementListStatement statement);
         void VisitStatement(SwitchStatement statement);
+        void VisitStatement(TryStatement statement);
         void VisitStatement(UsingStatement statement);
         void VisitStatement(WhileLoopStatement statement);
     }

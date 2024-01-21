@@ -9,6 +9,8 @@ Language:
     - Range expression `x..y`
     - Foreach variable now supports all assigns
     - Null coalescing operator `a ?? b`
+    - try-catch-finally statement
+    - Safe expression `err -? a`
     - last comma ignoring in creators
     - upper->super, new special context `upper`
     - single statements, else if

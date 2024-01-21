@@ -16,8 +16,13 @@ namespace SLThree
         public BaseStatement[] Body { get; set; }
 
         public ConditionStatement() { }
-        public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, Cursor cursor)
-            : this(condition, trueBlock, falseBlock, new SourceContext(cursor)) { }
+        public ConditionStatement(BaseExpression condition, BaseStatement[] body, int falsestart, SourceContext context) : base(context)
+        {
+            Condition = condition;
+            Body = body;
+            count = Body.Length;
+            this.falsestart = falsestart;
+        }
 
         public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, SourceContext context) : base(context)
         {
@@ -49,14 +54,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ConditionStatement()
-            {
-                Condition = Condition.CloneCast(),
-                Body = Body.CloneArray(),
-                SourceContext = SourceContext.CloneCast(),
-                count = count,
-                falsestart = falsestart
-            };
+            return new ConditionStatement(Condition.CloneCast(), Body.CloneArray(), falsestart, SourceContext.CloneCast());
         }
     }
 }

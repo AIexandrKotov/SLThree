@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class NullCoalescingExpression : BinaryOperator
+    public class NullCoalescing : BinaryOperator
     {
         public override string Operator => "??";
-        public NullCoalescingExpression(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
-        public NullCoalescingExpression() : base() { }
+        public NullCoalescing(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public NullCoalescing() : base() { }
 
         public override object GetValue(ExecutionContext context)
         {
@@ -22,7 +22,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new NullCoalescingExpression(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new NullCoalescing(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
         }
     }
 }
