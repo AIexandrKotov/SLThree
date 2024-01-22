@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Pegasus.Common;
 using SLThree;
 using SLThree.Extensions;
+using SLThree.sys;
 
 namespace slt
 {
@@ -518,11 +519,11 @@ namespace slt
             { "-V", "--repl-version" },
             { "-D", "--repl-difference" },
 
-
             { "-h", "--help" },
             { "-q", "--quit" },
             { "-c", "--clear" },
             { "-r", "--reset" },
+            { "-f", "--run-file" },
             { "-H", "--conhelp" },
             { "-l", "--locals" },
             { "-p", "--perfomance" },
@@ -556,7 +557,76 @@ namespace slt
         }
         public static bool ExtendedCommands(string command)
         {
-            var wrds = command.Split(new char[] { '\n', '\r', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] Splitter(string str)
+            {
+                var ret = new List<string>();
+                var current = new StringBuilder();
+
+                const int state_whitespace = 0;
+                const int state_any = 1;
+                const int state_string = 2;
+
+                var state = state_whitespace;
+
+                foreach (var c in str)
+                {
+                    if (state == state_string)
+                    {
+                        if (c == '"')
+                        {
+                            ret.Add(current.ToString());
+                            current.Clear();
+                            state = state_whitespace;
+                        }
+                        else
+                        {
+                            current.Append(c);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (char.IsWhiteSpace(c))
+                        {
+                            if (state == state_whitespace) continue;
+                            else
+                            {
+                                ret.Add(current.ToString());
+                                current.Clear();
+                                state = state_whitespace;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '"')
+                            {
+                                if (state == state_whitespace)
+                                {
+                                    state = state_string;
+                                    continue;
+                                }
+                                else current.Append(c);
+                            }
+                            else
+                            {
+                                if (state == state_whitespace)
+                                {
+                                    state = state_any;
+                                    current.Append(c);
+                                    continue;
+                                }
+                                else current.Append(c);
+                            }
+                        }
+                    }
+                }
+
+                if (current.Length > 0) ret.Add(current.ToString());
+
+                return ret.ToArray();
+            }
+
+            var wrds = Splitter(command);
             wrds = Array.ConvertAll(wrds, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortREPLCommands) : x);
 
             var any_executed = false;
@@ -591,6 +661,38 @@ namespace slt
             {
                 out_extended_exceptions = !out_extended_exceptions;
                 OutAsWarning($"Showing extended exceptions is {out_extended_exceptions}");
+                any_executed = true;
+            }
+            if (wrds.TryGetArgument("-f", out var runfile_path, null, ShortREPLCommands))
+            {
+                var encoding = default(Encoding);
+                if (wrds.TryGetArgument("-e", out var encodingstr, () => null, ShortCommands))
+                    encoding = GetEncoding(encodingstr);
+
+                var context = default(ExecutionContext);
+                if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
+                {
+                    var ocontext = SLThree.sys.slt.eval(REPLContext.wrap, runfile_incontext);
+                    switch (ocontext)
+                    {
+                        case ExecutionContext cc:
+                            context = cc;
+                            break;
+                        case ExecutionContext.ContextWrap wrap:
+                            context = wrap.pred;
+                            break;
+                    }
+                }
+                else context = REPLContext;
+
+                if (context != null)
+                {
+                    InvokeFile(runfile_path, context, encoding, wrds.HasArgument("--show"));
+                }
+                else
+                {
+                    OutAsException($"`{runfile_incontext}` is not context");
+                }
                 any_executed = true;
             }
             if (wrds.HasArgument("-r", ShortREPLCommands))

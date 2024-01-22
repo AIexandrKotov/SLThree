@@ -8,6 +8,10 @@
          --onlynull            - clear only null-value variables
     -e --exex              - Turn on/off extended exceptions
     -p --perfomance        - Turn on/off measure perfomance
+    -f --run-file <STR>    - Runs file in current context
+         -e --encoding <ENC>   - File will be read in ENC encoding
+         --in <CNT>            - Runs file in CNT context
+         --show                - Result of running will be shown
 
     -c --clear     - Clear console
     -h --help      - Outs this text
