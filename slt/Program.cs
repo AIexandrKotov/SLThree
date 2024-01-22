@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
@@ -359,28 +360,44 @@ namespace slt
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
         public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
         {
-            var local_usings = context.LocalVariables.GetAsDictionary()
+            var local_usings0 = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
-                .ToDictionary(x => x.Key, x => 
-                    ((x.Value as MemberAccess.ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
+                .Select(x => new KeyValuePair<string, string>(x.Key, (x.Value as MemberAccess.ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
+            var local_usings = new Dictionary<string, List<string>>();
+            foreach (var x in local_usings0)
+            {
+                if (local_usings.ContainsKey(x.Value))
+                    local_usings[x.Value].Add(x.Key);
+                else local_usings[x.Value] = new List<string>() { x.Key };
+            }
+
             if (local_usings.Count == 0) return;
             OutAsWarning($"--- CLASSES ---");
             var max_variable_name = table;
             if (table < 0) max_variable_name = 0;
             if (local_usings.Count > 0 && table != -1)
             {
-                max_variable_name = Math.Max(max_variable_name, local_usings.Max(x => x.Value.Length));
+                max_variable_name = Math.Max(max_variable_name, local_usings.Max(x => x.Key.Length));
             }
             foreach (var x in local_usings)
             {
                 Console.Write("    ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write(x.Value.PadLeft(max_variable_name));
+                Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.ResetColor();
                 Console.Write(" as ");
-                Console.ForegroundColor = ConsoleColor.White;
-                var output = x.Key.Trim();
-                Console.Write(output);
+                var many = false;
+                foreach (var alias in x.Value)
+                {
+                    if (many)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write(alias);
+                    many = true;
+                }
                 Console.ResetColor();
                 Console.WriteLine();
             }
@@ -555,6 +572,7 @@ namespace slt
                 ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
             }
         }
+
         public static bool ExtendedCommands(string command)
         {
             string[] Splitter(string str)
@@ -672,15 +690,23 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    var ocontext = SLThree.sys.slt.eval(REPLContext.wrap, runfile_incontext);
-                    switch (ocontext)
+                    if (LANG_060.Supports)
                     {
-                        case ExecutionContext cc:
-                            context = cc;
-                            break;
-                        case ExecutionContext.ContextWrap wrap:
-                            context = wrap.pred;
-                            break;
+                        var ocontext = LANG_060.Eval(new ExecutionContext.ContextWrap(REPLContext), runfile_incontext);
+                        switch (ocontext)
+                        {
+                            case ExecutionContext cc:
+                                context = cc;
+                                break;
+                            case ExecutionContext.ContextWrap wrap:
+                                context = wrap.pred;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        OutAsWarning("Running in a different context is possible starting from SLThree 0.6.0");
+                        context = REPLContext;
                     }
                 }
                 else context = REPLContext;

@@ -1,8 +1,7 @@
 ------ SLThree REPL 1.2.0 ------ [22.01.24]
 New:
     - Running files
-For LANG 0.5.0+:
-    - Allow `using repl;`
+    - Collapsing of aliases
 For LANG 0.3.0+:
     - Fixed context output recursion
       in lists, tuples and dictionaries
