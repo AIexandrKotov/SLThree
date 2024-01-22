@@ -1,6 +1,7 @@
 ﻿using SLThree.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Contexts;
@@ -13,6 +14,7 @@ namespace SLThree.sys
 #pragma warning disable IDE1006 // Стили именования
     public static class linq
     {
+
         internal static MemberAccess.ClassAccess LinqAccess = new MemberAccess.ClassAccess(typeof(linq));
         public static IEnumerable<object> range(long end)
         {
@@ -198,6 +200,16 @@ namespace SLThree.sys
         public static List<object> to_list(IEnumerable<object> objects) => objects.ToList();
         public static ITuple to_tuple(IEnumerable<object> objects) => CreatorTuple.Create(objects.ToArray());
         public static object[] to_array(IEnumerable<object> objects) => objects.ToArray();
+        public static IEnumerable<object> to_enumerable(System.Collections.IEnumerable enumerable)
+        {
+            foreach (var x in enumerable)
+                yield return x;
+        }
+        public static IEnumerable<object> as_tuples(System.Collections.IDictionary dictionary)
+        {
+            foreach (var x in dictionary.Keys)
+                yield return (x, dictionary[x]);
+        }
 
         public static IEnumerable<object> skip(IEnumerable<object> objects, long count) => objects.Skip((int)count);
         public static IEnumerable<object> take(IEnumerable<object> objects, long count) => objects.Take((int)count);
@@ -227,6 +239,14 @@ namespace SLThree.sys
 
         public static string jts(IEnumerable<object> objects, string str) => objects.JoinIntoString(str);
         public static string jts(IEnumerable<object> objects) => objects.JoinIntoString(" ");
+
+        public static object @foreach(IEnumerable<object> objects, Method method)
+        {
+            var ret = default(object);
+            foreach (var x in objects)
+                ret = method.GetValue(new object[1] { x });
+            return ret;
+        }
     }
 #pragma warning restore IDE1006 // Стили именования
 }

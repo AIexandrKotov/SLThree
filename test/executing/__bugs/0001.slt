@@ -1,0 +1,2 @@
+(new using slt).parse("a = 2;")();
+ASSERT(self, (a == 2) as is);

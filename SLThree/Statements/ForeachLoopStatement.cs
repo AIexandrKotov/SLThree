@@ -8,35 +8,40 @@ namespace SLThree
 {
     public class ForeachLoopStatement : BaseStatement
     {
-        public NameLexem Name { get; set; }
-        public BaseLexem Iterator { get; set; }
+        public BaseExpression Left { get; set; }
+        public BaseExpression Iterator { get; set; }
         public BaseStatement[] LoopBody { get; set; }
 
         public ForeachLoopStatement() : base() { }
-        public ForeachLoopStatement(NameLexem name, BaseLexem iterator, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(context)
         {
-            Name = name;
+            Left = left;
             Iterator = iterator;
-            LoopBody = cycleBody.Statements.ToArray();
+            LoopBody = cycleBody;
             count = LoopBody.Length;
+            is_name_expr = Left is NameExpression;
         }
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementListStatement cycleBody, SourceContext context) 
+            : this(left, iterator, cycleBody.Statements.ToArray(), context) { }
 
+        private bool is_name_expr;
         private ExecutionContext last_context;
         private int variable_index;
         private int count;
         public override object GetValue(ExecutionContext context)
         {
             var iterator = Iterator.GetValue(context).Cast<IEnumerable>();
-            if (context != last_context)
+            if (is_name_expr && context != last_context)
             {
                 last_context = context;
-                variable_index = context.LocalVariables.SetValue(Name.Name, null);
+                variable_index = context.LocalVariables.SetValue(Left.Cast<NameExpression>().Name, null);
             }
             var ret = default(object);
             context.StartCycle();
             foreach (var x in iterator)
             {
-                context.LocalVariables.SetValue(variable_index, x);
+                if (is_name_expr) context.LocalVariables.SetValue(variable_index, x);
+                else BinaryAssign.AssignToValue(context, Left, x, ref last_context, ref is_name_expr, ref variable_index);
                 for (var i = 0; i < count; i++)
                 {
                     ret = LoopBody[i].GetValue(context);
@@ -48,18 +53,11 @@ namespace SLThree
             return ret;
         }
 
-        public override string ToString() => $"foreach ({Name} in {Iterator}) {{{LoopBody}}}";
+        public override string ToString() => $"foreach ({Left} in {Iterator}) {{{LoopBody}}}";
 
         public override object Clone()
         {
-            return new ForeachLoopStatement()
-            {
-                Name = Name.CloneCast(),
-                Iterator = Iterator.CloneCast(),
-                LoopBody = LoopBody.CloneArray(),
-                SourceContext = SourceContext.CloneCast(),
-                count = count
-            };
+            return new ForeachLoopStatement(Left.CloneCast(), Iterator.CloneCast(), LoopBody.CloneArray(), SourceContext.CloneCast());
         }
     }
 }

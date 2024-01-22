@@ -16,37 +16,42 @@ namespace TestSuite
 
         private static bool current_assert = true;
         private static int current_assert_id = 1;
-        public static void Assert(ExecutionContext.ContextWrap context, BaseLexem lexem)
+        public static void Log(object o)
+        {
+            ErrorLog.Add(o.ToString());
+        }
+
+        public static void Assert(ExecutionContext.ContextWrap context, BaseExpression expression)
         {
             try
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("");
                 Console.Write($"{current_assert_id++, 6}  ");
-                if (lexem.GetValue(context.pred).Cast<bool>())
+                if (expression.GetValue(context.pred).Cast<bool>())
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write($"SUCCESS ");
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($" {lexem}    ");
+                    Console.WriteLine($" {expression}    ");
                     Console.ForegroundColor = ConsoleColor.White;
-                    //Console.WriteLine($"at {lexem.SourceContext.ToStringWithoutFile()}");
+                    //Console.WriteLine($"at {expression.SourceContext.ToStringWithoutFile()}");
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write($" FAILED ");
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write($" at {lexem.SourceContext.ToStringWithoutFile()}  ");
+                    Console.Write($" at {expression.SourceContext.ToStringWithoutFile()}  ");
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"{lexem}");
-                    throw new RuntimeError("Assertion exception", lexem.SourceContext);
+                    Console.WriteLine($"{expression}");
+                    throw new RuntimeError("Assertion exception", expression.SourceContext);
                 }
             }
             catch (Exception e)
             {
                 current_assert = false;
-                ErrorLog.Add($"FAILED {lexem} as {lexem.SourceContext} ===> {e}");
+                ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {e}");
             }
         }
 
@@ -77,8 +82,8 @@ namespace TestSuite
             try
             {
                 var context = new ExecutionContext();
-                context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseLexem>)Assert).Method);
-
+                context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseExpression>)Assert).Method);
+                context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 
                 Parser.This.RunScript(File.ReadAllText(filename), filename, context);
                 return current_assert;
@@ -96,11 +101,11 @@ namespace TestSuite
             }
         }
 
-        static string removable_parsing = Path.GetFullPath("..\\test\\parsing\\");
+        static string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\test\\parsing\\");
         public static void ParsingTests()
         {
             Console.WriteLine(">>> Parsing Tests");
-            foreach (var filename in Directory.GetFiles("..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\parsing\\" : "..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
             {
                 if (ParseTest(filename))
                 {
@@ -117,11 +122,11 @@ namespace TestSuite
             }
         }
 
-        static string removable_executing = Path.GetFullPath("..\\test\\executing\\");
+        static string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\test\\executing\\");
         public static void ExecutingTests()
         {
             Console.WriteLine(">>> Executing Tests");
-            foreach (var filename in Directory.GetFiles("..\\test\\executing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\executing\\" : "..\\test\\executing", "*.slt", SearchOption.AllDirectories))
             {
                 Console.WriteLine($">>> {Path.GetFullPath(filename).Replace(removable_executing, "")}");
                 if (ExecTest(filename))
@@ -148,12 +153,16 @@ namespace TestSuite
             
         }
 
+        private static bool from_solution = false;
+
         public static int Main(string[] args)
         {
             Console.Title = "SLThree Test Suite";
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">>> SLThree Test Suite");
-            TypeofLexem.RegistredAssemblies.Add(typeof(Program).Assembly);
+            if (args.Contains("--from-solution"))
+                from_solution = true;
+            SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());

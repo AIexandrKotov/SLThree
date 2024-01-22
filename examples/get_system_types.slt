@@ -1,3 +1,3 @@
-using SLThree.UsingStatement;
+using slt;
 using linq;
-linq.jts(UsingStatement.SystemTypes.Keys, "\n");
+sly.sys_types.Keys |> linq.jts("\n");

@@ -1,23 +1,24 @@
-out_help = () => 
-{
+out_help = () => {
     using console;
     console.writeln("0 - Выйти");
     console.writeln("h - Вывести ещё раз");
-    console.writeln("+ - Вывести a + b");
-    console.writeln("* - Вывести a * b");
-    console.writeln("% - Вывести a % b");
+    console.writeln("? - Вывести применённый оператор к a и b");
     console.writeln($"a - Заполнить a (Сейчас: {global.a})");
     console.writeln($"b - Заполнить b (Сейчас: {global.b})");
 };
-read = str =>
-{
+read = str => {
+    using slt;
     using console;
     console.write(str);
-    return console.readln().Trim() as i64;
+    try {
+        return slt.eval(console.readln());
+    }
+    catch (err) return err.GetType().Name;
 };
 
 using console;
-global.a = global.b = 2;
+using slt;
+(global.a, global.b) = (228, 666);
 out_help();
 while (true) 
 {
@@ -29,25 +30,11 @@ while (true)
             break;
         case "h":
             out_help();
-        case "+":
-            {
-                console.writeln($"Вывод: {global.a + global.b}");
-            }
-        case "*":
-            {
-                console.writeln($"Вывод: {global.a * global.b}");
-            }
-        case "%":
-            {
-                console.writeln($"Вывод: {global.a % global.b}");
-            }
         case "a":
-            {
-                global.a = read("Введите a: ");
-            }
+            global.a = read("Введите a: ");
         case "b":
-            {
-                global.b = read("Введите b: ");
-            }
+            global.b = read("Введите b: ");
     }
+    if (input.Length == 1 && "+-/*".Contains(input))
+        console.writeln($"Вывод: {slt.eval($"global.a {input} global.b")}");
 }

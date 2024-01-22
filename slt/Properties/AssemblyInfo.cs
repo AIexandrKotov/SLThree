@@ -1,3 +1,5 @@
+using SLThree.Extensions;
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -37,11 +39,35 @@ using System.Runtime.InteropServices;
 
 public static class REPLVersion
 {
+    public class Reflected
+    {
+        public int Major { get; private set; }
+        public int Minor { get; private set; }
+        public int Build { get; private set; }
+        public int Revision { get; private set; }
+        public DateTime LastUpdate { get; private set; }
+
+        public string Version { get; private set; }
+        public string VersionWithoutRevision { get; private set; }
+
+        public Reflected()
+        {
+            var slt_version = typeof(REPLVersion);
+            Major = int.Parse(slt_version.GetField("Major").GetValue(null).Cast<string>());
+            Minor = int.Parse(slt_version.GetField("Minor").GetValue(null).Cast<string>());
+            Build = int.Parse(slt_version.GetField("Build").GetValue(null).Cast<string>());
+            Revision = int.Parse(slt_version.GetField("Revision").GetValue(null).Cast<string>());
+            LastUpdate = new DateTime(slt_version.GetField("LastUpdate").GetValue(null).Cast<long>());
+
+            Version = Major + "." + Minor + "." + Build + "." + Revision;
+            VersionWithoutRevision = Major + "." + Minor + "." + Build;
+        }
+    }
     public const string Major = "1"; //vh
-    public const string Minor = "1"; //vh
+    public const string Minor = "2"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "195"; //vh
-    public const long LastUpdate = 638355943959099032; //vh
+    public const string Revision = "231"; //vh
+    public const long LastUpdate = 638415423910482939; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;

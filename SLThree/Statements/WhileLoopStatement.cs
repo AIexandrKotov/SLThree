@@ -9,11 +9,11 @@ namespace SLThree
 {
     public class WhileLoopStatement : BaseStatement
     {
-        public BaseLexem Condition { get; set; }
+        public BaseExpression Condition { get; set; }
         public BaseStatement[] LoopBody { get; set; }
 
         public WhileLoopStatement() : base() { }
-        public WhileLoopStatement(BaseLexem condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public WhileLoopStatement(BaseExpression condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
             LoopBody = cycleBody.Statements.ToArray();

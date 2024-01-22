@@ -17,7 +17,7 @@ namespace SLThree.Visitors
             switch (o)
             {
                 case null: return;
-                case BaseLexem lexem: VisitLexem(lexem); return;
+                case BaseExpression expression: VisitExpression(expression); return;
                 case BaseStatement statement: VisitStatement(statement); return;
                 case ExecutionContext context: Visit(context); return;
                 case Method method: Visit(method); return;
@@ -46,146 +46,155 @@ namespace SLThree.Visitors
 
         public List<ExecutionContext.IExecutable> Executables { get; } = new List<ExecutionContext.IExecutable>();
 
-        public virtual void VisitLexem(BaseLexem lexem)
+        public virtual void VisitExpression(BaseExpression expression)
         {
-            Executables.Add(lexem);
-            switch (lexem)
+            Executables.Add(expression);
+            switch (expression)
             {
-                case CastLexem lex: VisitLexem(lex); return;
-                case ChanceChooseLexem lex: VisitLexem(lex); return;
-                case MemberAccess lex: VisitLexem(lex); return;
-                case ExpressionTernary lex: VisitLexem(lex); return;
-                case ExpressionBinary lex: VisitLexem(lex); return;
-                case ExpressionUnary lex: VisitLexem(lex); return;
-                case Literal lex: VisitLexem(lex); return;
-                case TypeofLexem lex: VisitLexem(lex); return;
-                case NewLexem lex: VisitLexem(lex); return;
-                case NameLexem lex: VisitLexem(lex); return;
-                case LambdaLexem lex: VisitLexem(lex); return;
-                case InvokeLexem lex: VisitLexem(lex); return;
-                case InterpolatedString lex: VisitLexem(lex); return;
-                case IndexLexem lex: VisitLexem(lex); return;
-                case EqualchanceChooseLexem lex: VisitLexem(lex); return;
-                case CreatorTuple lex: VisitLexem(lex); return;
-                case CreatorDictionary lex: VisitLexem(lex); return;
-                case CreatorArray lex: VisitLexem(lex); return;
+                case CastExpression expr: VisitExpression(expr); return;
+                case MemberAccess expr: VisitExpression(expr); return;
+                case TernaryOperator expr: VisitExpression(expr); return;
+                case BinaryOperator expr: VisitExpression(expr); return;
+                case UnaryOperator expr: VisitExpression(expr); return;
+                case Literal expr: VisitExpression(expr); return;
+                case NewExpression expr: VisitExpression(expr); return;
+                case NameExpression expr: VisitExpression(expr); return;
+                case LambdaExpression expr: VisitExpression(expr); return;
+                case InvokeExpression expr: VisitExpression(expr); return;
+                case InterpolatedString expr: VisitExpression(expr); return;
+                case IndexExpression expr: VisitExpression(expr); return;
+                case CreatorTuple expr: VisitExpression(expr); return;
+                case CreatorDictionary expr: VisitExpression(expr); return;
+                case CreatorList expr: VisitExpression(expr); return;
+                case CreatorUsing expr: VisitExpression(expr); return;
+                case ReflectionExpression expr: VisitExpression(expr); return;
+                case TypenameExpression expr: VisitExpression(expr); return;
+                case CreatorArray expr: VisitExpression(expr); return;
+                case CreatorContext expr: VisitExpression(expr); return;
+                case CreatorRange expr: VisitExpression(expr); return;
             }
-            Executables.Remove(lexem);
+            Executables.Remove(expression);
         }
 
-        public virtual void VisitLexem(CastLexem lexem)
+        public virtual void VisitExpression(CastExpression expression)
         {
-            VisitLexem(lexem.Left);
-            VisitLexem(lexem.Right);
+            VisitExpression(expression.Left);
+            VisitExpression(expression.Type);
         }
-        public virtual void VisitLexem(ChanceChooseLexem lexem)
+        public virtual void VisitExpression(CreatorList expression)
         {
-            foreach (var x in lexem.Chooser)
+            foreach (var x in expression.Expressions)
             {
-                VisitLexem(x.Item1);
-                VisitLexem(x.Item2);
+                VisitExpression(x);
             }
         }
-        public virtual void VisitLexem(CreatorArray lexem)
+        public virtual void VisitExpression(CreatorDictionary expression)
         {
-            foreach (var x in lexem.Lexems)
+            foreach (var x in expression.Entries)
             {
-                VisitLexem(x);
+                VisitExpression(x.Key);
+                VisitExpression(x.Value);
             }
         }
-        public virtual void VisitLexem(CreatorDictionary lexem)
+        public virtual void VisitExpression(CreatorTuple expression)
         {
-            foreach (var x in lexem.Entries)
+            foreach (var x in expression.Expressions)
             {
-                VisitLexem(x.Key);
-                VisitLexem(x.Value);
+                VisitExpression(x);
             }
         }
-        public virtual void VisitLexem(CreatorTuple lexem)
+        public virtual void VisitExpression(IndexExpression expression)
         {
-            foreach (var x in lexem.Lexems)
+            VisitExpression(expression.Expression);
+            foreach (var x in expression.Arguments)
             {
-                VisitLexem(x);
+                VisitExpression(x);
             }
         }
-        public virtual void VisitLexem(EqualchanceChooseLexem lexem)
+        public virtual void VisitExpression(InterpolatedString expression)
         {
-            foreach (var x in lexem.Chooser)
+            foreach (var x in expression.Expressions)
             {
-                VisitLexem(x);
+                VisitExpression(x);
             }
         }
-        public virtual void VisitLexem(IndexLexem lexem)
+        public virtual void VisitExpression(InvokeExpression expression)
         {
-            VisitLexem(lexem.Lexem);
-            foreach (var x in lexem.Arguments)
+            VisitExpression(expression.Left);
+            foreach (var x in expression.Arguments)
             {
-                VisitLexem(x);
+                VisitExpression(x);
             }
         }
-        public virtual void VisitLexem(InterpolatedString lexem)
+        public virtual void VisitExpression(LambdaExpression expression)
         {
-            foreach (var x in lexem.Lexems)
-            {
-                VisitLexem(x);
-            }
-        }
-        public virtual void VisitLexem(InvokeLexem lexem)
-        {
-            VisitLexem(lexem.Left);
-            foreach (var x in lexem.Arguments)
-            {
-                VisitLexem(x);
-            }
-        }
-        public virtual void VisitLexem(LambdaLexem lexem)
-        {
-            Visit(lexem.Method);
+            Visit(expression.Method);
         }
 
-        public virtual void VisitLexem(NameLexem lexem)
+        public virtual void VisitExpression(NameExpression expression)
         {
             
         }
 
-        public virtual void VisitLexem(NewLexem lexem)
+        public virtual void VisitExpression(NewExpression expression)
         {
-            if (lexem.MemberAccess != null) VisitLexem(lexem.MemberAccess);
-            else VisitLexem(lexem.InvokeLexem);
+            VisitExpression(expression.Typename);
+            for (var i = 0; i < expression.Arguments.Length; i++)
+                VisitExpression(expression.Arguments[i]);
         }
 
-        public virtual void VisitLexem(TypeofLexem lexem)
+        public virtual void VisitExpression(Literal expression)
         {
             
         }
 
-        public virtual void VisitLexem(Literal lexem)
+        public virtual void VisitExpression(UnaryOperator expression)
         {
-            
+            VisitExpression(expression.Left);
         }
 
-        public virtual void VisitLexem(ExpressionUnary lexem)
+        public virtual void VisitExpression(BinaryOperator expression)
         {
-            VisitLexem(lexem.Left);
+            VisitExpression(expression.Left);
+            VisitExpression(expression.Right);
         }
 
-        public virtual void VisitLexem(ExpressionBinary lexem)
+        public virtual void VisitExpression(TernaryOperator expression)
         {
-            VisitLexem(lexem.Left);
-            VisitLexem(lexem.Right);
+            VisitExpression(expression.Condition);
+            VisitExpression(expression.Left);
+            VisitExpression(expression.Right);
         }
 
-        public virtual void VisitLexem(ExpressionTernary lexem)
+        public virtual void VisitExpression(MemberAccess expression)
         {
-            VisitLexem(lexem.Condition);
-            VisitLexem(lexem.Left);
-            VisitLexem(lexem.Right);
+            VisitExpression(expression.Left);
+            VisitExpression(expression.Right);
         }
 
-        public virtual void VisitLexem(MemberAccess lexem)
+        public virtual void VisitExpression(CreatorUsing expression)
         {
-            VisitLexem(lexem.Left);
-            VisitLexem(lexem.Right);
+            VisitExpression(expression.Type);
+        }
+
+        public virtual void VisitExpression(ReflectionExpression expression)
+        {
+            VisitExpression(expression.Left);
+            if (expression.Right != null)
+                VisitExpression(expression.Right);
+            if (expression.MethodArguments != null)
+                for (var i = 0; i < expression.MethodArguments.Length; i++)
+                    VisitExpression(expression.MethodArguments[i]);
+            if (expression.MethodGenericArguments != null)
+                for (var i = 0; i < expression.MethodGenericArguments.Length; i++)
+                    VisitExpression(expression.MethodGenericArguments[i]);
+        }
+
+        public virtual void VisitExpression(TypenameExpression expression)
+        {
+            if (expression.Generics != null)
+                for (var i = 0; i < expression.Generics.Length; i++)
+                    VisitExpression(expression.Generics[i]);
         }
 
         public BaseStatement PreviousStatement => throw new NotImplementedException();
@@ -205,54 +214,56 @@ namespace SLThree.Visitors
                 case StatementListStatement st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
+                case TryStatement st: VisitStatement(st); return;
+                case ThrowStatement st: VisitStatement(st); return;
             }
             Executables.Remove(statement);
         }
 
         public virtual void VisitStatement(ForeachLoopStatement statement)
         {
-            VisitLexem(statement.Iterator);
+            VisitExpression(statement.Iterator);
             foreach (var x in statement.LoopBody)
                 VisitStatement(x);
         }
 
         public virtual void VisitStatement(WhileLoopStatement statement)
         {
-            VisitLexem(statement.Condition);
+            VisitExpression(statement.Condition);
             foreach (var x in statement.LoopBody)
                 VisitStatement(x);
         }
 
         public virtual void VisitStatement(ExpressionStatement statement)
         {
-            VisitLexem(statement.Lexem);
+            VisitExpression(statement.Expression);
         }
 
         public virtual void VisitStatement(ConditionStatement statement)
         {
-            VisitLexem(statement.Condition);
+            VisitExpression(statement.Condition);
             foreach (var x in statement.Body)
                 VisitStatement(x);
         }
 
         public virtual void VisitStatement(ReturnStatement statement)
         {
-            if (!statement.VoidReturn) VisitLexem(statement.Lexem);
+            if (!statement.VoidReturn) VisitExpression(statement.Expression);
         }
 
         public virtual void VisitStatement(SwitchStatement statement)
         {
-            VisitLexem(statement.Value);
+            VisitExpression(statement.Value);
             foreach (var x in statement.Cases)
             {
-                VisitLexem(x.Value);
+                VisitExpression(x.Value);
                 VisitStatement(x.Statements);
             }
         }
 
         public virtual void VisitStatement(UsingStatement statement)
         {
-            
+            VisitExpression(statement.Using);
         }
 
         public virtual void VisitStatement(StatementListStatement statement)
@@ -269,6 +280,43 @@ namespace SLThree.Visitors
         public virtual void VisitStatement(ContinueStatement statement)
         {
 
+        }
+
+        public virtual void VisitExpression(CreatorArray expression)
+        {
+            VisitExpression(expression.ArrayType);
+            VisitExpression(expression.Size);
+        }
+
+        public virtual void VisitExpression(CreatorContext expression)
+        {
+            if (expression.Typecast != null) VisitExpression(expression.Typecast);
+            if (expression.Body != null)
+                foreach (var x in expression.Body)
+                    VisitStatement(x);
+        }
+
+        public virtual void VisitExpression(CreatorRange expression)
+        {
+            VisitExpression(expression.LowerBound);
+            VisitExpression(expression.UpperBound);
+        }
+
+        public virtual void VisitStatement(TryStatement statement)
+        {
+            for (var i = 0; i < statement.TryBody.Length; i++)
+                VisitStatement(statement.TryBody[i]);
+            if (statement.CatchVariable != null)
+                VisitExpression(statement.CatchVariable);
+            for (var i = 0; i < statement.CatchBody.Length; i++)
+                VisitStatement(statement.CatchBody[i]);
+            for (var i = 0; i < statement.FinallyBody.Length; i++)
+                VisitStatement(statement.FinallyBody[i]);
+        }
+
+        public virtual void VisitStatement(ThrowStatement statement)
+        {
+            VisitExpression(statement.ThrowExpression);
         }
     }
 }

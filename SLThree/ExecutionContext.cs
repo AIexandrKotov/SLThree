@@ -1,6 +1,8 @@
 ﻿using SLThree.Extensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -63,7 +65,7 @@ namespace SLThree
 
         public ContextWrap @this;
 
-        public class ContextWrap
+        public class ContextWrap : IEnumerable<object>
         {
             public ExecutionContext pred;
 
@@ -89,7 +91,17 @@ namespace SLThree
                         if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //recursive");
                         else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
                     }
-                    else sb.AppendLine(Decoration(x.Value).ToString() + ";");
+                    else if (x.Value is MemberAccess.ClassAccess ca)
+                    {
+                        var first = false;
+                        foreach (var line in ca.ToString().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (first) sb.Append("    ");
+                            sb.AppendLine(line);
+                            first = true;
+                        }
+                    }
+                    else sb.AppendLine(Decoration(x.Value)?.ToString() ?? "null" + ";");
                 }
                 index -= 1;
                 sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");
@@ -118,13 +130,25 @@ namespace SLThree
             }
 
             public override string ToString() => ToShortString();
+
+            public object this[string index]
+            {
+                get => pred.LocalVariables.GetValue(index).Item1;
+                set => pred.LocalVariables.SetValue(index, value);
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return pred.LocalVariables.Variables.Where(x => x != null).GetEnumerator();
+            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         internal ExecutionContext PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
-        internal readonly ContextWrap wrap;
-        internal ContextWrap upper;
-        internal ExecutionContext toplevel { get => upper?.pred; set => upper = new ContextWrap(value); }
+        public readonly ContextWrap wrap;
+        internal ContextWrap super;
+        internal ExecutionContext toplevel { get => super?.pred; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
         {
@@ -165,7 +189,7 @@ namespace SLThree
             
         }
 
-        public BaseStatement parse(string s) => new Parser().ParseScript(s);
+        public BaseStatement parse(string s) => Parser.This.ParseScript(s);
         public object eval(IExecutable executable) => executable.GetValue(this);
 
         public LocalVariablesContainer LocalVariables { get; set; } = new LocalVariablesContainer();

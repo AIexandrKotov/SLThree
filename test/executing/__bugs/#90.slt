@@ -1,0 +1,5 @@
+2 + 2;
+//comment
+context { 
+    a = 2;
+}

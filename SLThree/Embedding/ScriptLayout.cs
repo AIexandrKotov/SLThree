@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.sys;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,8 +53,8 @@ namespace SLThree.Embedding
         private static void Reference(string assembly)
         {
             var ass = Assembly.LoadFrom(assembly);
-            if (!TypeofLexem.RegistredAssemblies.Contains(ass))
-                TypeofLexem.RegistredAssemblies.Add(ass);
+            if (!slt.registred.Contains(ass))
+                slt.registred.Add(ass);
         }
 
         private static BaseStatement ParseFile(string filename)

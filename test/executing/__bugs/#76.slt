@@ -1,0 +1,2 @@
+using System.Console;
+@Console::WriteLine(any);

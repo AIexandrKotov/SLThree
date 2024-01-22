@@ -27,20 +27,20 @@ namespace SLThree.Visitors
             Level -= 1;
         }
 
-        public override void VisitLexem(BaseLexem lexem)
+        public override void VisitExpression(BaseExpression expression)
         {
             WriteTab();
-            Writeln(lexem.GetType().Name);
+            Writeln(expression.GetType().Name);
             WriteTab();
-            WriteFiels(lexem);
+            WriteFiels(expression);
             Level += 1;
-            base.VisitLexem(lexem);
+            base.VisitExpression(expression);
             Level -= 1;
         }
 
         private object GetValue(object o)
         {
-            if (o is IList<BaseLexem> lex) return $"[{lex.JoinIntoString(", ")}]";
+            if (o is IList<BaseExpression> lex) return $"[{lex.JoinIntoString(", ")}]";
             if (o is IList<BaseStatement> st) return $"[{st.Select(x => x.GetType().Name).JoinIntoString(", ")}]";
             return o;
         }

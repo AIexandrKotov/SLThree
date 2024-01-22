@@ -14,11 +14,11 @@ namespace SLThree
         public class Node : ICloneable
         {
             public bool Next { get; set; }
-            public BaseLexem Value { get; set; }
+            public BaseExpression Value { get; set; }
             public BaseStatement Statements { get; set; }
 
             public Node() { }
-            public Node(BaseLexem condition, BaseStatement statements, bool next)
+            public Node(BaseExpression condition, BaseStatement statements, bool next)
             {
                 Value = condition;
                 Statements = statements;
@@ -33,11 +33,11 @@ namespace SLThree
             }
         }
 
-        public BaseLexem Value;
+        public BaseExpression Value;
         public Node[] Cases;
 
         public SwitchStatement() : base() { }
-        public SwitchStatement(BaseLexem value, IList<Node> cases, SourceContext context) : base(context)
+        public SwitchStatement(BaseExpression value, IList<Node> cases, SourceContext context) : base(context)
         {
             Value = value;
             Cases = cases.ToArray();

@@ -7,12 +7,12 @@ namespace SLThree
     public class ReturnStatement : BaseStatement
     {
         public bool VoidReturn;
-        public BaseLexem Lexem;
+        public BaseExpression Expression;
 
         public ReturnStatement() : base() { }
-        public ReturnStatement(BaseLexem lexem, SourceContext context) : base(context)
+        public ReturnStatement(BaseExpression expression, SourceContext context) : base(context)
         {
-            Lexem = lexem;
+            Expression = expression;
         }
 
         public ReturnStatement(SourceContext context) : base(context)
@@ -20,7 +20,7 @@ namespace SLThree
             VoidReturn = true;
         }
 
-        public override string ToString() => $"{Lexem}";
+        public override string ToString() => $"{Expression}";
         public override object GetValue(ExecutionContext context)
         {
             if (VoidReturn)
@@ -30,7 +30,7 @@ namespace SLThree
             }
             else
             {
-                var value = Lexem.GetValue(context);
+                var value = Expression.GetValue(context);
                 context.Return(value);
                 return value;
             }
@@ -38,7 +38,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new ReturnStatement() { Lexem = Lexem.CloneCast(), VoidReturn = VoidReturn.Copy(), SourceContext = SourceContext.CloneCast() };
+            return new ReturnStatement() { Expression = Expression.CloneCast(), VoidReturn = VoidReturn.Copy(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

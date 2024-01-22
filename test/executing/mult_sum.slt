@@ -1,0 +1,9 @@
+using linq;
+x = 1..9 
+    |> linq.select(x => {
+        using linq;
+        return 1..9 |> linq.select(y => upper.x*y, self);
+    })
+    |> linq.select_many()
+    |> linq.sum();
+self |> ASSERT((x == 2025) as is);

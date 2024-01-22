@@ -2,40 +2,43 @@
 <package >
   <metadata>
     <id>slthree</id>
-    <version>0.4.0</version>
+    <version>0.6.0</version>
     <authors>Kotov</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <!-- <icon>icon.png</icon> -->
     <description>SLThree script language library</description>
     <releaseNotes>
------- 0.4.0 Armavir update ------ [13.11.23]
+------ 0.6.0 Functionalization Update ------ [22.01.24]
 Language:
-    - Creating own contextes
-    - Operator \ (random choose, including with chances)
-    - used types in type cast
-    - Commentaries is working now
-    - Supporting recursive methods, naming and cloning methods by assign
-    - `self` is wrapped context now
-    - sys.linq (sys.* classes) class instead `linq` keywords
-    - fixed lazy of &amp;&amp; and ||
-    - Octal num literals
-Embedding
-    - Added NonGenericWrapper
+    - Pipe operator `x |> y()`
+    - try-catch-finally statement, throw statement
+    - Null conditional operators `x?.y`, `x?[y]`, `x?()`
+    - Null coalescing operator `a ?? b`
+    - Safe expression `err -? a`
+    - Range expression `x..y`
+    - New choosers syntax `^x..y`, `*[x, y]`
+    - Array constructor `new T[size]`
+    - Last `,` ignoring in creators `[1, ]`, `(1, )`
+    - Similarity of new context and context statement
+    - Typing refactoring (similar `T`s in `new T`, `as T`, `is T`, etc.)
+    - Foreach expression now supports `x[y]`, `(x, y)`, `x.y`
+    - Indexators for context `self["varname"]`, IEnumerable implementation
+    - `upper`->`super`, new special context `upper` (previous context)
+    - single statements `if/while/etc. (...) statement;` (including else if)
+Bugfixes:
+    - Returning contextes and tuples from methods now works
+    - Fixed lazy of ternary operator
+    - Fixed raws of string and char
+    - Fixed `x.y(a, b)(c, d)` case where x is class access
     </releaseNotes>
     <copyright>$copyright$</copyright>
-    <tags>language script-lang</tags>
-    <dependencies>
-      <group targetFramework=".NETFramework4.7.1">
-        <dependency id="Pegasus.Common" version="4.1.0.0" />
-      </group>
-    </dependencies>
+    <tags>language scripts script-lang</tags>
     <frameworkAssemblies>
         <frameworkAssembly assemblyName="System"  />
         <frameworkAssembly assemblyName="System.Core" />
     </frameworkAssemblies>
     <readme>doc\README.md</readme>
-    <repository type="git" url="https://github.com/AIexandrKotov/SLThree.git" branch="master" commit="bcfffeaf8be2dcde35b1387932dc0ecced408815" />
+    <repository type="git" url="https://github.com/AIexandrKotov/SLThree.git" branch="master" />
   </metadata>
   <files>
     <file src="SLThree\README.md" target="doc"/>
