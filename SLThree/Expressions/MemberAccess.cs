@@ -127,7 +127,7 @@ namespace SLThree
                         {
                             counted_contextwrapcache = true;
                             is_upper = true;
-                            return pred.pred.PreviousContext.wrap;
+                            return pred.pred.PreviousContext?.wrap;
                         }
                         variable_name = predName.ExpressionToString().Replace(" ", "");
                         counted_contextwrapcache = true;
@@ -158,6 +158,7 @@ namespace SLThree
                     if (prop != null) return prop.GetValue(left);
                     nest_type = type.GetNestedType(nameExpression.Name);
                     if (nest_type != null) return new ClassAccess(nest_type);
+
                     throw new RuntimeError($"Name \"{nameExpression.Name}\" not found in {type.GetTypeString()}", SourceContext);
                 }
                 else if (Right is InvokeExpression invokeExpression)

@@ -1,15 +1,15 @@
 ------ 0.6.0 Functionalization Update ------ [~.~.~]
 Language:
     - Pipe operator `x |> y()`
-    - try-catch-finally statement
+    - try-catch-finally statement, throw statement
     - Null conditional operators `x?.y`, `x?[y]`, `x?()`
     - Null coalescing operator `a ?? b`
     - Safe expression `err -? a`
     - Range expression `x..y`
     - New choosers syntax `^x..y`, `*[x, y]`
     - Array constructor `new T[size]`
-    - last comma ignoring in creators
-    - uniformity of new context and context statement
+    - Last `,` ignoring in creators `[1, ]`, `(1, )`
+    - Similarity of new context and context statement
     - Typing refactoring (similar `T`s in `new T`, `as T`, `is T`, etc.)
     - Foreach expression now supports `x[y]`, `(x, y)`, `x.y`
     - Indexators for context `self["varname"]`, IEnumerable implementation

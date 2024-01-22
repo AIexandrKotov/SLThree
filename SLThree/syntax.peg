@@ -38,6 +38,7 @@ statement <BaseStatement>
     / foreach_statement
     / while_statement
     / try_statement
+    / throw_statement
     / expression_statement
     / block_statement
 
@@ -105,6 +106,9 @@ try_statement <BaseStatement>
     / "try" _ try_body:block_statement _ 
       "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, null     , null      , finally_body, state) }
     / "try" _ try_body:block_statement                                          { new TryStatement(try_body, null     , null      , null        , state) }
+
+throw_statement <BaseStatement>
+    = "throw" _required_ expr:expression { new ThrowStatement(expr, state) }
 
 context_statement <BaseStatement>
     = "context" _required_ n:name _ ":" _ t:typename _ "{" _ st:statement_list _ "}" {
@@ -463,7 +467,10 @@ identifier <BaseExpression>
     = name
 
 keyword
-    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "using" / "which" / "typeof" / "context" / "self" / "upper" / "this" / "global" / "super" / "try" / "catch" / "finally"
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" 
+    / "using" / "context" / "new"
+    / "self" / "upper" / "this" / "global" / "super"
+    / "try" / "catch" / "finally" / "throw"
 
 name <NameExpression>
     = first:available_name { new NameExpression(first.JoinIntoString(""), state) }

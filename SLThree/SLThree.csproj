@@ -120,6 +120,7 @@
     <Compile Include="Expressions\Creators\CreatorTuple.cs" />
     <Compile Include="Expressions\ReflectionExpression.cs" />
     <Compile Include="Statements\ContextStatement.cs" />
+    <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Statements\TryStatement.cs" />
     <Compile Include="sys\console.cs" />
     <Compile Include="sys\linq.cs" />

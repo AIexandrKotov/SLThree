@@ -172,12 +172,12 @@ namespace SLThree.Visitors
             VisitExpression(expression.Right);
         }
 
-        public void VisitExpression(CreatorUsing expression)
+        public virtual void VisitExpression(CreatorUsing expression)
         {
             VisitExpression(expression.Type);
         }
 
-        public void VisitExpression(ReflectionExpression expression)
+        public virtual void VisitExpression(ReflectionExpression expression)
         {
             VisitExpression(expression.Left);
             if (expression.Right != null)
@@ -190,7 +190,7 @@ namespace SLThree.Visitors
                     VisitExpression(expression.MethodGenericArguments[i]);
         }
 
-        public void VisitExpression(TypenameExpression expression)
+        public virtual void VisitExpression(TypenameExpression expression)
         {
             if (expression.Generics != null)
                 for (var i = 0; i < expression.Generics.Length; i++)
@@ -215,6 +215,7 @@ namespace SLThree.Visitors
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
                 case TryStatement st: VisitStatement(st); return;
+                case ThrowStatement st: VisitStatement(st); return;
             }
             Executables.Remove(statement);
         }
@@ -311,6 +312,11 @@ namespace SLThree.Visitors
                 VisitStatement(statement.CatchBody[i]);
             for (var i = 0; i < statement.FinallyBody.Length; i++)
                 VisitStatement(statement.FinallyBody[i]);
+        }
+
+        public virtual void VisitStatement(ThrowStatement statement)
+        {
+            VisitExpression(statement.ThrowExpression);
         }
     }
 }

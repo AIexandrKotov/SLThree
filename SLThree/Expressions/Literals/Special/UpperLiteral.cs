@@ -8,7 +8,7 @@ namespace SLThree
         public UpperLiteral(Cursor cursor) : base(cursor) { }
 
         public override string ExpressionToString() => "upper";
-        public override object GetValue(ExecutionContext context) => context.PreviousContext.wrap;
+        public override object GetValue(ExecutionContext context) => context.PreviousContext?.wrap;
         public override object Clone() => new UpperLiteral(SourceContext);
     }
 }
