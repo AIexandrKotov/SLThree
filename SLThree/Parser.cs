@@ -28,6 +28,28 @@ namespace SLThree
             return ret;
         }
 
+        private BaseStatement[] GetStatements(BaseStatement statement)
+        {
+            if (statement is StatementListStatement list) return list.Statements;
+            return new BaseStatement[1] { statement };
+        }
+
+        private StatementListStatement GetListStatement(BaseStatement statement)
+        {
+            if (statement is StatementListStatement list) return list;
+            return new StatementListStatement()
+            {
+                Statements = new BaseStatement[1] { statement },
+                SourceContext = statement.SourceContext
+            };
+        }
+
+        private T GetOptional<T>(IList<T> optional) where T: class
+        {
+            if (optional.Count == 1) return optional[0];
+            return null;
+        }
+
         private class InjectorVisitor : AbstractVisitor
         {
             private bool done;

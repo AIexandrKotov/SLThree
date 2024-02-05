@@ -13,7 +13,7 @@
             <Keywords name="Numbers, suffix1">i8 u8 i16 u16 i32 u32 i64 u64 f32 f64 %</Keywords>
             <Keywords name="Numbers, suffix2"></Keywords>
             <Keywords name="Numbers, range"></Keywords>
-            <Keywords name="Operators1">{ } [ ] , . ( ) ; + - / * &amp;&amp; &amp; || | ^ @ $ % |&gt;</Keywords>
+            <Keywords name="Operators1">{ } [ ] , . ( ) ; + - / * &amp;&amp; &amp; || | ^ @ $ % |&gt; &lt; &gt; =&gt; &lt;= &gt;= ? :</Keywords>
             <Keywords name="Operators2"></Keywords>
             <Keywords name="Folders in code1, open">{</Keywords>
             <Keywords name="Folders in code1, middle"></Keywords>
