@@ -11,6 +11,7 @@ namespace slt.sys
     public static class repl
     {
         public static int count { get; set; } = 20;
+        public static int max_output { get; set; } = 2500;
         public static object get_output(object value) => Program.GetOutput(value);
         public static void out_locals(ExecutionContext.ContextWrap context) => Program.OutLocals(context.pred, -2);
         public static void out_locals_typed(ExecutionContext.ContextWrap context) => Program.OutLocals(context.pred, -2, true);

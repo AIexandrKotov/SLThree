@@ -38,9 +38,9 @@ namespace SLThree
 
         public object ReturnedValue;
 
-        public List<Exception> Errors = new List<Exception>();
+        public readonly List<Exception> Errors = new List<Exception>();
 
-        public static ContextWrap global = new ContextWrap(new ExecutionContext(false) { fimp = false, Name = "global" });
+        public static readonly ContextWrap global = new ContextWrap(new ExecutionContext(false) { fimp = false, Name = "global" });
 
         static ExecutionContext()
         {
@@ -189,9 +189,6 @@ namespace SLThree
             
         }
 
-        public BaseStatement parse(string s) => Parser.This.ParseScript(s);
-        public object eval(IExecutable executable) => executable.GetValue(this);
-
-        public LocalVariablesContainer LocalVariables { get; set; } = new LocalVariablesContainer();
+        public readonly LocalVariablesContainer LocalVariables = new LocalVariablesContainer();
     }
 }

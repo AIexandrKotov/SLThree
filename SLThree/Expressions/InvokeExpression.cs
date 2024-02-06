@@ -16,7 +16,6 @@ namespace SLThree
         public BaseExpression[] Arguments;
         private bool null_conditional;
 
-
         public InvokeExpression(BaseExpression name, BaseExpression[] arguments, SourceContext context) : base(context)
         {
             Left = name;
@@ -30,11 +29,7 @@ namespace SLThree
         }
 
         public override string ExpressionToString() => $"{Left}{(null_conditional?"?":"")}({Arguments.JoinIntoString(", ")})";
-
-        private Func<object[], object[]> implicit_cached;
-
-        /*private bool get_counted_name;
-        private string get_name;*/
+        
         public object GetValue(ExecutionContext context, object[] args)
         {
             var o = Left.GetValue(context);
@@ -42,7 +37,7 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method {Left}(_) not found", SourceContext);
+                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
             }
 
             if (o is Method method)
@@ -64,7 +59,7 @@ namespace SLThree
                     ?.Invoke(o, args);
             }
 
-            throw new RuntimeError("Unexecutable method", SourceContext);
+            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)
@@ -89,7 +84,7 @@ namespace SLThree
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
-                if (founded == null) throw new RuntimeError($"Method {key}({Arguments.Select(x => "_").JoinIntoString(", ")}) not found", SourceContext);
+                if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)

@@ -90,30 +90,6 @@ namespace SLThree.Extensions
         private static Type type_generic_list = typeof(List<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
         private static Type type_void = typeof(void);
-
-        /// <summary>
-        /// Only for compatibility with old REPLs
-        /// </summary>
-        public static string GetTypeString(this string t)
-        {
-            if (t == "System.Object") return "any";
-            if (t == "System.Byte") return "u8";
-            if (t == "System.SByte") return "i8";
-            if (t == "System.Int16") return "i16";
-            if (t == "System.UInt16") return "u16";
-            if (t == "System.Int32") return "i32";
-            if (t == "System.UInt32") return "u32";
-            if (t == "System.Int64") return "i64";
-            if (t == "System.UInt64") return "u64";
-            if (t == "System.Double") return "f64";
-            if (t == "System.Single") return "f32";
-            if (t == "System.Boolean") return "bool";
-            if (t == "System.String") return "string";
-            if (t == "System.Char") return "char";
-            if (t == "SLThree.ExecutionContext+ContextWrap") return "context";
-            if (t == "System.Void") return "void";
-            else return t;
-        }
         public static Type ToType(this string s, bool throwError = false)
         {
             switch (s)

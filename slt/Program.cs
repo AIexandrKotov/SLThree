@@ -11,6 +11,7 @@ using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using Pegasus.Common;
+using slt.sys;
 using SLThree;
 using SLThree.Extensions;
 using SLThree.sys;
@@ -46,13 +47,10 @@ namespace slt
             { "ansi", Encoding.GetEncoding(1250) },
         };
         internal static Assembly SLThreeAssembly;
-        private static Version SLThreeFullVersion;
-        private static string SLTVersionWithoutRevision;
-        private static string SLTRevision;
-        private static long SLTTime;
+        private static SLTVersion.Reflected SLThreeVersion;
+        private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
         private static string[] Specification;
-        private static string SLTEdition;
         private static bool HasArgument(string arg) 
             => RunArguments.HasArgument(arg, ShortCommands);
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
@@ -61,13 +59,9 @@ namespace slt
         private static void InitSLThreeAssemblyInfo()
         {
             SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
-            var ver = SLThreeAssembly.GetName().Version;
-            SLThreeFullVersion = ver;
-            SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
-            SLTRevision = ver.Revision.ToString();
+            SLThreeVersion = new SLTVersion.Reflected();
+            SLTREPLVersion = new REPLVersion.Reflected();
             var sltver = SLThreeAssembly.GetType("SLTVersion");
-            SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
-            SLTEdition = sltver.GetProperty("Edition").GetValue(null).Cast<string>();
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
             Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
         }
@@ -84,7 +78,7 @@ namespace slt
                     if (int.TryParse(str, out var result)) return Encoding.GetEncoding(result);
                     else return Encoding.GetEncoding(str);
                 }
-                catch (ArgumentException e)
+                catch (ArgumentException)
                 {
                     Console.WriteLine($"Encoding {str} not found. using utf-8");
                     return Encoding.UTF8;
@@ -139,14 +133,14 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(SLTVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLTVersionWithoutRevision} ");
+            Console.Write($" {SLThreeVersion.VersionWithoutRevision} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{SLTEdition} ");
+            Console.Write($"{SLTVersion.Edition} ");
             Console.ResetColor();
-            var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTTime), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
+            var time = TimeZoneInfo.ConvertTimeFromUtc(SLThreeVersion.LastUpdate, TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLTRevision}");
+            Console.Write($"{SLThreeVersion.Revision}");
             Console.ResetColor();
             Console.Write($" by ");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -157,7 +151,7 @@ namespace slt
 
         public static void OutVersion(string version)
         {
-            if (SLThreeVersions.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
+            if (SLThreeVersions.TryGetValue(version.Replace("last", SLThreeVersion.VersionWithoutRevision), out var data))
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(data.JoinIntoString("\n"));
@@ -168,7 +162,7 @@ namespace slt
 
         public static void OutREPLVersion(string version)
         {
-            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
+            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTREPLVersion.VersionWithoutRevision), out var data))
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(data.JoinIntoString("\n"));
@@ -292,8 +286,8 @@ namespace slt
         {
             if (value is string) value = $"\"{value}\"";
             else if (value is Type type) value = type.GetTypeString();
-            else if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
-            else if (LANG_030.Supports) value = LANG_030.GetChoosersOutput(value);
+            else value = GetChoosersOutput(value);
+            if (value is string str && str.Length > repl.max_output) return str.Substring(0, repl.max_output - 3) + "...";
             return value;
         }
 
@@ -349,10 +343,58 @@ namespace slt
 
         private static void SupportingFeatures()
         {
-            LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
-            if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
-            if (LANG_050.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor == 5) LANG_050.Init();
-            if (LANG_060.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 6) LANG_060.Init();
+            RegisterNewSystemTypes();
+        }
+        private static void RegisterNewSystemTypes()
+        {
+            foreach (var x in Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.FullName.StartsWith("slt.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x))
+            {
+                SLThree.sys.slt.sys_types.Add(x.Key, x.Value);
+            }
+            SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
+        }
+
+        private static object SafeFromContext(object value)
+        {
+            if (value is ExecutionContext.ContextWrap wrap)
+                return $"context {wrap.pred.Name}";
+            if (value is null)
+                return "null";
+            else return value;
+        }
+
+        private static object GetChoosersOutput(object value)
+        {
+            if (value == null) return value;
+            if (value is ITuple tuple)
+            {
+                var xvalue = tuple.Enumerate(); value =
+                    $"({(xvalue.Count() <= repl.count ? xvalue.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : xvalue.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")})";
+            }
+            if (value is IList list) value =
+                    $"[{(list.Count <= repl.count ? list.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : list.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")}]";
+            if (value is IDictionary dict) value =
+                    $"{{{(dict.Count <= repl.count ? dict.Keys.Enumerate().Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(repl.count).Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") + "...")}}}";
+            var type = value.GetType();
+            if (value is IChooser)
+            {
+                if (value is IChanceChooser chanceChooser)
+                {
+                    var values = chanceChooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")}...)"
+                        : $"({values.Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")})";
+                }
+                else if (value is IEqualchanceChooser chooser)
+                {
+                    var values = chooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).JoinIntoString(" \\ ")}...)"
+                        : $"({values.JoinIntoString(" \\ ")})";
+                }
+            }
+            return value;
         }
 
         #region REPL Commands
@@ -513,8 +555,7 @@ namespace slt
                 }
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = LANG_040.Supports ? (x.Value is ExecutionContext.ContextWrap wrap ? $"context {LANG_040.NameOfContext(wrap.pred)}" : GetOutput(x.Value)?.ToString() ?? "null")
-                        : (GetOutput(x.Value)?.ToString() ?? "null");
+                var output = x.Value is ExecutionContext.ContextWrap wrap ? $"context {wrap.pred.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -553,24 +594,10 @@ namespace slt
             { "--help", () => OutREPLHelp() },
             { "--conhelp", () => OutHelp() },
         };
-        public static ExecutionContext GetNewREPLContext(bool update_global = true)
+        public static ExecutionContext GetNewREPLContext()
         {
             var context = new ExecutionContext();
-            if (update_global) UpdateGlobalContext();
             return context;
-        }
-        public static void UpdateGlobalContext()
-        {
-            if (LANG_040.Supports)
-            {
-
-            }
-            else
-            {
-                ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
-                ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
-                ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
-            }
         }
 
         public static bool ExtendedCommands(string command)
@@ -655,9 +682,9 @@ namespace slt
                 var context =
                     wrds.HasArgument("--global")
                     ? ExecutionContext.global.pred
-                        //:  (wrds.TryGetArgument("--context", out var vname) 
-                        //    ? REPLContext.LocalVariables.GetValue(vname).Item1.TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
-                        : REPLContext//)
+                        :  (wrds.TryGetArgument("--context", out var vname) 
+                            ? SLThree.sys.slt.eval(vname).TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
+                            : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
@@ -690,23 +717,15 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    if (LANG_060.Supports)
+                    var ocontext = SLThree.sys.slt.eval(new ExecutionContext.ContextWrap(REPLContext), runfile_incontext);
+                    switch (ocontext)
                     {
-                        var ocontext = LANG_060.Eval(new ExecutionContext.ContextWrap(REPLContext), runfile_incontext);
-                        switch (ocontext)
-                        {
-                            case ExecutionContext cc:
-                                context = cc;
-                                break;
-                            case ExecutionContext.ContextWrap wrap:
-                                context = wrap.pred;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        OutAsWarning("Running in a different context is possible starting from SLThree 0.6.0");
-                        context = REPLContext;
+                        case ExecutionContext cc:
+                            context = cc;
+                            break;
+                        case ExecutionContext.ContextWrap wrap:
+                            context = wrap.pred;
+                            break;
                     }
                 }
                 else context = REPLContext;

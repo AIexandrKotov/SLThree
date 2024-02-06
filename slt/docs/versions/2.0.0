@@ -1,0 +1,6 @@
+------ SLThree REPL 2.0.0 ------ [~.~.~]
+New:
+    - Locals of context with `--context`
+    - Output symbols cap `repl.max_output` (default: 2500)
+Supporing:
+    - Broken compatibilty with SLThree 0.6.0 and older
