@@ -15,6 +15,9 @@ namespace SLThree
         public string[] ParamNames;
         public StatementListStatement Statements;
 
+        public TypenameExpression[] ParamTypes;
+        public TypenameExpression ReturnType;
+
         public ExecutionContext.ContextWrap DefinitionPlace;
 
         public bool imp = false;
@@ -22,7 +25,7 @@ namespace SLThree
         public string contextName = "";
         public void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
-        public override string ToString() => $"_ {Name}({ParamNames.ConvertAll(x => "_").JoinIntoString(", ")})";
+        public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
 
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
         {
@@ -60,6 +63,19 @@ namespace SLThree
             return null;
         }
 
+        public RecursiveMethod MakeRecursive()
+        {
+            return new RecursiveMethod()
+            {
+                Name = Name,
+                ParamNames = ParamNames,
+                ParamTypes = ParamTypes,
+                ReturnType = ReturnType,
+                DefinitionPlace = DefinitionPlace,
+                Statements = Statements,
+            };
+        }
+
         public static MethodInfo Create<TResult>(Func<TResult> func) => func.Method;
         public static MethodInfo Create<T1, TResult>(Func<T1, TResult> func) => func.Method;
         public static MethodInfo Create<T1, T2, TResult>(Func<T1, T2, TResult> func) => func.Method;
@@ -78,6 +94,8 @@ namespace SLThree
                 imp = imp,
                 Name = Name,
                 ParamNames = ParamNames.CloneArray(),
+                ParamTypes = ParamTypes.CloneArray(),
+                ReturnType = ReturnType.CloneCast(),
                 Statements = Statements.CloneCast()
             };
         }

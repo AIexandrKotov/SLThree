@@ -109,6 +109,7 @@ binary_9 <BaseExpression> -memoize
     / method
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, state) }
+    / left:arg_name _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
     / left:binary_7 _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
     / left:binary_7 _ "+=" _ right:binary_9 { new BinaryAssign(left, new BinaryAdd(left, right, state), state) }
     / left:binary_7 _ "-=" _ right:binary_9 { new BinaryAssign(left, new BinaryRem(left, right, state), state) }
@@ -203,8 +204,8 @@ unary <BaseExpression>
     / primary
 
 primary <BaseExpression> -memoize
-    = left:primary _ conditional:"?"? _ "(" _ args:argument<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), conditional.Count == 1, state) }
-    / left:primary _ conditional:"?"? _ "[" _ args:argument<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), conditional.Count == 1, state) }
+    = left:primary _ conditional:"?"? _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), conditional.Count == 1, state) }
+    / left:primary _ conditional:"?"? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), conditional.Count == 1, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / "{" _ etrs:(<CreatorDictionary.Entry>left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) })
@@ -213,10 +214,11 @@ primary <BaseExpression> -memoize
     }
     / "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
-    / "new" _required_ right:typename _ "(" _ args:argument<0,,"," _> _ ")" { new NewExpression(right, args.ToArray(), state) }
+    / "new" _required_ right:typename _ "(" _ args:expression<0,,"," _> _ ")" { new NewExpression(right, args.ToArray(), state) }
     / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorArray(tp, size, state) }
-    / "(" _ args:argument<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
-    / "[" _ args:argument<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
+    / "(" _ args:arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
     / name_literal
     / special
     / name
@@ -225,7 +227,7 @@ primary <BaseExpression> -memoize
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
 
 access_right <BaseExpression> -memoize
-    = left:name _ "(" _ args:argument<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    = left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / right:access_right { right }
     / right:name { right }
 
@@ -245,20 +247,21 @@ context <CreatorContext>
 
 lambda <BaseExpression>
     = left:(
-        <ValueTuple<IList<string>, NameExpression[]>>
+        <ValueTuple<IList<string>, NameExpression[], TypenameExpression>>
         mods:(<IList<string>> mods_i:method_modificator<1,,_required_> _required_ { mods_i })?
         args:(
             <IList<NameExpression>> "(" _ args_i:arg_name<0,,"," _> _ ")" { args_i }
             / a:arg_name { new NameExpression[1] { a } }
-        ) {
-            new ValueTuple<IList<string>, NameExpression[]>(GetOptional(mods) ?? new string[0], args.ToArray())
+        )
+        ret:(<TypenameExpression> _ ":" _ t:typename {t})? {
+            new ValueTuple<IList<string>, NameExpression[], TypenameExpression>(GetOptional(mods) ?? new string[0], args.ToArray(), GetOptional(ret))
         }
     ) _ "=>" _ right:(
         <StatementListStatement>
         expr:expression { GetListStatement(new ReturnStatement(expr, state)) }
         / block_statement
     ) {
-        new LambdaExpression(new InvokeExpression(null, left.Item2, state), right, left.Item1, state)
+        new LambdaExpression(new InvokeExpression(null, left.Item2, state), right, left.Item3, left.Item1, state)
     }
 
 method_modificator
@@ -274,10 +277,9 @@ typename_node <BaseExpression> -memoize
     / special
     / name
 
-argument <BaseExpression> = expression
-
 arg_name <NameExpression>
-    = name
+    = t:typename _ n:name { n.Hint(t) }
+    / name
 
 name_literal <BaseExpression>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }

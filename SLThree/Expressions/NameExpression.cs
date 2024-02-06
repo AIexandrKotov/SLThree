@@ -11,16 +11,14 @@ namespace SLThree
 {
     public partial class NameExpression : BaseExpression
     {
+        public TypenameExpression TypeHint;
         public string Name;
         public NameExpression() : base() { }
-        public NameExpression(string name, SourceContext context) : base(context)
+        public NameExpression(string name, SourceContext context) : this(name, null, context) { }
+        public NameExpression(string name, TypenameExpression typehint, SourceContext context) : base(context)
         {
             Name = name;
-        }
-        public NameExpression(string name, string next, SourceContext context) : base(context)
-        {
-            Name = name;
-            if (next.Length != 0) Name += $".{next}";
+            TypeHint = typehint;
         }
 
         public override string ExpressionToString() => Name;
@@ -43,9 +41,15 @@ namespace SLThree
             }
         }
 
+        public NameExpression Hint(TypenameExpression typehint)
+        {
+            TypeHint = typehint;
+            return this;
+        }
+
         public override object Clone()
         {
-            return new NameExpression() { Name = Name.CloneCast(), SourceContext = SourceContext.CloneCast() };
+            return new NameExpression(Name.CloneCast(), TypeHint.CloneCast(), SourceContext = SourceContext.CloneCast());
         }
     }
 }

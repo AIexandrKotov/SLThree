@@ -172,6 +172,7 @@
     <EmbeddedResource Include="docs\versions\0.5.1" />
     <EmbeddedResource Include="docs\versions\0.5.2" />
     <EmbeddedResource Include="docs\versions\0.6.0" />
+    <EmbeddedResource Include="docs\versions\0.7.0" />
     <None Include="packages.config" />
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>
