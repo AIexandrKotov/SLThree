@@ -1,7 +1,5 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions.Cloning;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace SLThree
 {
@@ -39,12 +37,12 @@ namespace SLThree
                     counted_invoked = context;
                     return right;
                 }
-                else return assignToValue(context, Left, right);
+                else return InternalAssignToValue(context, Left, right);
             }
             throw new OperatorError(this, Left?.GetType(), right?.GetType());
         }
 
-        private static object assignToValue(ExecutionContext context, BaseExpression Left, object right)
+        private static object InternalAssignToValue(ExecutionContext context, BaseExpression Left, object right)
         {
             if (Left is NameExpression nl)
             {

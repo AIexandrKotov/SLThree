@@ -1,10 +1,7 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace SLThree
@@ -13,7 +10,7 @@ namespace SLThree
     {
         public BaseExpression[] Expressions;
         public (ExecutionContext, bool, int)[] Caches;
-        
+
         public CreatorTuple(BaseExpression[] expressions, SourceContext context) : base(context)
         {
             Expressions = expressions;
@@ -39,7 +36,7 @@ namespace SLThree
         private static Type generic_vt8 = typeof(ValueTuple<,,,,,,,>);
 
         private static Type[] objs7 = Enumerable.Repeat(typeof(object), 7).ToArray();
-        private static Type[] get_objs8(Type next) =>
+        private static Type[] Get_objs8(Type next) =>
             objs7.Append(next).ToArray();
 
         public static ITuple Create(object[] objs, int index = 0)
@@ -57,7 +54,7 @@ namespace SLThree
                 default:
                     {
                         var rest = Create(objs, index + 7);
-                        return (ITuple)Activator.CreateInstance(generic_vt8.MakeGenericType(get_objs8(rest.GetType())),
+                        return (ITuple)Activator.CreateInstance(generic_vt8.MakeGenericType(Get_objs8(rest.GetType())),
                             new object[8]
                             { objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6], rest });
                     }

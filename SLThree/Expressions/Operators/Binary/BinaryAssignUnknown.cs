@@ -1,5 +1,4 @@
 ﻿using SLThree.Extensions.Cloning;
-using System.Linq;
 using System.Reflection;
 
 namespace SLThree
@@ -9,8 +8,6 @@ namespace SLThree
         public override string Operator => "? =";
         public BinaryAssignUnknown(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
         public BinaryAssignUnknown() : base() { }
-
-        private static bool is_invalid_name(char x) => !(x == '_' || (x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'));
 
         public override object GetValue(ExecutionContext context)
         {

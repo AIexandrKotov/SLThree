@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System.Collections;
 using System.Linq;
@@ -85,7 +84,7 @@ namespace SLThree
             }
             return null;
         }
-        
+
         public object SetValue(ExecutionContext context, object value)
         {
             var o = Expression.GetValue(context);
@@ -103,7 +102,7 @@ namespace SLThree
                     {
                         return o.Cast<IList>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()] = value;
                     }
-                case 4: 
+                case 4:
                     PropertyInfo.SetValue(o, value, Arguments.ConvertAll(x => x.GetValue(context)));
                     break;
             }

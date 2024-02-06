@@ -1,8 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
-using System.Threading;
-
-namespace SLThree
+﻿namespace SLThree
 {
     public abstract class Literal : BaseExpression
     {
@@ -11,9 +7,10 @@ namespace SLThree
         public Literal(SourceContext context) : base(context) { }
 
         private string rawRepresentation = "";
-        public string RawRepresentation { 
+        public string RawRepresentation
+        {
             get => string.IsNullOrEmpty(rawRepresentation) ? Value.ToString() : rawRepresentation;
-            set => rawRepresentation = value; 
+            set => rawRepresentation = value;
         }
 
         public override string ExpressionToString() => RawRepresentation;

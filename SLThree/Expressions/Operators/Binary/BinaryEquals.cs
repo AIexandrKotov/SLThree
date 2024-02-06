@@ -1,8 +1,6 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
-using static SLThree.SwitchStatement;
 
 namespace SLThree
 {

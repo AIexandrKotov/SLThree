@@ -2,12 +2,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree
 {
@@ -51,14 +48,14 @@ namespace SLThree
         {
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
-            if (assign_to_global) toplevel = global.pred;
+            if (assign_to_global) SuperContext = global.pred;
         }
 
         public ExecutionContext(ExecutionContext context)
         {
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
-            if (context != null) toplevel = context;
+            if (context != null) SuperContext = context;
         }
 
         public ExecutionContext() : this(true) { }
@@ -67,7 +64,7 @@ namespace SLThree
 
         public class ContextWrap : IEnumerable<object>
         {
-            public ExecutionContext pred;
+            public readonly ExecutionContext pred;
 
             public ContextWrap(ExecutionContext pred)
             {
@@ -84,11 +81,11 @@ namespace SLThree
                 sb.AppendLine($"context {pred.Name} {{");
                 foreach (var x in pred.LocalVariables.GetAsDictionary())
                 {
-                    
+
                     sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
                     if (x.Value is ContextWrap wrap)
                     {
-                        if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //recursive");
+                        if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //already printed");
                         else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
                     }
                     else if (x.Value is MemberAccess.ClassAccess ca)
@@ -148,15 +145,15 @@ namespace SLThree
         //public ContextWrap pred => new ContextWrap(PreviousContext);
         public readonly ContextWrap wrap;
         internal ContextWrap super;
-        internal ExecutionContext toplevel { get => super?.pred; set => super = new ContextWrap(value); }
+        internal ExecutionContext SuperContext { get => super?.pred; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
         {
             var context = this;
-            while (context.toplevel != null)
+            while (context.SuperContext != null)
             {
-                yield return context.toplevel;
-                context = context.toplevel;
+                yield return context.SuperContext;
+                context = context.SuperContext;
             }
         }
 
@@ -186,7 +183,7 @@ namespace SLThree
         public void PrepareToInvoke() { Returned = Broken = Continued = false; }
         public void DefaultEnvironment()
         {
-            
+
         }
 
         public readonly LocalVariablesContainer LocalVariables = new LocalVariablesContainer();

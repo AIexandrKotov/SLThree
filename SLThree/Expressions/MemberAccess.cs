@@ -1,12 +1,9 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
-using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 
 namespace SLThree
 {
@@ -78,7 +75,8 @@ namespace SLThree
 
         public override string Operator => ".";
         public MemberAccess(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context) { }
-        public MemberAccess(BaseExpression left, BaseExpression right, bool null_conditional, SourceContext context) : base(left, right, context) {
+        public MemberAccess(BaseExpression left, BaseExpression right, bool null_conditional, SourceContext context) : base(left, right, context)
+        {
             this.null_conditional = null_conditional;
         }
         public MemberAccess() : base() { }
@@ -144,12 +142,12 @@ namespace SLThree
                         return invokeExpression.GetValue(pred.pred, invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                 }
-                var has_access = left is ClassAccess access; 
+                var has_access = left is ClassAccess access;
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null) return field.GetValue(left);
                 if (prop != null) return prop.GetValue(left);
                 if (nest_type != null) return new ClassAccess(nest_type);
-                
+
                 if (Right is NameExpression nameExpression)
                 {
                     field = type.GetField(nameExpression.Name);
@@ -167,7 +165,7 @@ namespace SLThree
                 }
             }
             else if (null_conditional) return null;
-            
+
             throw new OperatorError(this, left?.GetType(), Right?.GetType());
         }
 
@@ -188,8 +186,8 @@ namespace SLThree
                 if (left is ExecutionContext.ContextWrap wrap)
                 {
                     context = wrap.pred;
-                    var has_access_2 = left is ClassAccess access_2;
-                    var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
+                    //var has_access_2 = left is ClassAccess;
+                    //var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameExpression nameExpression2)
                     {
                         other_context_name = Right.ExpressionToString().Replace(" ", "");
@@ -206,7 +204,7 @@ namespace SLThree
                     }
                     return;
                 }
-                var has_access = left is ClassAccess access;
+                var has_access = left is ClassAccess;
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null)
                 {

@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +28,7 @@ namespace SLThree
         }
 
         public Entry[] Entries;
-        
+
         public CreatorDictionary(Entry[] entries, SourceContext context) : base(context)
         {
             Entries = entries;

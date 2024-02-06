@@ -1,18 +1,11 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace SLThree
 {
     public class UsingStatement : BaseStatement
     {
-        //todo only for compatibility
-        public static Dictionary<string, Type> SystemTypes { get; } = sys.slt.sys_types;
-
         public NameExpression Alias;
         public CreatorUsing Using;
 

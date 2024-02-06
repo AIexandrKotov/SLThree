@@ -1,12 +1,7 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace SLThree
 {
@@ -28,8 +23,8 @@ namespace SLThree
             this.null_conditional = null_conditional;
         }
 
-        public override string ExpressionToString() => $"{Left}{(null_conditional?"?":"")}({Arguments.JoinIntoString(", ")})";
-        
+        public override string ExpressionToString() => $"{Left}{(null_conditional ? "?" : "")}({Arguments.JoinIntoString(", ")})";
+
         public object GetValue(ExecutionContext context, object[] args)
         {
             var o = Left.GetValue(context);
@@ -77,10 +72,10 @@ namespace SLThree
 
             if (obj is MemberAccess.ClassAccess ca)
             {
-                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static); 
-                    // после первого вызова GetMethod
-                    // переставляет перегрузки, у которых аргумент object
-                    // в начало массива методов
+                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                // после первого вызова GetMethod
+                // переставляет перегрузки, у которых аргумент object
+                // в начало массива методов
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;

@@ -1,12 +1,7 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
-using static SLThree.SwitchStatement;
 
 namespace SLThree
 {

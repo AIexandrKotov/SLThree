@@ -1,13 +1,8 @@
 ﻿using SLThree.sys;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Embedding
 {
@@ -16,7 +11,7 @@ namespace SLThree.Embedding
         private class LoadOption
         {
             public string file = null;
-            public string dir;
+            public string dir = null;
             public bool all = false;
             public LoadOption() { }
         }

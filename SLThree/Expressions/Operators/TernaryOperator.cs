@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
@@ -10,7 +9,7 @@ namespace SLThree
         public BaseExpression Condition;
         public BaseExpression Left;
         public BaseExpression Right;
-        
+
         public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(priority, context)
         {
             Condition = cond;

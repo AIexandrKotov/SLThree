@@ -1,6 +1,5 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using SLThree.sys;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +17,7 @@ namespace SLThree
             UpperBound = upperBound;
         }
 
-        public struct DoubleRange 
+        public struct DoubleRange
         {
 
         }

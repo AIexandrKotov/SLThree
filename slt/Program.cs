@@ -1,4 +1,7 @@
-﻿using System;
+﻿using slt.sys;
+using SLThree;
+using SLThree.Extensions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,15 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
-using System.Threading.Tasks;
-using Pegasus.Common;
-using slt.sys;
-using SLThree;
-using SLThree.Extensions;
-using SLThree.sys;
 
 namespace slt
 {
@@ -51,7 +46,7 @@ namespace slt
         private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
         private static string[] Specification;
-        private static bool HasArgument(string arg) 
+        private static bool HasArgument(string arg)
             => RunArguments.HasArgument(arg, ShortCommands);
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
             => RunArguments.TryGetArgument(arg, out value, not_found, ShortCommands);
@@ -282,6 +277,48 @@ namespace slt
             Console.ResetColor();
         }
 
+        private static object SafeFromContext(object value)
+        {
+            if (value is ExecutionContext.ContextWrap wrap)
+                return $"context {wrap.pred.Name}";
+            if (value is null)
+                return "null";
+            else return value;
+        }
+
+        private static object GetChoosersOutput(object value)
+        {
+            if (value == null) return value;
+            if (value is ITuple tuple)
+            {
+                var xvalue = tuple.Enumerate(); value =
+                    $"({(xvalue.Count() <= repl.count ? xvalue.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : xvalue.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")})";
+            }
+            if (value is IList list) value =
+                    $"[{(list.Count <= repl.count ? list.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : list.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")}]";
+            if (value is IDictionary dict) value =
+                    $"{{{(dict.Count <= repl.count ? dict.Keys.Enumerate().Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(repl.count).Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") + "...")}}}";
+            var type = value.GetType();
+            if (value is IChooser)
+            {
+                if (value is IChanceChooser chanceChooser)
+                {
+                    var values = chanceChooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")}...)"
+                        : $"({values.Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")})";
+                }
+                else if (value is IEqualchanceChooser chooser)
+                {
+                    var values = chooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).JoinIntoString(" \\ ")}...)"
+                        : $"({values.JoinIntoString(" \\ ")})";
+                }
+            }
+            return value;
+        }
+
         public static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
@@ -344,7 +381,9 @@ namespace slt
         private static void SupportingFeatures()
         {
             RegisterNewSystemTypes();
+            ExecutionContext.ContextWrap.Decoration = GetOutput;
         }
+
         private static void RegisterNewSystemTypes()
         {
             foreach (var x in Assembly.GetExecutingAssembly().GetTypes()
@@ -355,52 +394,10 @@ namespace slt
             SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
         }
 
-        private static object SafeFromContext(object value)
-        {
-            if (value is ExecutionContext.ContextWrap wrap)
-                return $"context {wrap.pred.Name}";
-            if (value is null)
-                return "null";
-            else return value;
-        }
-
-        private static object GetChoosersOutput(object value)
-        {
-            if (value == null) return value;
-            if (value is ITuple tuple)
-            {
-                var xvalue = tuple.Enumerate(); value =
-                    $"({(xvalue.Count() <= repl.count ? xvalue.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : xvalue.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")})";
-            }
-            if (value is IList list) value =
-                    $"[{(list.Count <= repl.count ? list.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : list.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")}]";
-            if (value is IDictionary dict) value =
-                    $"{{{(dict.Count <= repl.count ? dict.Keys.Enumerate().Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(repl.count).Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") + "...")}}}";
-            var type = value.GetType();
-            if (value is IChooser)
-            {
-                if (value is IChanceChooser chanceChooser)
-                {
-                    var values = chanceChooser.Values;
-                    value = values.Count > repl.count
-                        ? $"({values.Take(repl.count).Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")}...)"
-                        : $"({values.Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")})";
-                }
-                else if (value is IEqualchanceChooser chooser)
-                {
-                    var values = chooser.Values;
-                    value = values.Count > repl.count
-                        ? $"({values.Take(repl.count).JoinIntoString(" \\ ")}...)"
-                        : $"({values.JoinIntoString(" \\ ")})";
-                }
-            }
-            return value;
-        }
-
         #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
-        public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
+        public static void OutUsingClasses(ExecutionContext context, int table = -1)
         {
             var local_usings0 = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
@@ -445,7 +442,7 @@ namespace slt
             }
         }
 
-        public static void OutLocalMethods(ExecutionContext context, int table = -1, bool typed = false)
+        public static void OutLocalMethods(ExecutionContext context, int table = -1)
         {
             Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
@@ -453,7 +450,7 @@ namespace slt
                 {
                     if (x.Value is Method method)
                     {
-                        return (string.Empty, method.ParamNames, true);
+                        return (method.ReturnType?.ToString() ?? "any", method.ParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true);
                     }
                     else if (x.Value is MethodInfo info)
                     {
@@ -481,25 +478,26 @@ namespace slt
             foreach (var x in local_methods)
             {
                 Console.Write("    ");
-                if (x.Value.Item3)
-                {
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write("SLT".PadLeft(max_ret_type));
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write(x.Value.Item1.PadLeft(max_ret_type));
-                    Console.ResetColor();
-                }
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(x.Value.Item1.PadLeft(max_ret_type));
+                Console.ResetColor();
                 Console.Write(" ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(x.Key.PadRight(max_method_name));
                 Console.ResetColor();
                 Console.Write("(");
-                Console.ForegroundColor = x.Value.Item3 ? ConsoleColor.Magenta : ConsoleColor.Cyan;
-                Console.Write(x.Value.Item2.JoinIntoString(", "));
+                var tnext = false;
+                foreach (var t in x.Value.Item2)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
                 Console.ResetColor();
                 Console.Write(") ");
                 Console.WriteLine();
@@ -536,23 +534,16 @@ namespace slt
             foreach (var x in local_variables)
             {
                 Console.Write("    ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.ResetColor();
                 if (typed)
                 {
-                    if (types[x.Key] == null)
-                    {
-                        Console.Write("".PadRight((table == -1 ? 0 : 2) + max_variable_type));
-                    }
-                    else
-                    {
-                        Console.Write(": ");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write((types[x.Key] ?? "").PadRight(max_variable_type));
-                        Console.ResetColor();
-                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write((types[x.Key] ?? "").PadRight(max_variable_type));
+                    Console.Write(" ");
+                    Console.ResetColor();
                 }
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.Write(" = ");
                 Console.ResetColor();
                 var output = x.Value is ExecutionContext.ContextWrap wrap ? $"context {wrap.pred.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
@@ -564,8 +555,8 @@ namespace slt
 
         public static void OutLocals(ExecutionContext context, int table = -1, bool typed = false)
         {
-            OutUsingClasses(context, table, typed);
-            OutLocalMethods(context, table, typed);
+            OutUsingClasses(context, table);
+            OutLocalMethods(context, table);
             OutLocalVariables(context, table, typed);
         }
 
@@ -675,14 +666,14 @@ namespace slt
             wrds = Array.ConvertAll(wrds, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortREPLCommands) : x);
 
             var any_executed = false;
-            
+
             if (wrds.HasArgument("-l", ShortREPLCommands))
             {
                 var typed = wrds.HasArgument("--typed");
                 var context =
                     wrds.HasArgument("--global")
                     ? ExecutionContext.global.pred
-                        :  (wrds.TryGetArgument("--context", out var vname) 
+                        : (wrds.TryGetArgument("--context", out var vname)
                             ? SLThree.sys.slt.eval(vname).TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
                             : REPLContext)
                         ;
@@ -692,7 +683,7 @@ namespace slt
                 }
                 else
                 {
-                    OutLocals(context, - 1, typed);
+                    OutLocals(context, -1, typed);
                 }
                 any_executed = true;
             }

@@ -16,7 +16,7 @@ namespace SLThree
             if (type.Generics == null)
             {
                 var str = type.Typename.ToString();
-                if (UsingStatement.SystemTypes.TryGetValue(str, out var sys))
+                if (SLThree.sys.slt.sys_types.TryGetValue(str, out var sys))
                     system = new MemberAccess.ClassAccess(sys);
             }
         }

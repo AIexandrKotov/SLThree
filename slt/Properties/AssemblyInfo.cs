@@ -1,7 +1,6 @@
 using SLThree.Extensions;
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // Общие сведения об этой сборке предоставляются следующим набором
@@ -66,8 +65,8 @@ public static class REPLVersion
     public const string Major = "2"; //vh
     public const string Minor = "0"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "277"; //vh
-    public const long LastUpdate = 638428117081043152; //vh
+    public const string Revision = "297"; //vh
+    public const long LastUpdate = 638428175291987510; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;

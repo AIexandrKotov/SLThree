@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {

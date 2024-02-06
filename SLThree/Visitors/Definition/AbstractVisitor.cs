@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Visitors
 {
@@ -133,7 +130,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(NameExpression expression)
         {
-            
+
         }
 
         public virtual void VisitExpression(NewExpression expression)
@@ -145,7 +142,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(Literal expression)
         {
-            
+
         }
 
         public virtual void VisitExpression(UnaryOperator expression)

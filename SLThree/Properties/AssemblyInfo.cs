@@ -1,11 +1,10 @@
-using System.IO;
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Linq;
 using SLThree.Extensions;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
@@ -40,7 +39,8 @@ using SLThree.Extensions;
 [assembly: AssemblyVersion(SLTVersion.Version)]
 [assembly: AssemblyFileVersion(SLTVersion.Version)]
 
-public static class SLTVersion {
+public static class SLTVersion
+{
     public class Reflected
     {
         public int Major { get; private set; }
@@ -69,8 +69,8 @@ public static class SLTVersion {
     public const string Major = "0"; //vh
     public const string Minor = "7"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "2339"; //vh
-    public const long LastUpdate = 638428117075428054; //vh
+    public const string Revision = "2348"; //vh
+    public const long LastUpdate = 638428145019071801; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;

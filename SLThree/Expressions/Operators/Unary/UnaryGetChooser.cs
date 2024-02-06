@@ -8,14 +8,14 @@ namespace SLThree
     {
         public override string Operator => "*";
         public TypenameExpression Typename;
-        public UnaryGetChooser(BaseExpression left, TypenameExpression typename, SourceContext context, bool priority = false) : base(left, context, priority) 
+        public UnaryGetChooser(BaseExpression left, TypenameExpression typename, SourceContext context, bool priority = false) : base(left, context, priority)
         {
             Typename = typename;
         }
         public UnaryGetChooser() : base() { }
         public override object GetValue(ExecutionContext context)
         {
-            return Typename == null 
+            return Typename == null
                 ? sys.random.to_chooser(Left.GetValue(context))
                 : sys.random.to_chooser(Left.GetValue(context), Typename.GetValue(context).Cast<Type>());
         }

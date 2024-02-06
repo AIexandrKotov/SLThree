@@ -3,14 +3,13 @@ using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace SLThree
 {
     public class Method : ICloneable
     {
-        private static Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
-        
+        private static readonly Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
+
         public string Name;
         public string[] ParamNames;
         public StatementListStatement Statements;
@@ -37,9 +36,11 @@ namespace SLThree
             }
             else
             {
-                ret = new ExecutionContext(context);
-                ret.@this = DefinitionPlace;
-                ret.toplevel = ret.@this.pred?.toplevel;
+                ret = new ExecutionContext(context)
+                {
+                    @this = DefinitionPlace
+                };
+                ret.SuperContext = ret.@this.pred?.SuperContext;
                 cached_method_contextes.Add(this, ret);
             }
             ret.Name = contextName;

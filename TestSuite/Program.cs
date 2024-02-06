@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using SLThree;
+﻿using SLThree;
 using SLThree.Extensions;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace TestSuite
 {
@@ -27,7 +24,7 @@ namespace TestSuite
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("");
-                Console.Write($"{current_assert_id++, 6}  ");
+                Console.Write($"{current_assert_id++,6}  ");
                 if (expression.GetValue(context.pred).Cast<bool>())
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
@@ -83,6 +80,7 @@ namespace TestSuite
             {
                 var context = new ExecutionContext();
                 context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseExpression>)Assert).Method);
+                context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
                 context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 
                 Parser.This.RunScript(File.ReadAllText(filename), filename, context);
@@ -101,7 +99,8 @@ namespace TestSuite
             }
         }
 
-        static string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\test\\parsing\\");
+        static string GetPath(string path) => from_solution ? path : Path.Combine("..", path);
+        static readonly string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\test\\parsing\\");
         public static void ParsingTests()
         {
             Console.WriteLine(">>> Parsing Tests");
@@ -122,7 +121,7 @@ namespace TestSuite
             }
         }
 
-        static string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\test\\executing\\");
+        static readonly string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\test\\executing\\");
         public static void ExecutingTests()
         {
             Console.WriteLine(">>> Executing Tests");
@@ -150,7 +149,7 @@ namespace TestSuite
 
         public static void ErrorsTests()
         {
-            
+
         }
 
         private static bool from_solution = false;

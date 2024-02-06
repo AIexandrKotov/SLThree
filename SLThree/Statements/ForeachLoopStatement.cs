@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System.Collections;
 using System.Linq;
@@ -21,7 +20,7 @@ namespace SLThree
             count = LoopBody.Length;
             is_name_expr = Left is NameExpression;
         }
-        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementListStatement cycleBody, SourceContext context) 
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementListStatement cycleBody, SourceContext context)
             : this(left, iterator, cycleBody.Statements.ToArray(), context) { }
 
         private bool is_name_expr;

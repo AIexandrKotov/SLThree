@@ -1,13 +1,8 @@
 ﻿using SLThree.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Contexts;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.sys
 {
@@ -102,9 +97,9 @@ namespace SLThree.sys
         }
         public static object min(IEnumerable<object> objects) => objects.Min();
 
-        public static object max_by(IEnumerable<object> objects, Method method) 
+        public static object max_by(IEnumerable<object> objects, Method method)
             => objects.MaxBy(x => method.GetValue(new object[1] { x }));
-        public static object max_by(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context) 
+        public static object max_by(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context)
             => objects.MaxBy(x => method.GetValue(context.pred, new object[1] { x }));
 
         public static object min_by(IEnumerable<object> objects, Method method)
@@ -114,7 +109,7 @@ namespace SLThree.sys
 
         public static IEnumerable<object> group_by(IEnumerable<object> objects, Method method)
             => objects.GroupBy(x => method.GetValue(new object[1] { x }));
-        public static IEnumerable<object> group_by(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context) 
+        public static IEnumerable<object> group_by(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context)
             => objects.GroupBy(x => method.GetValue(context.pred, new object[1] { x }));
         public static IEnumerable<object> order_by(IEnumerable<object> objects, Method method)
             => objects.OrderBy(x => method.GetValue(new object[1] { x }));
@@ -186,7 +181,7 @@ namespace SLThree.sys
         public static IEnumerable<object> enumerate(IEnumerable<object> objects)
         {
             var i = 0;
-            foreach(var x in objects)
+            foreach (var x in objects)
             {
                 yield return (i, x);
                 i++;

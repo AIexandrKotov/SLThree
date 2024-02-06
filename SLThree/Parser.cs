@@ -1,10 +1,7 @@
 ﻿using SLThree.Extensions;
 using SLThree.Visitors;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree
 {
@@ -44,7 +41,7 @@ namespace SLThree
             };
         }
 
-        private T GetOptional<T>(IList<T> optional) where T: class
+        private T GetOptional<T>(IList<T> optional) where T : class
         {
             if (optional.Count == 1) return optional[0];
             return null;
@@ -53,7 +50,7 @@ namespace SLThree
         private class InjectorVisitor : AbstractVisitor
         {
             private bool done;
-            private BaseExpression Addition;
+            private readonly BaseExpression Addition;
             public InjectorVisitor(BaseExpression addition)
             {
                 Addition = addition;
@@ -79,7 +76,7 @@ namespace SLThree
         {
             throw exception;
         }
-        
+
         private static BaseStatement CheckOnContextStatements(BaseStatement statement)
         {
             if (statement is ExpressionStatement expressionStatement)

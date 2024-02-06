@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Extensions
 {
@@ -150,7 +144,7 @@ namespace SLThree.Extensions
         }
         private static IEnumerable<string> NestedVariations(this string s)
         {
-            var ind = -1;
+            int ind;
             while ((ind = s.LastIndexOf('.')) != -1)
             {
                 yield return s = s.Substring(0, ind) + "+" + s.Substring(ind + 1, s.Length - ind - 1);
@@ -199,7 +193,7 @@ namespace SLThree.Extensions
             if (casting_type == type_context)
             {
                 if (o is Type st_type)
-                    return 
+                    return
                         st_type.IsAbstract && st_type.IsSealed
                         ? new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
                         : new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());

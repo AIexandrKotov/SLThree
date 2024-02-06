@@ -1,9 +1,8 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
-    public class BinaryOr: BinaryOperator
+    public class BinaryOr : BinaryOperator
     {
         public override string Operator => "||";
         public BinaryOr(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
