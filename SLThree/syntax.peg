@@ -363,7 +363,18 @@ keyword
     / "try" / "catch" / "finally" / "throw"
 
 name <NameExpression>
-    = first:available_name { new NameExpression(first.JoinIntoString(""), state) }
+    = u:unicode {
+        new NameExpression(u, state)
+    }
+
+unicode
+    = name_not_digit name_digit*
+
+name_digit
+    = first:.&{ first == "_" || char.IsLetter(first[0]) || char.IsDigit(first[0]) }
+
+name_not_digit
+    = first:.&{ first == "_" || char.IsLetter(first[0]) }
 
 interpolated_string <InterpolatedString> = "$\"" chars:interpolated_start exp:interpolated_expression* ("\"" / #ERROR{ "Expected '\"'" }) {
     new InterpolatedString(chars, exp, state)
@@ -411,9 +422,6 @@ string_escape
     / "\\n" { "\n" }
     / "\\r" { "\r" }
     / "\\\"" { "\"" }
-
-available_name <IList<string>>
-    = value:([a-zA-Z_] [a-zA-Z0-9_]*)+ { value }
 
 comment
     = "//" ([^\r\n]*)

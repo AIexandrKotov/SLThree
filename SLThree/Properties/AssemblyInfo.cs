@@ -69,8 +69,8 @@ public static class SLTVersion {
     public const string Major = "0"; //vh
     public const string Minor = "7"; //vh
     public const string Build = "0"; //vh
-    public const string Revision = "2278"; //vh
-    public const long LastUpdate = 638428053111417623; //vh
+    public const string Revision = "2339"; //vh
+    public const long LastUpdate = 638428117075428054; //vh
 
     public const string Version = Major + "." + Minor + "." + Build + "." + Revision;
     public const string VersionWithoutRevision = Major + "." + Minor + "." + Build;
