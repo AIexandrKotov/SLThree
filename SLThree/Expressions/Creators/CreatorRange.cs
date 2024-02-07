@@ -46,7 +46,7 @@ namespace SLThree
         {
             long lower;
             long upper;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 lower = LowerBound.GetValue(context).Cast<long>();
                 upper = UpperBound.GetValue(context).Cast<long>();

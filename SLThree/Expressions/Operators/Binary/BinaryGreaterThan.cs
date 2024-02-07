@@ -13,7 +13,7 @@ namespace SLThree
         {
             object left;
             object right;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
                 right = Right.GetValue(context);
@@ -39,7 +39,7 @@ namespace SLThree
                 if (right is ulong u2) return u1 > u2;
                 if (right is double d2) return u1 > d2;
             }
-            if (!context.fimp)
+            if (!context.ForbidImplicit)
                 return (left as IComparable).CompareTo(right) > 0;
             context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
             return null;

@@ -29,7 +29,7 @@ namespace SLThree
                     ParamTypes = Left.Arguments.Select(x => (x as NameExpression).TypeHint).ToArray(),
                     ReturnType = ReturnTypeHint,
                     Statements = Right,
-                    imp = Modificators.Contains("implicit"),
+                    Implicit = Modificators.Contains("implicit"),
                 };
                 if (Modificators.Contains("recursive")) Method = Method.MakeRecursive();
             }

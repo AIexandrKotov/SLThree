@@ -74,11 +74,11 @@ namespace SLThree
             {
                 case 1:
                     {
-                        return o.Cast<IList>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
+                        return o.Cast<IList>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
                     }
                 case 3:
                     {
-                        return o.Cast<ITuple>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
+                        return o.Cast<ITuple>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
                     }
                 case 4: return PropertyInfo.GetValue(o, Arguments.ConvertAll(x => x.GetValue(context)));
             }
@@ -100,7 +100,7 @@ namespace SLThree
             {
                 case 1:
                     {
-                        return o.Cast<IList>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()] = value;
+                        return o.Cast<IList>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()] = value;
                     }
                 case 4:
                     PropertyInfo.SetValue(o, value, Arguments.ConvertAll(x => x.GetValue(context)));

@@ -11,7 +11,7 @@ namespace SLThree
             ret.PreviousContext = context;
             ret.LocalVariables.FillArguments(this, arguments);
             ret.@this = DefinitionPlace;
-            ret.fimp = !imp;
+            ret.ForbidImplicit = !Implicit;
             return ret;
         }
 
@@ -20,7 +20,7 @@ namespace SLThree
             return new RecursiveMethod()
             {
                 DefinitionPlace = DefinitionPlace,
-                imp = imp,
+                Implicit = Implicit,
                 Name = Name,
                 ParamNames = ParamNames.CloneArray(),
                 Statements = Statements.CloneCast()

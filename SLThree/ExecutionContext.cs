@@ -27,7 +27,7 @@ namespace SLThree
         /// <summary>
         /// Запрещает implicit в контексте
         /// </summary>
-        public bool fimp = false;
+        public bool ForbidImplicit = false;
 
         internal bool Returned;
         internal bool Broken;
@@ -37,7 +37,7 @@ namespace SLThree
 
         public readonly List<Exception> Errors = new List<Exception>();
 
-        public static readonly ContextWrap global = new ContextWrap(new ExecutionContext(false) { fimp = false, Name = "global" });
+        public static readonly ContextWrap global = new ContextWrap(new ExecutionContext(false) { ForbidImplicit = false, Name = "global" });
 
         static ExecutionContext()
         {
@@ -160,7 +160,7 @@ namespace SLThree
         private int cycles = 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void StartCycle()
+        internal void StartCycle()
         {
             cycles += 1;
             Broken = Continued = false;
@@ -169,7 +169,7 @@ namespace SLThree
         public bool InCycle() => cycles > 1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EndCycle()
+        internal void EndCycle()
         {
             cycles -= 1;
             Broken = Continued = false;

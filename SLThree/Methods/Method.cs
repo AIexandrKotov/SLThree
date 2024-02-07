@@ -19,10 +19,10 @@ namespace SLThree
 
         public ExecutionContext.ContextWrap DefinitionPlace;
 
-        public bool imp = false;
+        public bool Implicit = false;
 
-        public string contextName = "";
-        public void UpdateContextName() => contextName = $"<{Name}>methodcontext";
+        internal string contextName = "";
+        internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
         public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
 
@@ -46,7 +46,7 @@ namespace SLThree
             ret.Name = contextName;
             ret.PreviousContext = context;
             ret.LocalVariables.FillArguments(this, arguments);
-            ret.fimp = !imp;
+            ret.ForbidImplicit = !Implicit;
             return ret;
         }
 
@@ -92,7 +92,7 @@ namespace SLThree
             return new Method()
             {
                 DefinitionPlace = DefinitionPlace,
-                imp = imp,
+                Implicit = Implicit,
                 Name = Name,
                 ParamNames = ParamNames.CloneArray(),
                 ParamTypes = ParamTypes.CloneArray(),

@@ -12,7 +12,7 @@ namespace SLThree
         {
             object left;
             object right;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
                 right = Right.GetValue(context);

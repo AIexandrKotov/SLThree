@@ -11,7 +11,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             object left;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
             }

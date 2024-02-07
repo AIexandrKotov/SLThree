@@ -28,27 +28,27 @@ namespace SLThree.sys
         }
 
         public static long sum_i64(IEnumerable<object> objects)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Sum(x => (long)x)
             : objects.Sum(x => (long)x.CastToType(typeof(long)));
         public static long sum_i64(IEnumerable<object> objects, Method method)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Sum(x => (long)method.GetValue(new object[1] { x }))
             : objects.Sum(x => (long)method.GetValue(new object[1] { x }).CastToType(typeof(long)));
         public static long sum_i64(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context)
-            => context.pred.fimp
+            => context.pred.ForbidImplicit
             ? objects.Sum(x => (long)method.GetValue(context.pred, new object[1] { x }))
             : objects.Sum(x => (long)method.GetValue(context.pred, new object[1] { x }).CastToType(typeof(long)));
         public static double sum_f64(IEnumerable<object> objects)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Sum(x => (double)x)
             : objects.Sum(x => (double)x.CastToType(typeof(double)));
         public static double sum_f64(IEnumerable<object> objects, Method method)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Sum(x => (double)method.GetValue(new object[1] { x }))
             : objects.Sum(x => (double)method.GetValue(new object[1] { x }).CastToType(typeof(double)));
         public static double sum_f64(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context)
-            => context.pred.fimp
+            => context.pred.ForbidImplicit
             ? objects.Sum(x => (double)method.GetValue(context.pred, new object[1] { x }))
             : objects.Sum(x => (double)method.GetValue(context.pred, new object[1] { x }).CastToType(typeof(double)));
         public static double sum(IEnumerable<object> objects) => sum_f64(objects);
@@ -56,15 +56,15 @@ namespace SLThree.sys
         public static double sum(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context) => sum_f64(objects, method, context);
 
         public static double average(IEnumerable<object> objects)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Average(x => (double)x)
             : objects.Average(x => (double)x.CastToType(typeof(double)));
         public static double average(IEnumerable<object> objects, Method method)
-            => ExecutionContext.global.pred.fimp
+            => ExecutionContext.global.pred.ForbidImplicit
             ? objects.Average(x => (double)method.GetValue(new object[1] { x }))
             : objects.Average(x => (double)method.GetValue(new object[1] { x }).CastToType(typeof(double)));
         public static double average(IEnumerable<object> objects, Method method, ExecutionContext.ContextWrap context)
-            => context.pred.fimp
+            => context.pred.ForbidImplicit
             ? objects.Average(x => (double)method.GetValue(context.pred, new object[1] { x }))
             : objects.Average(x => (double)method.GetValue(context.pred, new object[1] { x }).CastToType(typeof(double)));
 
