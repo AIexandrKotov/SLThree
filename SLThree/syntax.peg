@@ -64,7 +64,8 @@ while_statement <WhileLoopStatement>
     / "while" _ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 foreach_statement <ForeachLoopStatement>
-    = "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
+    = "foreach" _ "(" _ n:arg_name   _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
+    / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
     / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach body must be in { }", state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
     / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Empty loop head", state)) }

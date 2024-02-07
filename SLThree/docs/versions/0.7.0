@@ -1,4 +1,6 @@
 ------ 0.7.0 Typing Update ------ [~.~.~]
 Language:
-    - Typehints `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`
+    - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
+      `foreach (T x in ...)`
+    - Dot notation `d.x = y` for dictionaries`
     - Supporting unicode names

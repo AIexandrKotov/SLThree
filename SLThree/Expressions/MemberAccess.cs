@@ -1,6 +1,7 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -142,6 +143,8 @@ namespace SLThree
                         return invokeExpression.GetValue(pred.pred, invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                 }
+                if (left is IDictionary dict && Right is NameExpression name)
+                    return dict[name.Name];
                 var has_access = left is ClassAccess access;
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null) return field.GetValue(left);
@@ -218,6 +221,11 @@ namespace SLThree
                 }
                 if (Right is NameExpression nameExpression)
                 {
+                    if (left is IDictionary dict)
+                    {
+                        dict[nameExpression.Name] = value;
+                        return;
+                    }
                     field = type.GetField(nameExpression.Name);
                     if (field != null)
                     {
