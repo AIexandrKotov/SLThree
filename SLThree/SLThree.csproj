@@ -140,7 +140,7 @@
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Statements\ConditionStatement.cs" />
     <Compile Include="Statements\ExpressionStatement.cs" />
-    <Compile Include="Statements\StatementListStatement.cs" />
+    <Compile Include="Statements\StatementList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\BaseStatement.cs" />
     <Compile Include="Statements\UsingStatement.cs" />

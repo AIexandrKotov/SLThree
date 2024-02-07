@@ -10,7 +10,7 @@
         void VisitStatement(ExpressionStatement statement);
         void VisitStatement(ForeachLoopStatement statement);
         void VisitStatement(ReturnStatement statement);
-        void VisitStatement(StatementListStatement statement);
+        void VisitStatement(StatementList statement);
         void VisitStatement(SwitchStatement statement);
         void VisitStatement(ThrowStatement statement);
         void VisitStatement(TryStatement statement);

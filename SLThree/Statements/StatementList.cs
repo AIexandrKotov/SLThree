@@ -4,14 +4,14 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class StatementListStatement : BaseStatement
+    public class StatementList : BaseStatement
     {
         public BaseStatement[] Statements;
         private int count;
 
-        public StatementListStatement() : base() { }
+        public StatementList() : base() { }
 
-        public StatementListStatement(IList<BaseStatement> statements, SourceContext context) : base(context)
+        public StatementList(IList<BaseStatement> statements, SourceContext context) : base(context)
         {
             Statements = statements.ToArray();
             count = statements.Count;
@@ -32,7 +32,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new StatementListStatement() { Statements = Statements.CloneArray(), count = count.Copy(), SourceContext = SourceContext.CloneCast() };
+            return new StatementList() { Statements = Statements.CloneArray(), count = count.Copy(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

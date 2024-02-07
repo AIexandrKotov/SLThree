@@ -8,8 +8,8 @@ file <BaseStatement>
     = "#SLT#" _ v:statement_list _ EOF { v }
     / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, state) }
 
-statement_list <StatementListStatement>
-    = st:statement<0,,_> { new StatementListStatement(st, state) }
+statement_list <StatementList>
+    = st:statement<0,,_> { new StatementList(st, state) }
 
 statement <BaseStatement>
     = return_statement
@@ -25,7 +25,7 @@ statement <BaseStatement>
     / throw_statement
     / expression_statement
     / block_statement
-    / ";" { new StatementListStatement(new BaseStatement[0], state) }
+    / ";" { new StatementList(new BaseStatement[0], state) }
 
 using_statement <UsingStatement>
     = "using" _required_ u:using  
@@ -54,9 +54,9 @@ case_node <SwitchStatement.Node>
     = "case" _ expr:expression _ ":" _ st:statement _ { new SwitchStatement.Node(expr, st, false) }
     / "case" _ expr:expression _ ":" _ { new SwitchStatement.Node(expr, null, true) }
 
-block_statement <StatementListStatement>
+block_statement <StatementList>
     = "{" _ st:statement_list _ "}" { st }
-    / "{" _ st:statement_list _ { Panic<StatementListStatement>(new SyntaxError("Unclosed block", state)) }
+    / "{" _ st:statement_list _ { Panic<StatementList>(new SyntaxError("Unclosed block", state)) }
 
 while_statement <WhileLoopStatement>
     = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), state) }
@@ -73,7 +73,7 @@ foreach_statement <ForeachLoopStatement>
 
 condition_statement <ConditionStatement>
     = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionStatement(cond, GetListStatement(t), GetListStatement(f), state) }
-    / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionStatement(cond, GetListStatement(t), new StatementListStatement(new BaseStatement[0], state), state) }
+    / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionStatement(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
     / "if" _ "(" _ ")" _ statement? { Panic<ConditionStatement>(new SyntaxError("Empty condition", state)) }
 
 try_statement <TryStatement>
@@ -238,7 +238,7 @@ using <CreatorUsing>
 context <CreatorContext>
     = context_name:(<NameExpression> _required_ n:name {n})?
     context_type:(<TypenameExpression> _ ":" _ t:typename {t})?
-    context_body:(<StatementListStatement> _ st:block_statement {st})? {
+    context_body:(<StatementList> _ st:block_statement {st})? {
         new CreatorContext(
             GetOptional(context_name),
             GetOptional(context_type), 
@@ -258,7 +258,7 @@ lambda <BaseExpression>
             new ValueTuple<IList<string>, NameExpression[], TypenameExpression>(GetOptional(mods) ?? new string[0], args.ToArray(), GetOptional(ret))
         }
     ) _ "=>" _ right:(
-        <StatementListStatement>
+        <StatementList>
         expr:expression { GetListStatement(new ReturnStatement(expr, state)) }
         / block_statement
     ) {

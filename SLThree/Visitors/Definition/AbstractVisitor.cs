@@ -208,7 +208,7 @@ namespace SLThree.Visitors
                 case ReturnStatement st: VisitStatement(st); return;
                 case SwitchStatement st: VisitStatement(st); return;
                 case UsingStatement st: VisitStatement(st); return;
-                case StatementListStatement st: VisitStatement(st); return;
+                case StatementList st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
                 case TryStatement st: VisitStatement(st); return;
@@ -263,7 +263,7 @@ namespace SLThree.Visitors
             VisitExpression(statement.Using);
         }
 
-        public virtual void VisitStatement(StatementListStatement statement)
+        public virtual void VisitStatement(StatementList statement)
         {
             foreach (var x in statement.Statements)
                 VisitStatement(x);

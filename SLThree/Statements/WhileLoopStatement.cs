@@ -10,7 +10,7 @@ namespace SLThree
         public BaseStatement[] LoopBody { get; set; }
 
         public WhileLoopStatement() : base() { }
-        public WhileLoopStatement(BaseExpression condition, StatementListStatement cycleBody, Cursor cursor) : base(cursor)
+        public WhileLoopStatement(BaseExpression condition, StatementList cycleBody, Cursor cursor) : base(cursor)
         {
             Condition = condition;
             LoopBody = cycleBody.Statements.ToArray();

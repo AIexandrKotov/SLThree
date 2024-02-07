@@ -16,7 +16,7 @@ namespace SLThree
             this.falsestart = falsestart;
         }
 
-        public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, SourceContext context) : base(context)
+        public ConditionStatement(BaseExpression condition, StatementList trueBlock, StatementList falseBlock, SourceContext context) : base(context)
         {
             Condition = condition;
             count = trueBlock.Statements.Length + falseBlock.Statements.Length;

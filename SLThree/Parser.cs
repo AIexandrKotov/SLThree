@@ -27,14 +27,14 @@ namespace SLThree
 
         private BaseStatement[] GetStatements(BaseStatement statement)
         {
-            if (statement is StatementListStatement list) return list.Statements;
+            if (statement is StatementList list) return list.Statements;
             return new BaseStatement[1] { statement };
         }
 
-        private StatementListStatement GetListStatement(BaseStatement statement)
+        private StatementList GetListStatement(BaseStatement statement)
         {
-            if (statement is StatementListStatement list) return list;
-            return new StatementListStatement()
+            if (statement is StatementList list) return list;
+            return new StatementList()
             {
                 Statements = new BaseStatement[1] { statement },
                 SourceContext = statement.SourceContext

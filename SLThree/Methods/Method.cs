@@ -12,7 +12,7 @@ namespace SLThree
 
         public readonly string Name;
         public readonly string[] ParamNames;
-        public readonly StatementListStatement Statements;
+        public readonly StatementList Statements;
         public readonly bool Implicit = false;
 
         public readonly TypenameExpression[] ParamTypes;
@@ -24,7 +24,7 @@ namespace SLThree
         public ExecutionContext.ContextWrap DefinitionPlace => definitionplace;
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementListStatement statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit)
         {
             Name = name;
             ParamNames = paramNames;

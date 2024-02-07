@@ -4,7 +4,7 @@ namespace SLThree
 {
     public class RecursiveMethod : Method
     {
-        public RecursiveMethod(string name, string[] paramNames, StatementListStatement statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit)
+        public RecursiveMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit)
         {
         }
 

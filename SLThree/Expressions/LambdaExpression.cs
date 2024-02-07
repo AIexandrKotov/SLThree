@@ -7,11 +7,11 @@ namespace SLThree
     public class LambdaExpression : BaseExpression
     {
         public InvokeExpression Left;
-        public StatementListStatement Right;
+        public StatementList Right;
         public IList<string> Modificators;
         public TypenameExpression ReturnTypeHint;
 
-        public LambdaExpression(InvokeExpression invokeExpression, StatementListStatement statements, TypenameExpression typehint, IList<string> modificators, SourceContext context) : base(context)
+        public LambdaExpression(InvokeExpression invokeExpression, StatementList statements, TypenameExpression typehint, IList<string> modificators, SourceContext context) : base(context)
         {
             Left = invokeExpression;
             Right = statements;

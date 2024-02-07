@@ -7,7 +7,7 @@ namespace SLThree.Visitors
 {
     public class TreeViewer : AbstractVisitor
     {
-        public override void VisitStatement(StatementListStatement statement)
+        public override void VisitStatement(StatementList statement)
         {
             Level += 1;
             base.VisitStatement(statement);
