@@ -64,7 +64,7 @@ while_statement <WhileLoopStatement>
     / "while" _ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 foreach_statement <ForeachLoopStatement>
-    = "foreach" _ "(" _ n:arg_name   _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
+    = "foreach" _ "(" _ n:req_arg_name _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
     / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
     / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach body must be in { }", state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
@@ -217,7 +217,7 @@ primary <BaseExpression> -memoize
     / "new" _required_ "using" _required_ u: using { u }
     / "new" _required_ right:typename _ "(" _ args:expression<0,,"," _> _ ")" { new NewExpression(right, args.ToArray(), state) }
     / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorArray(tp, size, state) }
-    / "(" _ args:arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
     / name_literal
@@ -277,10 +277,14 @@ typename_node <BaseExpression> -memoize
     = left:typename_node _ "." _ right:name { new MemberAccess(left, right, state) }
     / special
     / name
+    
 
 arg_name <NameExpression>
-    = t:typename _ n:name { n.Hint(t) }
+    = req_arg_name
     / name
+
+req_arg_name <NameExpression>
+    = t:typename _ n:name { n.Hint(t) }
 
 name_literal <BaseExpression>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), state) }

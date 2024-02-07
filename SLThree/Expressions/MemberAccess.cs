@@ -197,10 +197,9 @@ namespace SLThree
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
-                            mth = mth.CloneCast();
-                            mth.Name = nameExpression2.Name;
+                            mth = mth.CloneWithNewName(nameExpression2.Name);
                             mth.UpdateContextName();
-                            mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
+                            mth.definitionplace = new ExecutionContext.ContextWrap(context);
                             value = mth;
                         }
                         context.LocalVariables.SetValue(other_context_name, value);
@@ -211,6 +210,7 @@ namespace SLThree
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null)
                 {
+                    if (field.IsInitOnly) throw new RuntimeError($"`{Right}` is readonly field", SourceContext);
                     field.SetValue(left, value);
                     return;
                 }
@@ -229,6 +229,7 @@ namespace SLThree
                     field = type.GetField(nameExpression.Name);
                     if (field != null)
                     {
+                        if (field.IsInitOnly) throw new RuntimeError($"`{Right}` is readonly field", SourceContext);
                         field.SetValue(left, value);
                         return;
                     }

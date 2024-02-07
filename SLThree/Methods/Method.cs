@@ -10,23 +10,36 @@ namespace SLThree
     {
         private static readonly Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
 
-        public string Name;
-        public string[] ParamNames;
-        public StatementListStatement Statements;
+        public readonly string Name;
+        public readonly string[] ParamNames;
+        public readonly StatementListStatement Statements;
+        public readonly bool Implicit = false;
 
-        public TypenameExpression[] ParamTypes;
-        public TypenameExpression ReturnType;
+        public readonly TypenameExpression[] ParamTypes;
+        public readonly TypenameExpression ReturnType;
 
-        public ExecutionContext.ContextWrap DefinitionPlace;
-
-        public bool Implicit = false;
-
+        internal ExecutionContext.ContextWrap definitionplace;
         internal string contextName = "";
+
+        public ExecutionContext.ContextWrap DefinitionPlace => definitionplace;
+
+        internal protected Method() { }
+        public Method(string name, string[] paramNames, StatementListStatement statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit)
+        {
+            Name = name;
+            ParamNames = paramNames;
+            Statements = statements;
+            ParamTypes = paramTypes;
+            ReturnType = returnType;
+            definitionplace = definitionPlace;
+            Implicit = @implicit;
+        }
+
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
         public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
 
-        public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext context = null)
+        public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
             ExecutionContext ret;
             if (cached_method_contextes.TryGetValue(this, out var cntx))
@@ -36,15 +49,15 @@ namespace SLThree
             }
             else
             {
-                ret = new ExecutionContext(context)
+                ret = new ExecutionContext(super_context)
                 {
-                    @this = DefinitionPlace
+                    @this = definitionplace
                 };
                 ret.SuperContext = ret.@this.pred?.SuperContext;
                 cached_method_contextes.Add(this, ret);
             }
             ret.Name = contextName;
-            ret.PreviousContext = context;
+            ret.PreviousContext = super_context;
             ret.LocalVariables.FillArguments(this, arguments);
             ret.ForbidImplicit = !Implicit;
             return ret;
@@ -66,15 +79,7 @@ namespace SLThree
 
         public RecursiveMethod MakeRecursive()
         {
-            return new RecursiveMethod()
-            {
-                Name = Name,
-                ParamNames = ParamNames,
-                ParamTypes = ParamTypes,
-                ReturnType = ReturnType,
-                DefinitionPlace = DefinitionPlace,
-                Statements = Statements,
-            };
+            return new RecursiveMethod(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit);
         }
 
         public static MethodInfo Create<TResult>(Func<TResult> func) => func.Method;
@@ -87,18 +92,14 @@ namespace SLThree
         public static MethodInfo Create<T1, T2, T3>(Action<T1, T2, T3> func) => func.Method;
         public static MethodInfo Create(Delegate func) => func.Method;
 
+        public virtual Method CloneWithNewName(string name)
+        {
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit);
+        }
+
         public virtual object Clone()
         {
-            return new Method()
-            {
-                DefinitionPlace = DefinitionPlace,
-                Implicit = Implicit,
-                Name = Name,
-                ParamNames = ParamNames.CloneArray(),
-                ParamTypes = ParamTypes.CloneArray(),
-                ReturnType = ReturnType.CloneCast(),
-                Statements = Statements.CloneCast()
-            };
+            return CloneWithNewName(Name);
         }
     }
 }

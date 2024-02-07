@@ -26,10 +26,9 @@ namespace SLThree
                 {
                     if (right is Method mth)
                     {
-                        mth = mth.CloneCast();
-                        mth.Name = nl.Name;
+                        mth = mth.CloneWithNewName(nl.Name);
                         mth.UpdateContextName();
-                        mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
+                        mth.definitionplace = new ExecutionContext.ContextWrap(context);
                         right = mth;
                     }
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
@@ -48,10 +47,9 @@ namespace SLThree
             {
                 if (right is Method mth)
                 {
-                    mth = mth.CloneCast();
-                    mth.Name = nl.Name;
+                    mth = mth.CloneWithNewName(nl.Name);
                     mth.UpdateContextName();
-                    mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
+                    mth.definitionplace = new ExecutionContext.ContextWrap(context);
                     right = mth;
                 }
                 context.LocalVariables.SetValue(nl.Name, right);
@@ -87,10 +85,9 @@ namespace SLThree
             {
                 if (right is Method mth)
                 {
-                    mth = mth.CloneCast();
-                    mth.Name = nl.Name;
+                    mth = mth.CloneWithNewName(nl.Name);
                     mth.UpdateContextName();
-                    mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
+                    mth.definitionplace = new ExecutionContext.ContextWrap(context);
                     right = mth;
                 }
                 variable_index = context.LocalVariables.SetValue(nl.Name, right);

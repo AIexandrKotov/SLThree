@@ -22,15 +22,14 @@ namespace SLThree
 
             if (Method == null)
             {
-                Method = new Method()
-                {
-                    Name = "$method",
-                    ParamNames = Left.Arguments.Select(x => (x as NameExpression).Name).ToArray(),
-                    ParamTypes = Left.Arguments.Select(x => (x as NameExpression).TypeHint).ToArray(),
-                    ReturnType = ReturnTypeHint,
-                    Statements = Right,
-                    Implicit = Modificators.Contains("implicit"),
-                };
+                Method = new Method(
+                    "$method",
+                    Left.Arguments.Select(x => (x as NameExpression).Name).ToArray(),
+                    Right,
+                    Left.Arguments.Select(x => (x as NameExpression).TypeHint).ToArray(),
+                    ReturnTypeHint,
+                    null,
+                    Modificators.Contains("implicit"));
                 if (Modificators.Contains("recursive")) Method = Method.MakeRecursive();
             }
         }
@@ -40,7 +39,7 @@ namespace SLThree
         public Method Method;
         public override object GetValue(ExecutionContext context)
         {
-            Method.DefinitionPlace = context.wrap;
+            Method.definitionplace = context.wrap;
             return Method;
         }
 
