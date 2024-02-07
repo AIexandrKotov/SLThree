@@ -37,7 +37,7 @@ namespace SLThree.sys
         {
             var ret = new List<T>();
             foreach (var x in enumerable)
-                ret.Add((T)x);
+                ret.Add(x.CastToType<T>());
             return new EqualchanceChooser<T>(ret);
         }
         private static ChanceChooser<T> internal_chooser1<T>(IDictionary dictionary)
@@ -45,7 +45,7 @@ namespace SLThree.sys
         {
             var lst = new List<(T, double)>();
             foreach (var key in dictionary.Keys)
-                lst.Add((key.Cast<T>(), dictionary[key].Cast<double>()));
+                lst.Add((key.CastToType<T>(), dictionary[key].Cast<double>()));
             return new ChanceChooser<T>(lst);
         }
         private static readonly MethodInfo i_c1 = typeof(random).GetMethod("internal_chooser1", BindingFlags.NonPublic | BindingFlags.Static);

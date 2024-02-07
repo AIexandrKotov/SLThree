@@ -33,28 +33,49 @@ namespace SLThree
             return Create(Expressions.ConvertAll(x => x.GetValue(context)));
         }
 
+        private static Type[] generic_vt = new Type[]
+        {
+            typeof(ValueTuple<>),
+            typeof(ValueTuple<,>),
+            typeof(ValueTuple<,,>),
+            typeof(ValueTuple<,,,>),
+            typeof(ValueTuple<,,,,>),
+            typeof(ValueTuple<,,,,,>),
+            typeof(ValueTuple<,,,,,,>)
+        };
         private static Type generic_vt8 = typeof(ValueTuple<,,,,,,,>);
-
-        private static Type[] objs7 = Enumerable.Repeat(typeof(object), 7).ToArray();
-        private static Type[] Get_objs8(Type next) =>
-            objs7.Append(next).ToArray();
-
         public static ITuple Create(object[] objs, int index = 0)
         {
             switch (objs.Length - index)
             {
                 case 0: throw new ArgumentException("Zero length array in objs");
-                case 1: return new ValueTuple<object>(objs[index]);
-                case 2: return new ValueTuple<object, object>(objs[index], objs[index + 1]);
-                case 3: return new ValueTuple<object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2]);
-                case 4: return new ValueTuple<object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3]);
-                case 5: return new ValueTuple<object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4]);
-                case 6: return new ValueTuple<object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5]);
-                case 7: return new ValueTuple<object, object, object, object, object, object, object>(objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6]);
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    return (ITuple)Activator.CreateInstance(
+                            generic_vt[objs.Length - index - 1].MakeGenericType(
+                                objs
+                                    .Skip(index)
+                                    .Select(x => x?.GetType() ?? typeof(object))
+                                    .ToArray()),
+                            objs
+                                .Skip(index)
+                                .ToArray());
                 default:
                     {
                         var rest = Create(objs, index + 7);
-                        return (ITuple)Activator.CreateInstance(generic_vt8.MakeGenericType(Get_objs8(rest.GetType())),
+                        return (ITuple)Activator.CreateInstance(
+                            generic_vt8.MakeGenericType(
+                                objs
+                                    .Skip(index)
+                                    .Take(7)
+                                    .Select(x => x?.GetType() ?? typeof(object))
+                                    .Append(rest.GetType())
+                                    .ToArray()),
                             new object[8]
                             { objs[index + 0], objs[index + 1], objs[index + 2], objs[index + 3], objs[index + 4], objs[index + 5], objs[index + 6], rest });
                     }

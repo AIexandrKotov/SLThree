@@ -23,15 +23,6 @@ namespace SLThree.Visitors
 
         public virtual void Visit(Method method)
         {
-            if (method is RecursiveMethod rm) Visit(rm);
-            else
-            {
-                for (var i = 0; i < method.Statements.Statements.Length; i++)
-                    VisitStatement(method.Statements.Statements[i]);
-            }
-        }
-        public virtual void Visit(RecursiveMethod method)
-        {
             for (var i = 0; i < method.Statements.Statements.Length; i++)
                 VisitStatement(method.Statements.Statements[i]);
         }
@@ -66,7 +57,7 @@ namespace SLThree.Visitors
                 case CreatorUsing expr: VisitExpression(expr); return;
                 case ReflectionExpression expr: VisitExpression(expr); return;
                 case TypenameExpression expr: VisitExpression(expr); return;
-                case CreatorArray expr: VisitExpression(expr); return;
+                case CreatorNewArray expr: VisitExpression(expr); return;
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
             }
@@ -279,7 +270,7 @@ namespace SLThree.Visitors
 
         }
 
-        public virtual void VisitExpression(CreatorArray expression)
+        public virtual void VisitExpression(CreatorNewArray expression)
         {
             VisitExpression(expression.ArrayType);
             VisitExpression(expression.Size);

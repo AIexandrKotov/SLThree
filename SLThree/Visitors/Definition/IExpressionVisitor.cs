@@ -4,7 +4,7 @@
     {
         void VisitExpression(BaseExpression expression);
 
-        void VisitExpression(CreatorArray expression);
+        void VisitExpression(CreatorNewArray expression);
         void VisitExpression(CreatorContext expression);
         void VisitExpression(CreatorDictionary expression);
         void VisitExpression(CreatorList expression);

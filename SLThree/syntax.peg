@@ -129,13 +129,9 @@ ternary_0 <BaseExpression> -memoize
     = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new TernaryOperator(cond, t, f, state) }
     / binary_8
 
-binary_8 <BaseExpression> -memoize
-    = lower:binary_8 _ ".." _ upper:binary_8 { new CreatorRange(lower, upper, state) }
-    / null_coalescing
-
-null_coalescing <BaseExpression>
-    = left:binary_7 _ "-?" _ right:null_coalescing { new SafeExpression(left, right, state) }
-    / left:binary_7 _ "??" _ right:null_coalescing { new NullCoalescing(left, right, state) }
+binary_8 <BaseExpression>
+    = left:binary_7 _ "-?" _ right:binary_8 { new SafeExpression(left, right, state) }
+    / left:binary_7 _ "??" _ right:binary_8 { new NullCoalescing(left, right, state) }
     / binary_7
 
 binary_7 <BaseExpression> -memoize
@@ -178,6 +174,12 @@ binary_1 <BaseExpression> -memoize
 
 binary_0 <BaseExpression> -memoize
     = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, state) }
+    / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, state), state) }
+    / "*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, state), t, state) }
+    / "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, t, state) }
+    / "^" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, state), state) }
+    / "*" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, state), null, state) }
+    / lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, state) }
     / left:binary_0 _ "::" _ right:name 
     _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,"," _> _ ">" {gen_args_i})? 
     _ args:    (<IList<TypenameExpression>> "(" _ args_i    :typename<0,,"," _> _ ")" {args_i    })? {
@@ -194,6 +196,7 @@ unary <BaseExpression>
     / i16:("-" _ ([0-9_]+ ("i16"))) { new ShortLiteral(short.Parse(i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, state) }
     / i32:("-" _ ([0-9_]+ ("i32"))) { new IntLiteral(int.Parse(i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), i32, state) }
     / i64:("-" _ ([0-9_]+ ("i64"))) { new LongLiteral(long.Parse(i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, state) }
+    / "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), state) }
     / "-" _ left:binary_min { new UnaryRem(left, state) }
     / "~" _ left:binary_min { new UnaryBitNot(left, state) }
     / "!" _ left:binary_min { new UnaryNot(left, state) }
@@ -209,16 +212,16 @@ primary <BaseExpression> -memoize
     / left:primary _ conditional:"?"? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), conditional.Count == 1, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
-    / "{" _ etrs:(<CreatorDictionary.Entry>left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) })
-        <0,,"," _> _ ("," _ )? "}" {
-            new CreatorDictionary(etrs.ToArray(), state)
-    }
+    / "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
+    / "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
     / "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
     / "new" _required_ right:typename _ "(" _ args:expression<0,,"," _> _ ")" { new NewExpression(right, args.ToArray(), state) }
-    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorArray(tp, size, state) }
+    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
     / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
+    / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
     / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
     / name_literal
     / special
@@ -226,6 +229,9 @@ primary <BaseExpression> -memoize
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+dictionary_entry <CreatorDictionary.Entry>
+    = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
 
 access_right <BaseExpression> -memoize
     = left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
@@ -267,7 +273,7 @@ lambda <BaseExpression>
 
 method_modificator
     = "recursive"
-    / "implicit"
+    / "explicit"
 
 typename <TypenameExpression>
     = t_node:typename_node _ "<" _ t_list:typename<1,,"," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }

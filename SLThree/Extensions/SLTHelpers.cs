@@ -184,6 +184,11 @@ namespace SLThree.Extensions
             return expression;
         }
 
+        public static T CastToType<T>(this object o)
+        {
+            return (T)o.CastToType(typeof(T));
+        }
+
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;
@@ -200,8 +205,9 @@ namespace SLThree.Extensions
                 else
                     return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
             }
-            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             var type = o.GetType();
+            if (type == casting_type) return o;
+            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             if (type == type_context)
             {
                 var wrapper = NonGenericWrapper.GetWrapper(casting_type);

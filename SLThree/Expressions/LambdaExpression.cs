@@ -29,8 +29,8 @@ namespace SLThree
                     Left.Arguments.Select(x => (x as NameExpression).TypeHint).ToArray(),
                     ReturnTypeHint,
                     null,
-                    Modificators.Contains("implicit"));
-                if (Modificators.Contains("recursive")) Method = Method.MakeRecursive();
+                    !Modificators.Contains("explicit"),
+                    Modificators.Contains("recursive"));
             }
         }
 

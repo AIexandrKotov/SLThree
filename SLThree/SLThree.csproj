@@ -50,6 +50,7 @@
     <Compile Include="Exceptions\UnexpectedError.cs" />
     <Compile Include="ExecutionContext.cs" />
     <Compile Include="Expressions\Creators\CreatorArray.cs" />
+    <Compile Include="Expressions\Creators\CreatorNewArray.cs" />
     <Compile Include="Expressions\Creators\CreatorRange.cs" />
     <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
     <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="Expressions\Literals\DoubleLiteral.cs" />
     <Compile Include="Expressions\BaseExpression.cs" />
     <Compile Include="Expressions\Literals\ULongLiteral.cs" />
-    <Compile Include="Methods\RecursiveMethod.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="SourceContext.cs" />
     <Compile Include="Statements\BreakStatement.cs" />

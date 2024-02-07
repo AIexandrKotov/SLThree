@@ -2,5 +2,8 @@
 Language:
     - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
       `foreach (T x in ...)`
+    - Typed creators `<T>[x, y]`, `<TK, TV>{x: y}`, `<T>x..y`
+    - Tuples get specific types right away `(1, ) is tuple<i64>`
+    - Array creator `-[x, y]`, `<T>-[x, y]`
     - Dot notation `d.x = y` for dictionaries`
     - Supporting unicode names

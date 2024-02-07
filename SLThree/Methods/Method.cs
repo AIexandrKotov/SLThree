@@ -14,6 +14,7 @@ namespace SLThree
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
+        public readonly bool Recursive = false;
 
         public readonly TypenameExpression[] ParamTypes;
         public readonly TypenameExpression ReturnType;
@@ -24,7 +25,7 @@ namespace SLThree
         public ExecutionContext.ContextWrap DefinitionPlace => definitionplace;
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit, bool recursive)
         {
             Name = name;
             ParamNames = paramNames;
@@ -33,6 +34,7 @@ namespace SLThree
             ReturnType = returnType;
             definitionplace = definitionPlace;
             Implicit = @implicit;
+            Recursive = recursive;
         }
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
@@ -42,24 +44,37 @@ namespace SLThree
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
             ExecutionContext ret;
-            if (cached_method_contextes.TryGetValue(this, out var cntx))
+            if (Recursive)
             {
-                ret = cntx;
-                ret.PrepareToInvoke();
+                ret = new ExecutionContext();
+                ret.Name = contextName;
+                ret.PreviousContext = super_context;
+                ret.LocalVariables.FillArguments(this, arguments);
+                ret.@this = definitionplace;
+                ret.ForbidImplicit = !Implicit;
+                return ret;
             }
             else
             {
-                ret = new ExecutionContext(super_context)
+                if (cached_method_contextes.TryGetValue(this, out var cntx))
                 {
-                    @this = definitionplace
-                };
-                ret.SuperContext = ret.@this.pred?.SuperContext;
-                cached_method_contextes.Add(this, ret);
+                    ret = cntx;
+                    ret.PrepareToInvoke();
+                }
+                else
+                {
+                    ret = new ExecutionContext(super_context)
+                    {
+                        @this = definitionplace
+                    };
+                    ret.SuperContext = ret.@this.pred?.SuperContext;
+                    cached_method_contextes.Add(this, ret);
+                }
+                ret.Name = contextName;
+                ret.PreviousContext = super_context;
+                ret.LocalVariables.FillArguments(this, arguments);
+                ret.ForbidImplicit = !Implicit;
             }
-            ret.Name = contextName;
-            ret.PreviousContext = super_context;
-            ret.LocalVariables.FillArguments(this, arguments);
-            ret.ForbidImplicit = !Implicit;
             return ret;
         }
 
@@ -77,10 +92,22 @@ namespace SLThree
             return null;
         }
 
-        public RecursiveMethod MakeRecursive()
-        {
-            return new RecursiveMethod(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit);
-        }
+        public object Invoke()
+            => GetValue(new object[0]);
+        public object Invoke<T>(T arg1)
+            => GetValue(new object[1] { arg1 });
+        public object Invoke<T1, T2>(T1 arg1, T2 arg2)
+            => GetValue(new object[2] { arg1, arg2 });
+        public object Invoke<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3)
+            => GetValue(new object[3] { arg1, arg2, arg3 });
+        public object Invoke(ExecutionContext old_context)
+            => GetValue(old_context, new object[0]);
+        public object Invoke<T>(ExecutionContext old_context, T arg1)
+            => GetValue(old_context, new object[1] { arg1 });
+        public object Invoke<T1, T2>(ExecutionContext old_context, T1 arg1, T2 arg2)
+            => GetValue(old_context, new object[2] { arg1, arg2 });
+        public object Invoke<T1, T2, T3>(ExecutionContext old_context, T1 arg1, T2 arg2, T3 arg3)
+            => GetValue(old_context, new object[3] { arg1, arg2, arg3 });
 
         public static MethodInfo Create<TResult>(Func<TResult> func) => func.Method;
         public static MethodInfo Create<T1, TResult>(Func<T1, TResult> func) => func.Method;
@@ -94,7 +121,7 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit);
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive);
         }
 
         public virtual object Clone()
