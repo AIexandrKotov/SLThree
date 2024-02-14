@@ -45,7 +45,8 @@ namespace SLThree.Extensions
                 if (generic_def == type_generic_list) name = "list";
                 else if (generic_def == type_generic_dict) name = "dict";
                 else if (t.Name.StartsWith("ValueTuple")) name = "tuple";
-                else name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
+                else if (t.FullName != null) name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
+                else name = t.Name.Substring(0, t.Name.IndexOf('`')).Split('.').Last();
                 return $"{name}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             }
             if (t == type_object) return "any";
@@ -61,6 +62,7 @@ namespace SLThree.Extensions
             if (t == type_char) return "char";
             if (t == type_context) return "context";
             if (t == type_void) return "void";
+            if (t.FullName == null) return t.Name;
 
             else return t.FullName;
         }

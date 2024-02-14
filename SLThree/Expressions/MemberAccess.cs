@@ -166,6 +166,10 @@ namespace SLThree
                 {
                     return invokeExpression.GetValue(context, left);
                 }
+                else if (Right is InvokeGenericExpression invokeGenericExpression)
+                {
+                    return invokeGenericExpression.GetValue(context, left);
+                }
             }
             else if (null_conditional) return null;
 

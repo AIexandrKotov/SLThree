@@ -208,7 +208,8 @@ unary <BaseExpression>
     / primary
 
 primary <BaseExpression> -memoize
-    = left:primary _ conditional:"?"? _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), conditional.Count == 1, state) }
+    = left:primary _ conditional:"?"? _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), conditional.Count == 1, state) }
+    / left:primary _ conditional:"?"? _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), conditional.Count == 1, state) }
     / left:primary _ conditional:"?"? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), conditional.Count == 1, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
@@ -234,7 +235,8 @@ dictionary_entry <CreatorDictionary.Entry>
     = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
 
 access_right <BaseExpression> -memoize
-    = left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    = left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
+    / left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / right:access_right { right }
     / right:name { right }
 

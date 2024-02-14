@@ -49,6 +49,7 @@ namespace SLThree.Visitors
                 case NameExpression expr: VisitExpression(expr); return;
                 case LambdaExpression expr: VisitExpression(expr); return;
                 case InvokeExpression expr: VisitExpression(expr); return;
+                case InvokeGenericExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
                 case IndexExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
@@ -109,6 +110,18 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(InvokeExpression expression)
         {
             VisitExpression(expression.Left);
+            foreach (var x in expression.Arguments)
+            {
+                VisitExpression(x);
+            }
+        }
+        public virtual void VisitExpression(InvokeGenericExpression expression)
+        {
+            VisitExpression(expression.Left);
+            foreach (var x in expression.GenericArguments)
+            {
+                VisitExpression(x);
+            }
             foreach (var x in expression.Arguments)
             {
                 VisitExpression(x);

@@ -49,7 +49,7 @@ namespace SLThree
 
         private class InjectorVisitor : AbstractVisitor
         {
-            private bool done;
+            public bool done;
             private readonly BaseExpression Addition;
             public InjectorVisitor(BaseExpression addition)
             {
@@ -64,11 +64,22 @@ namespace SLThree
                 expression.Arguments[0] = Addition;
                 done = true;
             }
+            public override void VisitExpression(InvokeGenericExpression expression)
+            {
+                if (done) return;
+                var old_args = expression.Arguments;
+                expression.Arguments = new BaseExpression[old_args.Length + 1];
+                old_args.CopyTo(expression.Arguments, 1);
+                expression.Arguments[0] = Addition;
+                done = true;
+            }
         }
 
         private static BaseExpression InjectFirst(BaseExpression left, BaseExpression right)
         {
-            new InjectorVisitor(left).VisitExpression(right);
+            var iv = new InjectorVisitor(left);
+            iv.VisitExpression(right);
+            if (!iv.done) throw new SyntaxError("Right of |> operator must be invokation", right.SourceContext);
             return right;
         }
 

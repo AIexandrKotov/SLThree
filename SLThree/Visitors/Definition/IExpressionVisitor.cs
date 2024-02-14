@@ -16,6 +16,7 @@
         void VisitExpression(IndexExpression expression);
         void VisitExpression(InterpolatedString expression);
         void VisitExpression(InvokeExpression expression);
+        void VisitExpression(InvokeGenericExpression expression);
         void VisitExpression(LambdaExpression expression);
         void VisitExpression(MemberAccess expression);
         void VisitExpression(NameExpression expression);

@@ -52,6 +52,7 @@
     <Compile Include="Expressions\Creators\CreatorArray.cs" />
     <Compile Include="Expressions\Creators\CreatorNewArray.cs" />
     <Compile Include="Expressions\Creators\CreatorRange.cs" />
+    <Compile Include="Expressions\InvokeGenericExpression.cs" />
     <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
     <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
     <Compile Include="Expressions\Operators\Binary\NullCoalescing.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Statements\UsingStatement.cs" />
     <Compile Include="Statements\WhileLoopStatement.cs" />
     <Compile Include="sys\convert.cs" />
+    <Compile Include="sys\tlinq.cs" />
     <Compile Include="sys\random.cs" />
     <Compile Include="sys\slt.cs" />
     <Compile Include="Tools\ChanceChooser.cs" />

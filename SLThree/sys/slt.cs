@@ -1,6 +1,7 @@
 ﻿using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -20,7 +21,9 @@ namespace SLThree.sys
         public static readonly List<Assembly> registred = new List<Assembly>()
         {
             typeof(object).Assembly,
-            typeof(slt).Assembly
+            typeof(Enumerable).Assembly,
+            typeof(slt).Assembly,
+            typeof(Stopwatch).Assembly,
         };
         public static readonly Dictionary<string, Type> sys_types = Assembly
             .GetExecutingAssembly()
