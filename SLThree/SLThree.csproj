@@ -121,10 +121,16 @@
     <Compile Include="Expressions\NewExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorTuple.cs" />
     <Compile Include="Expressions\ReflectionExpression.cs" />
+    <Compile Include="JIT\NETGenerator.cs" />
+    <Compile Include="JIT\NameCollector.cs" />
+    <Compile Include="JIT\AbstractNameInfo.cs" />
+    <Compile Include="JIT\NameType.cs" />
+    <Compile Include="Methods\NewMethod.cs" />
     <Compile Include="Statements\ContextStatement.cs" />
     <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Statements\TryStatement.cs" />
     <Compile Include="sys\console.cs" />
+    <Compile Include="sys\jit.cs" />
     <Compile Include="sys\linq.cs" />
     <Compile Include="LocalVariablesContainer.cs" />
     <Compile Include="Methods\Method.cs" />

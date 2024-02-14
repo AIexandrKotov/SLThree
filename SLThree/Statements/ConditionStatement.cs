@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions.Cloning;
+using System.Linq;
 
 namespace SLThree
 {
@@ -27,6 +28,9 @@ namespace SLThree
         }
         private int count;
         private int falsestart;
+
+        public BaseStatement[] IfBody => Body.Take(falsestart).ToArray();
+        public BaseStatement[] ElseBody => Body.Skip(falsestart).ToArray();
 
         public override string ToString() => $"if ({Condition}) {{{Body}}}";
 
