@@ -5,6 +5,7 @@
         void VisitStatement(BaseStatement statement);
 
         void VisitStatement(BreakStatement statement);
+        void VisitStatement(ContextStatement statement);
         void VisitStatement(ConditionStatement statement);
         void VisitStatement(ContinueStatement statement);
         void VisitStatement(ExpressionStatement statement);

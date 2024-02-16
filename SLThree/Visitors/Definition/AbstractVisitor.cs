@@ -59,6 +59,7 @@ namespace SLThree.Visitors
                 case ReflectionExpression expr: VisitExpression(expr); return;
                 case TypenameExpression expr: VisitExpression(expr); return;
                 case CreatorNewArray expr: VisitExpression(expr); return;
+                case CreatorArray expr: VisitExpression(expr); return;
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
             }
@@ -71,6 +72,14 @@ namespace SLThree.Visitors
             VisitExpression(expression.Type);
         }
         public virtual void VisitExpression(CreatorList expression)
+        {
+            foreach (var x in expression.Expressions)
+            {
+                VisitExpression(x);
+            }
+        }
+
+        public virtual void VisitExpression(CreatorArray expression)
         {
             foreach (var x in expression.Expressions)
             {
@@ -215,6 +224,7 @@ namespace SLThree.Visitors
                 case StatementList st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
+                case ContextStatement st: VisitStatement(st); return;
                 case TryStatement st: VisitStatement(st); return;
                 case ThrowStatement st: VisitStatement(st); return;
             }
@@ -260,6 +270,11 @@ namespace SLThree.Visitors
                 VisitExpression(x.Value);
                 VisitStatement(x.Statements);
             }
+        }
+
+        public virtual void VisitStatement(ContextStatement statement)
+        {
+            VisitExpression(statement.Creator);
         }
 
         public virtual void VisitStatement(UsingStatement statement)

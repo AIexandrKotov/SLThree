@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slt", "slt\slt.csproj", "{2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSuite", "TestSuite\TestSuite.csproj", "{7BE11ACC-9E66-467C-A787-985B1B956149}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLThree.HTMLCreator", "SLThree.HTMLCreator\SLThree.HTMLCreator.csproj", "{5F8424E0-25DB-4B10-A0A9-1B6F52E6585B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7BE11ACC-9E66-467C-A787-985B1B956149}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BE11ACC-9E66-467C-A787-985B1B956149}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BE11ACC-9E66-467C-A787-985B1B956149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F8424E0-25DB-4B10-A0A9-1B6F52E6585B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F8424E0-25DB-4B10-A0A9-1B6F52E6585B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F8424E0-25DB-4B10-A0A9-1B6F52E6585B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F8424E0-25DB-4B10-A0A9-1B6F52E6585B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
