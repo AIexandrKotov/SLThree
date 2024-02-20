@@ -177,9 +177,9 @@ namespace SLThree.sys
         {
             return objects.Max(x => (T)method.GetValue(context.pred, new object[] { x }));
         }
-        public static T max<T>(IEnumerable<T> objects, Method method)
+        public static T max<T>(IEnumerable<T> objects, Func<T, T> func)
         {
-            return objects.Max(x => (T)method.GetValue(new object[] { x }));
+            return objects.Max(x => func(x));
         }
         public static T max<T>(IEnumerable<T> objects) => objects.Max();
 
@@ -207,9 +207,9 @@ namespace SLThree.sys
         {
             return objects.Select(x => (TOut)method.GetValue(context.pred, new object[] { x }));
         }
-        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Method method)
+        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Func<TIn, TOut> method)
         {
-            return objects.Select(x => (TOut)method.GetValue(new object[] { x }));
+            return objects.Select(x => method.Invoke(x));
         }
 
         public static IEnumerable<T> select_many<T>(IEnumerable<T> objects) => objects.Select(x => (IEnumerable<T>)x).SelectMany(x => x);

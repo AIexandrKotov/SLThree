@@ -121,6 +121,7 @@
     <Compile Include="Expressions\NewExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorTuple.cs" />
     <Compile Include="Expressions\ReflectionExpression.cs" />
+    <Compile Include="SLThreeJIT.cs" />
     <Compile Include="JIT\NETGenerator.cs" />
     <Compile Include="JIT\NameCollector.cs" />
     <Compile Include="JIT\AbstractNameInfo.cs" />

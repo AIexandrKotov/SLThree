@@ -7,13 +7,17 @@ namespace SLThree.JIT
 {
     public class NameCollector : AbstractVisitor
     {
+        public readonly ExecutionContext definition_place;
+        public readonly ExecutionContext temporary_method_context;
         int index;
         List<AbstractNameInfo> variables = new List<AbstractNameInfo>();
         Dictionary<NameExpression, AbstractNameInfo> variablesMap = new Dictionary<NameExpression, AbstractNameInfo>();
         List<Type> Returnings = new List<Type>();
 
-        public NameCollector(Method method)
+        public NameCollector(Method method, ExecutionContext context)
         {
+            definition_place = context;
+            temporary_method_context = new ExecutionContext(definition_place);
             for (var i = 0; i < method.ParamNames.Length; i++)
             {
                 var vname = new AbstractNameInfo()
@@ -21,13 +25,13 @@ namespace SLThree.JIT
                     Index = i,
                     NameType = NameType.Parameter,
                     Name = method.ParamNames[i],
-                    Type = method.ParamTypes[i].GetStaticValue(),
+                    Type = (Type)method.ParamTypes[i].GetValue(context),
                 };
                 variables.Add(vname);
             }
         }
 
-        public Type GetAutotype(BaseExpression expression)
+        public Type GetAutotype(BaseExpression expression, bool throws = true)
         {
             if (expression.GetType().Name.Contains("Literal"))
             {
@@ -36,7 +40,7 @@ namespace SLThree.JIT
                     return bt.GetGenericArguments()[0];
             }
             if (expression is InterpolatedString) return typeof(string);
-            if (expression is NewExpression newExpression) return newExpression.Typename.GetStaticValue();
+            if (expression is NewExpression newExpression) return (Type)newExpression.Typename.GetValue(temporary_method_context);
             if (expression is NameExpression name)
             {
                 var vname = variables.LastOrDefault(x => x.Name == name.Name);
@@ -47,7 +51,8 @@ namespace SLThree.JIT
                 }
             }
 
-            throw new ArgumentException($"Untyped variable {expression} at {expression.SourceContext}");
+            if (throws) throw new ArgumentException($"Untyped variable {expression} at {expression.SourceContext}");
+            return null;
         }
 
         public override void VisitStatement(ReturnStatement statement)
@@ -91,6 +96,7 @@ namespace SLThree.JIT
                     variables.Add(vname);
                     variablesMap[name] = vname;
                 }
+                VisitExpression(expression.Right);
             }
             else base.VisitExpression(expression);
         }
@@ -103,9 +109,9 @@ namespace SLThree.JIT
             else throw new ArgumentException($"Unknown variable {expression} at {expression.SourceContext}");
         }
 
-        public static (List<AbstractNameInfo>, Dictionary<NameExpression, AbstractNameInfo>) Collect(Method method)
+        public static (List<AbstractNameInfo>, Dictionary<NameExpression, AbstractNameInfo>) Collect(Method method, ExecutionContext context)
         {
-            var vc = new NameCollector(method);
+            var vc = new NameCollector(method, context);
             vc.Visit(method);
             return (vc.variables, vc.variablesMap);
         }

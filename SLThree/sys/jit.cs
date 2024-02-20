@@ -26,20 +26,27 @@ namespace SLThree.sys
             Module = Assembly.DefineDynamicModule("module", "module.exe", true);
         }
 
-        public static List<JIT.AbstractNameInfo> collect_vars(Method method)
+        public static List<JIT.AbstractNameInfo> collect_vars(Method method, ExecutionContext context)
         {
-            return JIT.NameCollector.Collect(method).Item1;
+            return JIT.NameCollector.Collect(method, context).Item1;
         }
 
         public static MethodInfo opt(Method method, ExecutionContext.ContextWrap context)
         {
-            var rettype = method.ReturnType.GetStaticValue();
+            var rettype = method.ReturnType?.GetStaticValue();
             var ptypes = method.ParamTypes.ConvertAll(x => x.GetStaticValue());
             var dt = Module.DefineType($"type{index++}", TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed);
-            var mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
-            var ng = new JIT.NETGenerator(method, context.pred, mb.GetILGenerator());
-            ng.Visit(method);
-            var t = dt.CreateType();
+            Type t;
+            try
+            {
+                var mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
+                var ng = new JIT.NETGenerator(method, context.pred, mb, mb.GetILGenerator());
+                ng.Visit(method);
+            }
+            finally
+            {
+                t = dt.CreateType();
+            }
             return t.GetMethod(method.Name);
         }
 

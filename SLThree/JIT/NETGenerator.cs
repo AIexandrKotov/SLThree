@@ -1,12 +1,15 @@
 ﻿using SLThree.Extensions;
+using SLThree.sys;
 using SLThree.Visitors;
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Remoting.Contexts;
 using System.Security.AccessControl;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +28,10 @@ namespace SLThree.JIT
             if (VariablesMap.TryGetValue(expression, out var vi))
             {
                 vi.EmitGet(IL);
+            }
+            else
+            {
+                throw new NotSupportedException($"{expression.GetType().GetTypeString()} is not supported for JIT.");
             }
         }
 
@@ -50,7 +57,13 @@ namespace SLThree.JIT
             if (expression is BinaryAssign assign)
             {
                 VisitExpression(assign.Right);
-                VariablesMap[assign.Left as NameExpression].EmitSet(IL);
+                var vi = VariablesMap[assign.Left as NameExpression];/*
+                if (vi.Type != typeof(int))
+                {
+                    if (vi.Type == typeof(long) || vi.Type == typeof(ulong)) IL.Emit(OpCodes.Conv_I8); 
+                }*/
+                vi.EmitSet(IL);
+                if (Executables.Count > 0 && !(Executables.LastOrDefault(x => x is BaseStatement) is ExpressionStatement)) IL.Emit(OpCodes.Dup);
             }
             else
             {
@@ -69,9 +82,52 @@ namespace SLThree.JIT
                     case BinaryAnd _: IL.Emit(OpCodes.And); break;
                     case BinaryOr _: IL.Emit(OpCodes.Or); break;
                     case BinaryEquals _: IL.Emit(OpCodes.Ceq); break;
+                    case BinaryGreaterThan _: IL.Emit(OpCodes.Cgt); break;
+                    case BinaryLessThan _: IL.Emit(OpCodes.Clt); break;
                     default:
                         throw new NotSupportedException($"{expression.GetType().GetTypeString()} is not supported for JIT.");
                 }
+                //if (Executables.Count > 0 && Executables.LastOrDefault(x => x is BaseStatement) is ExpressionStatement) IL.Emit(OpCodes.Pop);
+            }
+        }
+
+        public void VisitLiteral(int literal)
+        {
+            switch (literal)
+            {
+                case -1:
+                    IL.Emit(OpCodes.Ldc_I4_M1);
+                    break;
+                case 0:
+                    IL.Emit(OpCodes.Ldc_I4_0);
+                    break;
+                case 1:
+                    IL.Emit(OpCodes.Ldc_I4_1);
+                    break;
+                case 2:
+                    IL.Emit(OpCodes.Ldc_I4_2);
+                    break;
+                case 3:
+                    IL.Emit(OpCodes.Ldc_I4_3);
+                    break;
+                case 4:
+                    IL.Emit(OpCodes.Ldc_I4_4);
+                    break;
+                case 5:
+                    IL.Emit(OpCodes.Ldc_I4_5);
+                    break;
+                case 6:
+                    IL.Emit(OpCodes.Ldc_I4_6);
+                    break;
+                case 7:
+                    IL.Emit(OpCodes.Ldc_I4_7);
+                    break;
+                case 8:
+                    IL.Emit(OpCodes.Ldc_I4_8);
+                    break;
+                default:
+                    IL.Emit(OpCodes.Ldc_I4, literal);
+                    return;
             }
         }
 
@@ -87,14 +143,38 @@ namespace SLThree.JIT
                         var value = (long)i64.Value;
                         if (value >= int.MinValue && value <= int.MaxValue)
                         {
-                            IL.Emit(OpCodes.Ldc_I4, (int)value);
+                            VisitLiteral((int)value);
                             IL.Emit(OpCodes.Conv_I8);
                         }
                         else IL.Emit(OpCodes.Ldc_I8, value);
                     }
                     break;
                 case ULongLiteral u64:
-                    IL.Emit(OpCodes.Ldc_I8, (ulong)u64.Value);
+                    {
+                        var value = (ulong)u64.Value;
+                        if (value >= uint.MinValue && value <= uint.MaxValue)
+                        {
+                            VisitLiteral((int)(uint)value);
+                            IL.Emit(OpCodes.Conv_I8);
+                        }
+                        else IL.Emit(OpCodes.Ldc_I8, (long)value);
+                    }
+                    IL.Emit(OpCodes.Ldc_I8, (long)u64.Value);
+                    break;
+                case IntLiteral i32:
+                    VisitLiteral((int)i32.Value);
+                    break;
+                case UIntLiteral u32:
+                    VisitLiteral((int)(uint)u32.Value);
+                    break;
+                case FloatLiteral f32:
+                    IL.Emit(OpCodes.Ldc_R4, (float)f32.Value);
+                    break;
+                case DoubleLiteral f64:
+                    IL.Emit(OpCodes.Ldc_R8, (double)f64.Value);
+                    break;
+                case BoolLiteral @bool:
+                    IL.Emit((bool)@bool.Value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
                     break;
             }
         }
@@ -102,10 +182,100 @@ namespace SLThree.JIT
         public override void VisitStatement(ExpressionStatement statement)
         {
             base.VisitStatement(statement);
-            IL.Emit(OpCodes.Pop);
         }
 
-        public Stack<bool> IsLastStatement = new Stack<bool>();
+        public bool IsLastStatement = false;
+
+        public Stack<(Label, Label)> LoopCondEnds = new Stack<(Label, Label)>();
+
+        public override void Visit(Method method)
+        {
+            var count = method.Statements.Statements.Length;
+            var current = 0;
+            foreach (var x in method.Statements.Statements)
+            {
+                current++;
+                IsLastStatement = current == count;
+                VisitStatement(x);
+            }
+        }
+
+        /// <summary>
+        /// Создаёт переход на метку если условие не выполняется
+        /// </summary>
+        public void MakeBRNotCondition(BaseExpression expression, Label label)
+        {
+            switch (expression)
+            {
+                case BinaryLessThan bge:
+                    VisitExpression(bge.Left);
+                    VisitExpression(bge.Right);
+                    IL.Emit(OpCodes.Bge_S, label);
+                    break;
+                case BinaryLessThanEquals bgt:
+                    VisitExpression(bgt.Left);
+                    VisitExpression(bgt.Right);
+                    IL.Emit(OpCodes.Bgt_S, label);
+                    break;
+                case BinaryGreaterThan ble:
+                    VisitExpression(ble.Left);
+                    VisitExpression(ble.Right);
+                    IL.Emit(OpCodes.Ble_S, label);
+                    break;
+                case BinaryGreaterThanEquals blt:
+                    VisitExpression(blt.Left);
+                    VisitExpression(blt.Right);
+                    IL.Emit(OpCodes.Blt_S, label);
+                    break;
+                case BinaryUnequals beq:
+                    VisitExpression(beq.Left);
+                    VisitExpression(beq.Right);
+                    IL.Emit(OpCodes.Beq_S, label);
+                    break;
+                default:
+                    VisitExpression(expression);
+                    IL.Emit(OpCodes.Brfalse_S, label);
+                    break;
+            }
+        }
+        /// <summary>
+        /// Создаёт переход на метку если условие выполняется
+        /// </summary>
+        public void MakeBRCondition(BaseExpression expression, Label label)
+        {
+            switch (expression)
+            {
+                case BinaryLessThan blt:
+                    VisitExpression(blt.Left);
+                    VisitExpression(blt.Right);
+                    IL.Emit(OpCodes.Blt_S, label);
+                    break;
+                case BinaryLessThanEquals ble:
+                    VisitExpression(ble.Left);
+                    VisitExpression(ble.Right);
+                    IL.Emit(OpCodes.Ble_S, label);
+                    break;
+                case BinaryGreaterThan bgt:
+                    VisitExpression(bgt.Left);
+                    VisitExpression(bgt.Right);
+                    IL.Emit(OpCodes.Bgt_S, label);
+                    break;
+                case BinaryGreaterThanEquals bge:
+                    VisitExpression(bge.Left);
+                    VisitExpression(bge.Right);
+                    IL.Emit(OpCodes.Bge_S, label);
+                    break;
+                case BinaryUnequals beq:
+                    VisitExpression(beq.Left);
+                    VisitExpression(beq.Right);
+                    IL.Emit(OpCodes.Beq_S, label);
+                    break;
+                default:
+                    VisitExpression(expression);
+                    IL.Emit(OpCodes.Brtrue_S, label);
+                    break;
+            }
+        }
 
         public override void VisitStatement(ConditionStatement statement)
         {
@@ -114,9 +284,8 @@ namespace SLThree.JIT
 
             if (elsebody.Length == 0)
             {
-                VisitExpression(statement.Condition);
                 var label = IL.DefineLabel();
-                IL.Emit(OpCodes.Brfalse_S, label);
+                MakeBRNotCondition(statement.Condition, label);
 
                 foreach (var x in ifbody)
                     VisitStatement(x);
@@ -124,51 +293,55 @@ namespace SLThree.JIT
             }
             else
             {
-                var not_is_last = !(IsLastStatement.Count == 0 || IsLastStatement.Peek());
+                var not_is_last = !IsLastStatement;
                 var labelelse = IL.DefineLabel();
-                var labelexit = default(Label);
-                if (not_is_last)
-                    labelexit = IL.DefineLabel();
-                IL.DeclareLocal(typeof(bool));
-                var index = this.index;
-                this.index++;
+                var labelexit = IL.DefineLabel();
 
-                VisitExpression(statement.Condition);
-                AbstractNameInfo.SetLocal(IL, index);
-
-                AbstractNameInfo.LoadLocal(IL, index);
-                IL.Emit(OpCodes.Brfalse_S, labelelse);
+                MakeBRNotCondition(statement.Condition, labelelse);
 
                 foreach (var x in ifbody)
                     VisitStatement(x);
 
-                if (not_is_last)
-                {
-                    IL.Emit(OpCodes.Br_S, labelexit);
-                }
+                IL.Emit(OpCodes.Br_S, labelexit);
 
                 IL.MarkLabel(labelelse);
+
                 foreach (var x in elsebody)
                     VisitStatement(x);
 
-                if (not_is_last)
-                {
-                    IL.MarkLabel(labelexit);
-                }
+                IL.MarkLabel(labelexit);
+                if (!not_is_last) IL.Emit(OpCodes.Nop);
             }
         }
 
-        public override void VisitStatement(StatementList statement)
+        public override void VisitStatement(WhileLoopStatement statement)
         {
-            var count = statement.Statements.Length;
-            var current = 0;
-            foreach (var x in statement.Statements)
-            {
-                current++;
-                IsLastStatement.Push(current == count);
+            var not_is_last = !IsLastStatement;
+            var label_condition = IL.DefineLabel();
+            var label_end = IL.DefineLabel();
+            LoopCondEnds.Push((label_condition, label_end));
+
+            IL.MarkLabel(label_condition);
+            MakeBRNotCondition(statement.Condition, label_end);
+            foreach (var x in statement.LoopBody)
                 VisitStatement(x);
-                IsLastStatement.Pop();
-            }
+            IL.Emit(OpCodes.Br_S, label_condition);
+
+            IL.MarkLabel(label_end);
+            if (!not_is_last) IL.Emit(OpCodes.Nop);
+            LoopCondEnds.Pop();
+        }
+
+        public override void VisitStatement(BreakStatement statement)
+        {
+            if (LoopCondEnds.Count == 0) throw new NotSupportedException("`break;` out of loop");
+            IL.Emit(OpCodes.Br_S, LoopCondEnds.Peek().Item2);
+        }
+
+        public override void VisitStatement(ContinueStatement statement)
+        {
+            if (LoopCondEnds.Count == 0) throw new NotSupportedException("`continue;` out of loop");
+            IL.Emit(OpCodes.Br_S, LoopCondEnds.Peek().Item1);
         }
 
         public override void VisitStatement(ReturnStatement statement)
@@ -178,16 +351,23 @@ namespace SLThree.JIT
             IL.Emit(OpCodes.Ret);
         }
 
-        public NETGenerator(Method method, ExecutionContext context, ILGenerator generator)
+        public NETGenerator(Method method, ExecutionContext context, MethodBuilder mb, ILGenerator generator)
         {
-            (Variables, VariablesMap) = NameCollector.Collect(method);
+            (Variables, VariablesMap) = NameCollector.Collect(method, context);
             IL = generator;
+            var paramid = 1;
             foreach (var x in Variables)
             {
                 if (x.NameType == NameType.Local)
                 {
-                    IL.DeclareLocal(x.Type);
+                    var lb = IL.DeclareLocal(x.Type);
+                    lb.SetLocalSymInfo(x.Name);
                     index++;
+                }
+                else if (x.NameType == NameType.Parameter)
+                {
+                    mb.DefineParameter(paramid, ParameterAttributes.None, x.Name);
+                    paramid++;
                 }
             }
         }
