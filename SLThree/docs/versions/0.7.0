@@ -1,5 +1,6 @@
 ------ 0.7.0 Typing Update ------ [~.~.~]
 Language:
+    - Generic methods `<T>(...) => ...`
     - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
       `foreach (T x in ...)`
     - Generic invokation `x<T>(a, b)`, sys.tlinq (typed linq)

@@ -17,11 +17,17 @@ namespace SLThree.Visitors
                 case BaseExpression expression: VisitExpression(expression); return;
                 case BaseStatement statement: VisitStatement(statement); return;
                 case ExecutionContext context: Visit(context); return;
+                case GenericMethod method: Visit(method); return;
                 case Method method: Visit(method); return;
             }
         }
 
         public virtual void Visit(Method method)
+        {
+            for (var i = 0; i < method.Statements.Statements.Length; i++)
+                VisitStatement(method.Statements.Statements[i]);
+        }
+        public virtual void Visit(GenericMethod method)
         {
             for (var i = 0; i < method.Statements.Statements.Length; i++)
                 VisitStatement(method.Statements.Statements[i]);
@@ -48,6 +54,7 @@ namespace SLThree.Visitors
                 case NewExpression expr: VisitExpression(expr); return;
                 case NameExpression expr: VisitExpression(expr); return;
                 case LambdaExpression expr: VisitExpression(expr); return;
+                case LambdaGenericExpression expr: VisitExpression(expr); return;
                 case InvokeExpression expr: VisitExpression(expr); return;
                 case InvokeGenericExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
@@ -69,10 +76,14 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(CastExpression expression)
         {
             VisitExpression(expression.Left);
+            Executables.Add(expression);
             VisitExpression(expression.Type);
+            Executables.Remove(expression);
         }
         public virtual void VisitExpression(CreatorList expression)
         {
+            if (expression.ListType != null)
+                VisitExpression(expression.ListType);
             foreach (var x in expression.Expressions)
             {
                 VisitExpression(x);
@@ -81,6 +92,8 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorArray expression)
         {
+            if (expression.ListType != null)
+                VisitExpression(expression.ListType);
             foreach (var x in expression.Expressions)
             {
                 VisitExpression(x);
@@ -88,6 +101,11 @@ namespace SLThree.Visitors
         }
         public virtual void VisitExpression(CreatorDictionary expression)
         {
+            if (expression.DictionaryType != null)
+            {
+                VisitExpression(expression.DictionaryType[0]);
+                VisitExpression(expression.DictionaryType[1]);
+            }
             foreach (var x in expression.Entries)
             {
                 VisitExpression(x.Key);
@@ -127,10 +145,12 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(InvokeGenericExpression expression)
         {
             VisitExpression(expression.Left);
+            Executables.Add(expression);
             foreach (var x in expression.GenericArguments)
             {
                 VisitExpression(x);
             }
+            Executables.Remove(expression);
             foreach (var x in expression.Arguments)
             {
                 VisitExpression(x);
@@ -140,15 +160,26 @@ namespace SLThree.Visitors
         {
             Visit(expression.Method);
         }
+        public virtual void VisitExpression(LambdaGenericExpression expression)
+        {
+            Visit(expression.Method);
+        }
 
         public virtual void VisitExpression(NameExpression expression)
         {
-
+            if (expression.TypeHint != null)
+            {
+                Executables.Add(expression);
+                VisitExpression(expression.TypeHint);
+                Executables.Remove(expression);
+            }
         }
 
         public virtual void VisitExpression(NewExpression expression)
         {
+            Executables.Add(expression);
             VisitExpression(expression.Typename);
+            Executables.Remove(expression);
             for (var i = 0; i < expression.Arguments.Length; i++)
                 VisitExpression(expression.Arguments[i]);
         }
@@ -193,18 +224,30 @@ namespace SLThree.Visitors
             if (expression.Right != null)
                 VisitExpression(expression.Right);
             if (expression.MethodArguments != null)
+            {
+                Executables.Add(expression);
                 for (var i = 0; i < expression.MethodArguments.Length; i++)
                     VisitExpression(expression.MethodArguments[i]);
+                Executables.Remove(expression);
+            }
             if (expression.MethodGenericArguments != null)
+            {
+                Executables.Add(expression);
                 for (var i = 0; i < expression.MethodGenericArguments.Length; i++)
                     VisitExpression(expression.MethodGenericArguments[i]);
+                Executables.Remove(expression);
+            }
         }
 
         public virtual void VisitExpression(TypenameExpression expression)
         {
             if (expression.Generics != null)
+            {
+                Executables.Add(expression);
                 for (var i = 0; i < expression.Generics.Length; i++)
                     VisitExpression(expression.Generics[i]);
+                Executables.Remove(expression);
+            }
         }
 
         public BaseStatement PreviousStatement => throw new NotImplementedException();
@@ -233,6 +276,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitStatement(ForeachLoopStatement statement)
         {
+            VisitExpression(statement.Left);
             VisitExpression(statement.Iterator);
             foreach (var x in statement.LoopBody)
                 VisitStatement(x);
@@ -306,7 +350,12 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorContext expression)
         {
-            if (expression.Typecast != null) VisitExpression(expression.Typecast);
+            if (expression.Typecast != null)
+            {
+                Executables.Add(expression);
+                VisitExpression(expression.Typecast);
+                Executables.Remove(expression);
+            }
             if (expression.Body != null)
                 foreach (var x in expression.Body)
                     VisitStatement(x);
@@ -314,6 +363,12 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorRange expression)
         {
+            if (expression.RangeType != null)
+            {
+                Executables.Add(expression);
+                VisitExpression(expression.RangeType);
+                Executables.Remove(expression);
+            }
             VisitExpression(expression.LowerBound);
             VisitExpression(expression.UpperBound);
         }

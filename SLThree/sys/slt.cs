@@ -18,6 +18,11 @@ namespace SLThree.sys
         public static string repr(object o) => TreeViewer.GetView(o);
         public static string context_repr(ExecutionContext.ContextWrap wrap) => wrap.ToDetailedString(1, new List<ExecutionContext.ContextWrap>());
 
+        public static Method make_generic(GenericMethod method, Type[] generic_args) => method.MakeGenericMethod(generic_args);
+        public static Method make_generic<T1>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1) });
+        public static Method make_generic<T1, T2>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2) });
+        public static Method make_generic<T1, T2, T3>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2), typeof(T3) });
+
         public static readonly List<Assembly> registred = new List<Assembly>()
         {
             typeof(object).Assembly,

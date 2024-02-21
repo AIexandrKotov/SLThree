@@ -55,7 +55,12 @@ namespace SLThree
                 foreach (var x in static_methods)
                 {
                     if (x.Name.StartsWith("get_") || x.Name.StartsWith("set_")) continue;
-                    sb.Append($"    {x.ReturnType.GetTypeString()} {x.Name}(");
+                    sb.Append($"    {x.ReturnType.GetTypeString()} {x.Name}");
+                    if (x.IsGenericMethodDefinition)
+                    {
+                        sb.Append($"<{x.GetGenericArguments().Select(a => a.Name).JoinIntoString(", ")}>");
+                    }
+                    sb.Append("(");
                     sb.Append(x.GetParameters().ConvertAll(p => p.ParameterType.GetTypeString()).JoinIntoString(", "));
                     sb.AppendLine(");");
                 }

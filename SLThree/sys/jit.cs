@@ -37,11 +37,18 @@ namespace SLThree.sys
             var ptypes = method.ParamTypes.ConvertAll(x => x.GetStaticValue());
             var dt = Module.DefineType($"type{index++}", TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed);
             Type t;
+            var mb = default(MethodBuilder);
             try
             {
-                var mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
+                mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
                 var ng = new JIT.NETGenerator(method, context.pred, mb, mb.GetILGenerator());
                 ng.Visit(method);
+            }
+            catch
+            {
+                var il = mb.GetILGenerator();
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Ret);
             }
             finally
             {

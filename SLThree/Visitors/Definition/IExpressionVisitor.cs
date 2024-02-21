@@ -19,6 +19,7 @@
         void VisitExpression(InvokeExpression expression);
         void VisitExpression(InvokeGenericExpression expression);
         void VisitExpression(LambdaExpression expression);
+        void VisitExpression(LambdaGenericExpression expression);
         void VisitExpression(MemberAccess expression);
         void VisitExpression(NameExpression expression);
         void VisitExpression(NewExpression expression);

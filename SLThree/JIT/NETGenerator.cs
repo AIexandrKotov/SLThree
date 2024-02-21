@@ -82,6 +82,21 @@ namespace SLThree.JIT
                     case BinaryAnd _: IL.Emit(OpCodes.And); break;
                     case BinaryOr _: IL.Emit(OpCodes.Or); break;
                     case BinaryEquals _: IL.Emit(OpCodes.Ceq); break;
+                    case BinaryUnequals _:
+                        IL.Emit(OpCodes.Ceq);
+                        IL.Emit(OpCodes.Ldc_I4_0);
+                        IL.Emit(OpCodes.Ceq);
+                        break;
+                    case BinaryLessThanEquals _:
+                        IL.Emit(OpCodes.Cgt);
+                        IL.Emit(OpCodes.Ldc_I4_0);
+                        IL.Emit(OpCodes.Ceq);
+                        break;
+                    case BinaryGreaterThanEquals _:
+                        IL.Emit(OpCodes.Clt);
+                        IL.Emit(OpCodes.Ldc_I4_0);
+                        IL.Emit(OpCodes.Ceq);
+                        break;
                     case BinaryGreaterThan _: IL.Emit(OpCodes.Cgt); break;
                     case BinaryLessThan _: IL.Emit(OpCodes.Clt); break;
                     default:

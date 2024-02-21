@@ -18,8 +18,8 @@ namespace SLThree
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
 
-        public readonly TypenameExpression[] ParamTypes;
-        public readonly TypenameExpression ReturnType;
+        public TypenameExpression[] ParamTypes;
+        public TypenameExpression ReturnType;
 
         internal ExecutionContext.ContextWrap definitionplace;
         internal string contextName = "";

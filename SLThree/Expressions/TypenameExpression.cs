@@ -47,7 +47,7 @@ namespace SLThree
             return $"{type_str}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
         }
 
-        public Type GetStaticValue()
+        public virtual Type GetStaticValue()
         {
             if (static_type != null)
                 return static_type;
@@ -106,6 +106,24 @@ namespace SLThree
         public override object Clone()
         {
             return new TypenameExpression(Typename.CloneCast(), Generics?.CloneArray(), SourceContext.CloneCast());
+        }
+    }
+
+    internal class TypenameGenericPart : TypenameExpression
+    {
+        public Type Type { get; set; }
+        public override string ExpressionToString() => Type.GetTypeString();
+        public override Type GetStaticValue()
+        {
+            return Type;
+        }
+        public override object GetValue(ExecutionContext context)
+        {
+            return Type;
+        }
+        public override object Clone()
+        {
+            return new TypenameGenericPart() { Type = Type, };
         }
     }
 }

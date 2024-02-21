@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -444,17 +445,22 @@ namespace slt
 
         public static void OutLocalMethods(ExecutionContext context, int table = -1)
         {
-            Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables.GetAsDictionary()
+            Dictionary<string, (string, string[], bool, string[])> local_methods = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
                 .ToDictionary(x => x.Key, x =>
                 {
+                    if (x.Value is GenericMethod gmethod)
+                    {
+                        return (gmethod.DefinitionReturnType?.ToString() ?? "any", gmethod.DefinitionParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, gmethod.Generics.ConvertAll(a => a.Name));
+                    }
                     if (x.Value is Method method)
                     {
-                        return (method.ReturnType?.ToString() ?? "any", method.ParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true);
+                        return (method.ReturnType?.ToString() ?? "any", method.ParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, new string[0]);
                     }
                     else if (x.Value is MethodInfo info)
                     {
-                        return (info.ReturnType == typeof(void) ? "void" : info.ReturnType.GetTypeString(), info.GetParameters().Select(y => y.ParameterType.GetTypeString()).ToArray(), false);
+                        var ret_gens = info.IsGenericMethodDefinition ? info.GetGenericArguments().ConvertAll(a => a.Name) : new string[0];
+                        return (info.ReturnType == typeof(void) ? "void" : info.ReturnType.GetTypeString(), info.GetParameters().Select(y => y.ParameterType.GetTypeString()).ToArray(), false, ret_gens);
                     }
                     return default;
                 });
@@ -462,20 +468,26 @@ namespace slt
             OutAsWarning($"--- METHODS ---");
             var max_ret_type = table;
             var max_method_name = table;
+            var max_generics = table;
             //var max_method_args = table;
             if (table < 0)
             {
                 max_ret_type = 0;
                 max_method_name = 0;
+                max_generics = 0;
                 //max_method_args = 0;
             }
             if (local_methods.Count > 0 && table != -1)
             {
                 max_ret_type = Math.Max(max_ret_type, local_methods.Max(x => x.Value.Item1?.Length ?? 0));
                 max_method_name = Math.Max(max_method_name, local_methods.Max(x => x.Key.Length));
+                max_generics = Math.Max(max_generics, local_methods.Max(x => x.Value.Item4.Length == 0 ? 0 : (x.Value.Item4.Sum(a => a.Length) + (x.Value.Item4.Length - 1) * 2)));
                 //max_method_args = Math.Max(max_method_args, local_methods.Max(x => x.Value.Item2.Sum(m => m.Length) + 2 * (x.Value.Item2.Length - 1)));
             }
-            foreach (var x in local_methods)
+
+            var local_methods_nongeneric = local_methods.Where(x => x.Value.Item4.Length == 0);
+            var local_methods_generic = local_methods.Where(x => x.Value.Item4.Length != 0);
+            foreach (var x in local_methods_nongeneric)
             {
                 Console.Write("    ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -487,6 +499,50 @@ namespace slt
                 Console.ResetColor();
                 Console.Write("(");
                 var tnext = false;
+                foreach (var t in x.Value.Item2)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
+                Console.ResetColor();
+                Console.Write(") ");
+                Console.WriteLine();
+            }
+            foreach (var x in local_methods_generic)
+            {
+                Console.Write("    ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(x.Value.Item1.PadLeft(max_ret_type));
+                Console.ResetColor();
+                Console.Write(" ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(x.Key.PadRight(max_method_name));
+                Console.ResetColor();
+                Console.Write("<");
+                var tnext = false;
+                foreach (var t in x.Value.Item4)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
+                Console.ResetColor();
+                Console.Write(">");
+                if (max_generics != 0)
+                    Console.Write("".PadRight(max_generics - x.Value.Item4.Sum(a => a.Length) - (x.Value.Item4.Length - 1) * 2));
+                Console.Write("(");
+                tnext = false;
                 foreach (var t in x.Value.Item2)
                 {
                     if (tnext)

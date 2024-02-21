@@ -122,8 +122,9 @@ binary_9 <BaseExpression> -memoize
     / left:binary_7 _ "^=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitXor(left, right, state), state) }
     / ternary_0
 
-method <BaseExpression> =
-    lambda
+method <BaseExpression>
+    = generic_lambda
+    / lambda
     
 ternary_0 <BaseExpression> -memoize
     = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new TernaryOperator(cond, t, f, state) }
@@ -254,7 +255,27 @@ context <CreatorContext>
             state)
     }
 
-lambda <BaseExpression>
+generic_lambda <LambdaGenericExpression>
+    = left:(
+        <ValueTuple<IList<string>, NameExpression[], TypenameExpression, NameExpression[]>>
+        mods:(<IList<string>> mods_i:method_modificator<1,,_required_> _required_ { mods_i })?
+        _ "<" _ generic_args:name<1,,"," _> _ ">" _
+        args:(
+            <IList<NameExpression>> "(" _ args_i:arg_name<0,,"," _> _ ")" { args_i }
+            / a:arg_name { new NameExpression[1] { a } }
+        )
+        ret:(<TypenameExpression> _ ":" _ t:typename {t})? {
+            new ValueTuple<IList<string>, NameExpression[], TypenameExpression, NameExpression[]>(GetOptional(mods) ?? new string[0], args.ToArray(), GetOptional(ret), generic_args.ToArray())
+        }
+    ) _ "=>" _ right:(
+        <StatementList>
+        expr:expression { GetListStatement(new ReturnStatement(expr, state)) }
+        / block_statement
+    ) {
+        new LambdaGenericExpression(new InvokeExpression(null, left.Item2, state), right, left.Item3, left.Item1, left.Item4, state)
+    }
+
+lambda <LambdaExpression>
     = left:(
         <ValueTuple<IList<string>, NameExpression[], TypenameExpression>>
         mods:(<IList<string>> mods_i:method_modificator<1,,_required_> _required_ { mods_i })?

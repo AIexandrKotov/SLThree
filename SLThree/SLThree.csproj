@@ -53,6 +53,7 @@
     <Compile Include="Expressions\Creators\CreatorNewArray.cs" />
     <Compile Include="Expressions\Creators\CreatorRange.cs" />
     <Compile Include="Expressions\InvokeGenericExpression.cs" />
+    <Compile Include="Expressions\LambdaGenericExpression.cs" />
     <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
     <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
     <Compile Include="Expressions\Operators\Binary\NullCoalescing.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Expressions\NewExpression.cs" />
     <Compile Include="Expressions\Creators\CreatorTuple.cs" />
     <Compile Include="Expressions\ReflectionExpression.cs" />
+    <Compile Include="Methods\GenericMethod.cs" />
     <Compile Include="SLThreeJIT.cs" />
     <Compile Include="JIT\NETGenerator.cs" />
     <Compile Include="JIT\NameCollector.cs" />

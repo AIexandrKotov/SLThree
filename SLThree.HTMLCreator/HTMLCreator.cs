@@ -387,6 +387,51 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append("}");
             }
         }
+        public override void VisitExpression(LambdaGenericExpression expression)
+        {
+            foreach (var x in expression.Modificators)
+            {
+                CurrentString.Append(GetKeyword1(x));
+                CurrentString.Append(" ");
+            }
+            CurrentString.Append("<");
+            for (var i = 0; i < expression.Generics.Length; i++)
+            {
+                CurrentString.Append(GetTypeSpan(expression.Generics[i].Name));
+                if (i != expression.Generics.Length - 1) CurrentString.Append(", ");
+            }
+            CurrentString.Append(">");
+            CurrentString.Append("(");
+            for (var i = 0; i < expression.Left.Arguments.Length; i++)
+            {
+                VisitExpression(expression.Left.Arguments[i]);
+                if (i != expression.Left.Arguments.Length - 1) CurrentString.Append(", ");
+            }
+            CurrentString.Append(")");
+            if (expression.ReturnTypeHint != null)
+            {
+                CurrentString.Append(": ");
+                VisitExpression(expression.ReturnTypeHint);
+            }
+            CurrentString.Append(" => ");
+            if (expression.Right.Statements.Length == 1 && expression.Right.Statements[0] is ReturnStatement ret)
+            {
+                VisitExpression(ret.Expression);
+            }
+            else
+            {
+                CurrentString.Append(" {");
+                CurrentTab += 1;
+                foreach (var x in expression.Right.Statements)
+                {
+                    Newline();
+                    VisitStatement(x);
+                }
+                CurrentTab -= 1;
+                Newline();
+                CurrentString.Append("}");
+            }
+        }
         public void VisitExpression(CreatorUsing expression, bool hasnew)
         {
             if (hasnew)
