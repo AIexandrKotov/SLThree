@@ -15,6 +15,7 @@ namespace SLThree
 
 
         private string name;
+        private bool is_constructor;
 
         //Left::Right<MethodGenericArguments>(MethodArguments)
         //Left::Right(MethodArguments)
@@ -27,6 +28,7 @@ namespace SLThree
             MethodGenericArguments = methodGenericArguments;
             MethodArguments = methodArguments;
             name = Right.ToString();
+            is_constructor = name == "new";
         }
 
         public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodArguments, SourceContext context) : this(left, right, null, methodArguments, context) { }
@@ -45,9 +47,17 @@ namespace SLThree
             }
             else
             {
-                var method = left.GetMethod(name, MethodArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
-                if (MethodGenericArguments != null) method.MakeGenericMethod(MethodGenericArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
-                return method;
+                if (is_constructor)
+                {
+                    var method = left.GetConstructor(MethodArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                    return method;
+                }
+                else
+                {
+                    var method = left.GetMethod(name, MethodArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                    if (MethodGenericArguments != null) method.MakeGenericMethod(MethodGenericArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                    return method;
+                }
             }
             throw new RuntimeError($"{this} not found", SourceContext);
         }

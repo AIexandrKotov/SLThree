@@ -7,4 +7,5 @@ Language:
     - Tuples get specific types right away `(1, ) is tuple<i64>`
     - Array creator `-[x, y]`, `<T>-[x, y]`
     - Dot notation `d.x = y` for dictionaries`
+    - Getting ConstructorInfo with `@T::new(...)`
     - Supporting unicode names
