@@ -1,6 +1,7 @@
 ------ SLThree REPL 2.0.0 ------ [~.~.~]
 New:
     - Locals of context with `--context`
+    - Multiline input supporting
     - Output of annotated methods, generic methods
     - Output symbols cap `repl.max_output` (default: 2500)
 Supporing:

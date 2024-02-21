@@ -893,6 +893,7 @@ namespace slt
         }
 
         private static Parser REPLParser;
+        private static Subparser REPLSubparser;
         private static bool REPLLoop;
         internal static ExecutionContext REPLContext;
         private static bool REPLPerfomance = false;
@@ -903,6 +904,7 @@ namespace slt
             OutREPLInfo();
 
             REPLParser = new SLThree.Parser();
+            REPLSubparser = new Subparser();
             REPLContext = myExecutionContext ?? GetNewREPLContext();
             REPLLoop = true;
 
@@ -921,9 +923,24 @@ namespace slt
             while (REPLLoop)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(">>> ");
-                var code = Console.ReadLine();
+                if (REPLSubparser.State == Subparser.SubparserState.Ready)
+                    Console.Write(">>> ");
+                else if (REPLSubparser.State == Subparser.SubparserState.WaitingText)
+                    Console.Write("... " + new string(' ', REPLSubparser.Tabs * 4));
+                try
+                {
+                    var state = REPLSubparser.Parse(Console.ReadLine());
+                    if (state == Subparser.SubparserState.WaitingText) continue;
+                }
+                catch (Exception e)
+                {
+                    REPLSubparser.Clear();
+                    OutException(e);
+                    continue;
+                }
                 Console.ResetColor();
+                var code = REPLSubparser.CurrentInput.ToString();
+                REPLSubparser.CurrentInput.Clear();
                 if (string.IsNullOrWhiteSpace(code)) continue;
                 if (code.StartsWith(">"))
                 {
