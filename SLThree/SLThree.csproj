@@ -54,6 +54,7 @@
     <Compile Include="Expressions\Creators\CreatorRange.cs" />
     <Compile Include="Expressions\InvokeGenericExpression.cs" />
     <Compile Include="Expressions\LambdaGenericExpression.cs" />
+    <Compile Include="Expressions\Literals\Special\Special.cs" />
     <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
     <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
     <Compile Include="Expressions\Operators\Binary\NullCoalescing.cs" />

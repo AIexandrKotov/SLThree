@@ -35,6 +35,7 @@ namespace SLThree.HTMLCreator
         /// </summary>
         public static string GetKeyword2(string str) => GetSpan(str, "slt-keyword2"); //for while
         public static string GetTypeSpan(string str) => GetSpan(str, "slt-type");
+        public static string GetCall(string str) => GetSpan(str, "slt-call");
         public static string GetDigit(string str) => GetSpan(str, "slt-digit");
         public static string GetString(string str) => GetSpan(str, "slt-string");
         public static string GetOperator(string str) => GetSpan(str, "slt-operator");
@@ -58,11 +59,16 @@ namespace SLThree.HTMLCreator
         public bool ListTupleElementNewLine = false;
         public bool ContextElementNewLine = true;
         public bool DictionaryElementNewLine = true;
+        public bool AlwaysPipe = true;
         public StringBuilder CurrentString = new StringBuilder();
         public int CurrentTab = 0;
         public List<string> CodeStrings = new List<string>();
 
 
+        public override void VisitExpression(Special expression)
+        {
+            CurrentString.Append(GetKeyword1(expression.ToString()));
+        }
         public override void VisitExpression(Literal expression)
         {
             if (expression is StringLiteral)
@@ -89,8 +95,11 @@ namespace SLThree.HTMLCreator
             if (expression.Generics != null && expression.Generics.Length > 0)
             {
                 CurrentString.Append(Replace("<"));
-                foreach (var x in expression.Generics)
-                    VisitExpression(x);
+                for (var i = 0;i < expression.Generics.Length; i++)
+                {
+                    VisitExpression(expression.Generics[i]);
+                    if (i < expression.Generics.Length - 1) CurrentString.Append(", ");
+                }
                 CurrentString.Append(Replace(">"));
             }
         }
@@ -136,9 +145,15 @@ namespace SLThree.HTMLCreator
             CurrentString.Append(".");
             VisitExpression(expression.Right);
         }
+
         public override void VisitExpression(InvokeExpression expression)
         {
-            VisitExpression(expression.Left);
+            if (expression.Left is NameExpression nameExpression)
+                CurrentString.Append(GetCall(nameExpression.Name));
+            else if (expression.Left is MemberAccess memberAccess)
+                if (memberAccess.Right is NameExpression nameExpression1)
+                    CurrentString.Append(GetCall(nameExpression1.Name));
+            else VisitExpression(expression.Left);
             CurrentString.Append("(");
             for (var i = 0; i < expression.Arguments.Length; i++)
             {
@@ -150,13 +165,13 @@ namespace SLThree.HTMLCreator
         public override void VisitExpression(InvokeGenericExpression expression)
         {
             VisitExpression(expression.Left);
-            CurrentString.Append("<");
+            CurrentString.Append(Replace("<"));
             for (var i = 0; i < expression.GenericArguments.Length; i++)
             {
                 VisitExpression(expression.GenericArguments[i]);
                 if (i != expression.GenericArguments.Length - 1) CurrentString.Append(", ");
             }
-            CurrentString.Append(">");
+            CurrentString.Append(Replace(">"));
             CurrentString.Append("(");
             for (var i = 0; i < expression.Arguments.Length; i++)
             {
@@ -167,6 +182,12 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(CreatorList expression)
         {
+            if (expression.ListType != null)
+            {
+                CurrentString.Append(Replace("<"));
+                VisitExpression(expression.ListType);
+                CurrentString.Append(Replace(">"));
+            }
             CurrentString.Append("[");
             if (!ListTupleElementNewLine)
             {
@@ -193,6 +214,12 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(CreatorArray expression)
         {
+            if (expression.ListType != null)
+            {
+                CurrentString.Append(Replace("<"));
+                VisitExpression(expression.ListType);
+                CurrentString.Append(Replace(">"));
+            }
             CurrentString.Append("-[");
             if (!ListTupleElementNewLine)
             {
@@ -255,6 +282,14 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(CreatorDictionary expression)
         {
+            if (expression.DictionaryType != null)
+            {
+                CurrentString.Append(Replace("<"));
+                VisitExpression(expression.DictionaryType[0]);
+                CurrentString.Append(", ");
+                VisitExpression(expression.DictionaryType[1]);
+                CurrentString.Append(Replace(">"));
+            }
             CurrentString.Append("{");
             if (!DictionaryElementNewLine)
             {
@@ -296,7 +331,7 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(UnaryOperator expression)
         {
-            CurrentString.Append($" {expression.Operator}");
+            CurrentString.Append($"{expression.Operator}");
             VisitExpression(expression.Left);
         }
         public override void VisitExpression(BaseExpression expression)

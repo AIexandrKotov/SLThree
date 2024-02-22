@@ -50,6 +50,7 @@ namespace SLThree.Visitors
                 case TernaryOperator expr: VisitExpression(expr); return;
                 case BinaryOperator expr: VisitExpression(expr); return;
                 case UnaryOperator expr: VisitExpression(expr); return;
+                case Special expr: VisitExpression(expr); return;
                 case Literal expr: VisitExpression(expr); return;
                 case NewExpression expr: VisitExpression(expr); return;
                 case NameExpression expr: VisitExpression(expr); return;
@@ -182,6 +183,11 @@ namespace SLThree.Visitors
             Executables.Remove(expression);
             for (var i = 0; i < expression.Arguments.Length; i++)
                 VisitExpression(expression.Arguments[i]);
+        }
+
+        public virtual void VisitExpression(Special expression)
+        {
+
         }
 
         public virtual void VisitExpression(Literal expression)

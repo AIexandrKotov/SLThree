@@ -2,7 +2,7 @@
 
 namespace SLThree
 {
-    public class ThisLiteral : BaseExpression
+    public class ThisLiteral : Special
     {
         public ThisLiteral(SourceContext context) : base(context) { }
         public ThisLiteral(Cursor cursor) : base(cursor) { }

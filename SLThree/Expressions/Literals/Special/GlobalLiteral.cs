@@ -2,7 +2,7 @@
 
 namespace SLThree
 {
-    public class GlobalLiteral : BaseExpression
+    public class GlobalLiteral : Special
     {
         public GlobalLiteral(SourceContext context) : base(context) { }
         public GlobalLiteral(Cursor cursor) : base(cursor) { }

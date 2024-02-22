@@ -26,6 +26,7 @@
         void VisitExpression(ReflectionExpression expression);
         void VisitExpression(TypenameExpression expression);
 
+        void VisitExpression(Special expression);
         void VisitExpression(Literal expression);
         void VisitExpression(UnaryOperator expression);
         void VisitExpression(BinaryOperator expression);
