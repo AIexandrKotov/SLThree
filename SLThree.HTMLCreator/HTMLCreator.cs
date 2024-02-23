@@ -164,7 +164,12 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(InvokeGenericExpression expression)
         {
-            VisitExpression(expression.Left);
+            if (expression.Left is NameExpression nameExpression)
+                CurrentString.Append(GetCall(nameExpression.Name));
+            else if (expression.Left is MemberAccess memberAccess)
+                if (memberAccess.Right is NameExpression nameExpression1)
+                    CurrentString.Append(GetCall(nameExpression1.Name));
+                else VisitExpression(expression.Left);
             CurrentString.Append(Replace("<"));
             for (var i = 0; i < expression.GenericArguments.Length; i++)
             {
@@ -652,8 +657,8 @@ namespace SLThree.HTMLCreator
             {
                 CurrentTab += 1;
                 Newline();
-                CurrentTab -= 1;
                 VisitStatement(ifbody[0]);
+                CurrentTab -= 1;
             }
             else
             {
@@ -679,8 +684,8 @@ namespace SLThree.HTMLCreator
             {
                 CurrentTab += 1;
                 Newline();
-                CurrentTab -= 1;
                 VisitStatement(elsebody[0]);
+                CurrentTab -= 1;
             }
             else
             {
@@ -706,8 +711,8 @@ namespace SLThree.HTMLCreator
             {
                 CurrentTab += 1;
                 Newline();
-                CurrentTab -= 1;
                 VisitStatement(statement.LoopBody[0]);
+                CurrentTab -= 1;
             }
             else
             {
