@@ -99,12 +99,12 @@ namespace TestSuite
             }
         }
 
-        static string GetPath(string path) => from_solution ? path : Path.Combine("..", path);
-        static readonly string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\test\\parsing\\");
+        static string GetPath(string path) => from_solution ? path : Path.Combine("..\\..\\..", path);
+        static readonly string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\..\\..\\test\\parsing\\");
         public static void ParsingTests()
         {
             Console.WriteLine(">>> Parsing Tests");
-            foreach (var filename in Directory.GetFiles(from_solution ? "test\\parsing\\" : "..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\parsing\\" : "..\\..\\..\\test\\parsing", "*.slt", SearchOption.AllDirectories))
             {
                 if (ParseTest(filename))
                 {
@@ -121,11 +121,11 @@ namespace TestSuite
             }
         }
 
-        static readonly string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\test\\executing\\");
+        static readonly string removable_executing = Path.GetFullPath(from_solution ? "test\\executing\\" : "..\\..\\..\\test\\executing\\");
         public static void ExecutingTests()
         {
             Console.WriteLine(">>> Executing Tests");
-            foreach (var filename in Directory.GetFiles(from_solution ? "test\\executing\\" : "..\\test\\executing", "*.slt", SearchOption.AllDirectories))
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\executing\\" : "..\\..\\..\\test\\executing", "*.slt", SearchOption.AllDirectories))
             {
                 Console.WriteLine($">>> {Path.GetFullPath(filename).Replace(removable_executing, "")}");
                 if (ExecTest(filename))

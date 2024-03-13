@@ -22,8 +22,13 @@ namespace SLThree.sys
 
         static jit()
         {
+#if NETFRAMEWORK
             Assembly = AssemblyBuilder.DefineDynamicAssembly(Name, AssemblyBuilderAccess.RunAndSave);
             Module = Assembly.DefineDynamicModule("module", "module.exe", true);
+#else
+            Assembly = AssemblyBuilder.DefineDynamicAssembly(Name, AssemblyBuilderAccess.Run);
+            Module = Assembly.DefineDynamicModule("module");
+#endif
         }
 
         public static List<JIT.AbstractNameInfo> collect_vars(Method method, ExecutionContext context)
@@ -59,9 +64,13 @@ namespace SLThree.sys
 
         public static void save()
         {
+#if NETFRAMEWORK
             Assembly.Save("module.exe");
             Assembly = AssemblyBuilder.DefineDynamicAssembly(Name, AssemblyBuilderAccess.RunAndSave);
             Module = Assembly.DefineDynamicModule("module", "module.exe", true);
+#else
+            throw new Exception("Saving assemblies allowed only on .NET Framework");
+#endif
         }
     }
 #pragma warning restore IDE1006 // Стили именования

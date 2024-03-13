@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -18,6 +17,16 @@ namespace slt
     {
         static Program()
         {
+#if NET6_0_OR_GREATER
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            EncodingAliases = new Dictionary<string, Encoding>()
+            {
+                { "utf-8", Encoding.UTF8 },
+                { "utf-16", Encoding.Unicode },
+                { "unicode", Encoding.Unicode },
+                { "ansi", Encoding.GetEncoding(1250) },
+            };
+#endif
             InitSLThreeAssemblyInfo();
             SupportingFeatures();
         }
@@ -35,13 +44,17 @@ namespace slt
             { "-D", "--repl-diff" },
         };
         private static string[] RunArguments;
-        private static Dictionary<string, Encoding> EncodingAliases = new Dictionary<string, Encoding>()
+        private static Dictionary<string, Encoding> EncodingAliases
+#if NETFRAMEWORK
+            = new Dictionary<string, Encoding>()
         {
             { "utf-8", Encoding.UTF8 },
             { "utf-16", Encoding.Unicode },
             { "unicode", Encoding.Unicode },
             { "ansi", Encoding.GetEncoding(1250) },
-        };
+        }
+#endif
+            ;
         internal static Assembly SLThreeAssembly;
         private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
@@ -114,16 +127,11 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(REPLVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {REPLVersion.VersionWithoutRevision} ");
+            Console.Write($" {SLTREPLVersion.VersionWithoutRevision} ");
             Console.ResetColor();
-            var time2 = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(REPLVersion.LastUpdate), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{REPLVersion.Revision}");
-            Console.ResetColor();
-            Console.Write($" by ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{time2}");
+            Console.WriteLine($"{SLTREPLVersion.Revision}");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
@@ -133,16 +141,10 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write($"{SLTVersion.Edition} ");
             Console.ResetColor();
-            var time = TimeZoneInfo.ConvertTimeFromUtc(SLThreeVersion.LastUpdate, TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLThreeVersion.Revision}");
+            Console.WriteLine($"{SLThreeVersion.Revision}");
             Console.ResetColor();
-            Console.Write($" by ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{time}");
-            Console.ResetColor();
-
         }
 
         public static void OutVersion(string version)
@@ -245,7 +247,7 @@ namespace slt
         }
         #endregion
 
-        #endregion
+#endregion
 
         #region Universal outs
         private static bool out_extended_exceptions
@@ -864,7 +866,25 @@ namespace slt
             Console.Write("SLThree REPL ");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{REPLVersion.VersionWithoutRevision}");
+            Console.Write($"{SLTREPLVersion.VersionWithoutRevision}");
+            Console.ResetColor();
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+#if NETFRAMEWORK
+            Console.WriteLine(".NET Framework 4.7.1");
+#else
+#if NET8_0_OR_GREATER
+            Console.WriteLine(".NET 8.0");
+#else
+#if NET7_0_OR_GREATER
+            Console.WriteLine(".NET 7.0");
+#else
+#if NET6_0_OR_GREATER
+            Console.WriteLine(".NET 6.0");
+#endif
+#endif
+#endif
+#endif
             Console.ResetColor();
         }
 
@@ -981,11 +1001,12 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-        #endregion
+#endregion
 
         public static void Main(string[] args)
         {
             System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-us");
+
             args = RunArguments = Array.ConvertAll(args, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortCommands) : x);
 
             if (args.Length > 0 && !args[0].StartsWith("-"))

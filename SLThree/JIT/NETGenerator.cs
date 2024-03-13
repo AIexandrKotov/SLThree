@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.Remoting.Contexts;
 using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Text;
@@ -376,7 +375,9 @@ namespace SLThree.JIT
                 if (x.NameType == NameType.Local)
                 {
                     var lb = IL.DeclareLocal(x.Type);
+#if NETFRAMEWORK
                     lb.SetLocalSymInfo(x.Name);
+#endif
                     index++;
                 }
                 else if (x.NameType == NameType.Parameter)

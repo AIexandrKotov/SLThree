@@ -89,6 +89,7 @@ namespace slt
             }
 
             CurrentInput.Append(s);
+            CurrentInput.Append("\n");
         }
 
         public void Clear()

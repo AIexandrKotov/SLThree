@@ -1,5 +1,6 @@
 ------ 0.7.0 Typing Update ------ [~.~.~]
 Language:
+    - Ported to .NET platform (.NET Standard 2.1+)
     - Generic methods `<T>(...) => ...`
     - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
       `foreach (T x in ...)`

@@ -1,5 +1,6 @@
 ------ SLThree REPL 2.0.0 ------ [~.~.~]
 New:
+    - Spliited to .NET 4.7.1, 6.0, 7.0 and 8.0
     - Locals of context with `--context`
     - Multiline input supporting
     - Output of annotated methods, generic methods

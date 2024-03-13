@@ -9,14 +9,14 @@ namespace SLThree
     {
         public static readonly Parser This = new Parser();
 
-        public BaseExpression ParseExpression(string s) => Parse("#EXPR# " + s).Cast<ExpressionStatement>().Expression;
+        public BaseExpression ParseExpression(string s) => this.Parse("#EXPR# " + s).Cast<ExpressionStatement>().Expression;
         public object EvalExpression(string s, ExecutionContext context = null)
         {
             if (context == null) context = new ExecutionContext();
             return ParseExpression(s).GetValue(context);
         }
 
-        public BaseStatement ParseScript(string s, string filename = null) => Parse("#SLT# " + s, filename);
+        public BaseStatement ParseScript(string s, string filename = null) => this.Parse("#SLT# " + s, filename);
         public ExecutionContext RunScript(string s, string filename = null, ExecutionContext context = null)
         {
             var parsed = ParseScript(s, filename);

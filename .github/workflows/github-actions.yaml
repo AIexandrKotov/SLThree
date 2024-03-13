@@ -30,4 +30,4 @@ jobs:
       run: msbuild SLThree.sln /p:Configuration=Release /p:DeployOnBuild=false
       
     - name: Tests
-      run: bin/TestSuite.exe --from-solution
+      run: bin/Release/net471/TestSuite.exe --from-solution

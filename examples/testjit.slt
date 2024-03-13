@@ -2,10 +2,10 @@ calc = explicit (i64 index): i64 => { i64 step = 0; while (index > 1) { if (inde
 
 >-p
 using linq;
-0..1_00_000 |> linq.max(calc);
+0..1_000_000 |> linq.max(calc);
 
 using jit; using tlinq;
 calc_opt = jit.opt(calc, self);
-<i64>0..1_00_000 |> tlinq.max<i64>(calc_opt.CreateDelegate(@System.Func<i64, i64>));
+<i64>0..1_000_000 |> tlinq.max<i64>(calc_opt.CreateDelegate(@System.Func<i64, i64>));
 
 jit.save();
