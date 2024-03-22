@@ -46,6 +46,7 @@ namespace SLThree
                     ret = LoopBody[i].GetValue(context);
                     if (context.Continued || context.Returned || context.Broken) break;
                 }
+                context.Continued = false;
                 if (context.Returned || context.Broken) break;
             }
             context.EndCycle();
