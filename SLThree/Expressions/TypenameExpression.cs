@@ -86,7 +86,7 @@ namespace SLThree
         {
             if (type_cached)
             {
-                return context.LocalVariables.GetValue(type_variable_id);
+                return Isolate(context.LocalVariables.GetValue(type_variable_id));
             }
             var type = context.LocalVariables.GetValue(type_str);
             if (type.Item1 != null)
