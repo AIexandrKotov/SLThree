@@ -147,6 +147,12 @@ namespace SLThree
                         }
                         return invokeExpression.GetValue(pred.pred, invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
+                    else if (Right is InvokeGenericExpression invokeGenericExpression)
+                    {
+                        return invokeGenericExpression.GetValue(pred.pred,
+                            invokeGenericExpression.GenericArguments.ConvertAll(x => (Type)x.GetValue(context)),
+                            invokeGenericExpression.Arguments.ConvertAll(x => x.GetValue(context)));
+                    }
                 }
                 if (left is IDictionary dict && Right is NameExpression name)
                     return dict[name.Name];
