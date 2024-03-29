@@ -1,0 +1,7 @@
+i = 0;
+while ((i += 1) < 5) {
+    null;
+    a = i;
+    continue;
+}
+ASSERT(self, (a + 1 == i) as is);

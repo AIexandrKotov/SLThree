@@ -157,7 +157,7 @@ namespace SLThree
 
                 public override void MakeGeneric(TypenameExpression newtypeexpr)
                 {
-                    Concrete.Left = newtypeexpr;
+                    Concrete.Right = newtypeexpr;
                 }
 
                 public override ref TypenameExpression GetPlacer()

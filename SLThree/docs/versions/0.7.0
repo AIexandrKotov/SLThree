@@ -11,3 +11,7 @@ Language:
     - Dot notation `d.x = y` for dictionaries`
     - Getting ConstructorInfo with `@T::new(...)`
     - Supporting unicode names
+Bugfixes:
+    - `continue;` is working correctly now
+    - fixed re-calling functions with `new T`, `as T`, etc.;
+    - fixed names starting with special names

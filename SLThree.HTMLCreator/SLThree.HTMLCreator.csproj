@@ -47,5 +47,11 @@
   <ItemGroup>
     <Content Include="slthree.css" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SLThree\SLThree.csproj">
+      <Project>{3c06071b-c261-4d2b-92b1-a47431d7b0e4}</Project>
+      <Name>SLThree</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

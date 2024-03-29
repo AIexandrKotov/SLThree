@@ -197,13 +197,25 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(UnaryOperator expression)
         {
-            VisitExpression(expression.Left);
+            if (expression.Left is TypenameExpression)
+            {
+                Executables.Add(expression);
+                VisitExpression(expression.Left);
+                Executables.Remove(expression);
+            }
+            else VisitExpression(expression.Left);
         }
 
         public virtual void VisitExpression(BinaryOperator expression)
         {
             VisitExpression(expression.Left);
-            VisitExpression(expression.Right);
+            if (expression.Right is TypenameExpression)
+            {
+                Executables.Add(expression);
+                VisitExpression(expression.Right);
+                Executables.Remove(expression);
+            }
+            else VisitExpression(expression.Right);
         }
 
         public virtual void VisitExpression(TernaryOperator expression)

@@ -47,6 +47,24 @@ namespace SLThree
             return null;
         }
 
+        private BaseExpression GetSpecialName(NameExpression expression)
+        {
+            switch (expression.Name)
+            {
+                case "global": return new GlobalLiteral(expression.SourceContext);
+                case "self": return new SelfLiteral(expression.SourceContext);
+                case "this": return new ThisLiteral(expression.SourceContext);
+                case "super": return new SuperLiteral(expression.SourceContext);
+                case "upper": return new UpperLiteral(expression.SourceContext);
+                case "true":
+                case "false":
+                    return new BoolLiteral(bool.Parse(expression.Name), expression.SourceContext);
+                case "null":
+                    return new NullLiteral(expression.SourceContext);
+            }
+            return expression;
+        }
+
         private class InjectorVisitor : AbstractVisitor
         {
             public bool done;

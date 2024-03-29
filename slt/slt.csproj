@@ -6,11 +6,11 @@
     <TargetFrameworks>net471;net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>2.0.0.528</Version>
+    <Version>2.0.0.573</Version>
     <BaseOutputPath>..\bin</BaseOutputPath>
     <ApplicationIcon>slthree.ico</ApplicationIcon>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <RuntimeIdentifiers>win-x64;osx-x64;unix-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

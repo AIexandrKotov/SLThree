@@ -22,7 +22,7 @@
         public Literal(T value, SourceContext context) : base(context)
         {
             Value = value;
-            RawRepresentation = Value.ToString();
+            RawRepresentation = Value?.ToString() ?? "null";
         }
         public Literal(T value, string raw, SourceContext context) : base(context)
         {

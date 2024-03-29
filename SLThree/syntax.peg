@@ -61,7 +61,7 @@ block_statement <StatementList>
 while_statement <WhileLoopStatement>
     = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), state) }
     / "while" _ "(" _ ")" _ statement? { Panic<WhileLoopStatement>(new SyntaxError("Empty loop head", state)) }
-    / "while" _ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+    / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 foreach_statement <ForeachLoopStatement>
     = "foreach" _ "(" _ n:req_arg_name _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
@@ -69,7 +69,7 @@ foreach_statement <ForeachLoopStatement>
     / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach body must be in { }", state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
     / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Empty loop head", state)) }
-    / "foreach" _ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+    / "foreach" _required_ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
 condition_statement <ConditionStatement>
     = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionStatement(cond, GetListStatement(t), GetListStatement(f), state) }
@@ -225,9 +225,7 @@ primary <BaseExpression> -memoize
     / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
     / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
     / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
-    / name_literal
     / special
-    / name
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
@@ -305,8 +303,6 @@ typename <TypenameExpression>
 typename_node <BaseExpression> -memoize
     = left:typename_node _ "." _ right:name { new MemberAccess(left, right, state) }
     / special
-    / name
-    
 
 arg_name <NameExpression>
     = req_arg_name
@@ -320,11 +316,7 @@ name_literal <BaseExpression>
     / "null" { new NullLiteral(state) }
 
 special <BaseExpression>
-    = "global" { new GlobalLiteral(state) }
-    / "super" { new SuperLiteral(state) }
-    / "upper" { new UpperLiteral(state) }
-    / "this" { new ThisLiteral(state) }
-    / "self" { new SelfLiteral(state) }
+    = n:name { GetSpecialName(n) }
 
 literal <BaseExpression>
     = percent_literal

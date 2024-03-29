@@ -13,9 +13,10 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.7.0.2785</Version>
+    <Version>0.7.0.2822</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
+    <ApplicationIcon>slthree.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -48,6 +49,10 @@
 
   <ItemGroup>
     <None Remove="docs\specification" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="slthree.ico" />
   </ItemGroup>
 
   <ItemGroup>
