@@ -24,13 +24,14 @@ namespace SLThree.sys
         public static Method make_generic<T1, T2>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2) });
         public static Method make_generic<T1, T2, T3>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2), typeof(T3) });
 
-        public static readonly List<Assembly> registred = new List<Assembly>()
+        public static readonly List<Assembly> registred;
+        static slt()
         {
-            typeof(object).Assembly,
-            typeof(Enumerable).Assembly,
-            typeof(slt).Assembly,
-            typeof(Stopwatch).Assembly,
-        };
+            registred = AppDomain.CurrentDomain.GetAssemblies().ToList();
+#if NET || NETSTANDARD
+            registred.Add(typeof(Console).Assembly);
+#endif
+        }
         public static readonly Dictionary<string, Type> sys_types = Assembly
             .GetExecutingAssembly()
             .GetTypes()
