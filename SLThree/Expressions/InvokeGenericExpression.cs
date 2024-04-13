@@ -79,7 +79,7 @@ namespace SLThree
 
             if (cached_1) return founded.MakeGenericMethod(generic_args).Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
 
-            if (obj is MemberAccess.ClassAccess ca)
+            if (obj is ClassAccess ca)
             {
                 ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
                 // после первого вызова GetMethod

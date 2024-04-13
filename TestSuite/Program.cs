@@ -18,7 +18,7 @@ namespace TestSuite
             ErrorLog.Add(o.ToString());
         }
 
-        public static void Assert(ExecutionContext.ContextWrap context, BaseExpression expression)
+        public static void Assert(ContextWrap context, BaseExpression expression)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace TestSuite
             try
             {
                 var context = new ExecutionContext();
-                context.LocalVariables.SetValue("ASSERT", ((Action<ExecutionContext.ContextWrap, BaseExpression>)Assert).Method);
+                context.LocalVariables.SetValue("ASSERT", ((Action<ContextWrap, BaseExpression>)Assert).Method);
                 context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
                 context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 

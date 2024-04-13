@@ -167,7 +167,7 @@ namespace SLThree.Extensions
         private static Type type_char = typeof(char);
         private static Type type_double = typeof(double);
         private static Type type_float = typeof(float);
-        private static Type type_context = typeof(ExecutionContext.ContextWrap);
+        private static Type type_context = typeof(ContextWrap);
 
         private static Type type_array = typeof(object[]);
         private static Type type_list = typeof(List<object>);
@@ -202,10 +202,10 @@ namespace SLThree.Extensions
                 if (o is Type st_type)
                     return
                         st_type.IsAbstract && st_type.IsSealed
-                        ? new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
-                        : new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
+                        ? new ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
+                        : new ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
                 else
-                    return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
+                    return new ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
             }
             var type = o.GetType();
             if (type == casting_type) return o;
@@ -215,11 +215,11 @@ namespace SLThree.Extensions
                 var wrapper = NonGenericWrapper.GetWrapper(casting_type);
                 if (casting_type.IsAbstract)
                 {
-                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ExecutionContext.ContextWrap)o).pred);
-                    else wrapper.UnwrapStatic(((ExecutionContext.ContextWrap)o).pred);
+                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ContextWrap)o).pred);
+                    else wrapper.UnwrapStatic(((ContextWrap)o).pred);
                     return null;
                 }
-                else return wrapper.Unwrap(((ExecutionContext.ContextWrap)o).pred);
+                else return wrapper.Unwrap(((ContextWrap)o).pred);
             }
             if (casting_type.IsEnum)
             {

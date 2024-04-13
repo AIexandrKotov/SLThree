@@ -21,13 +21,13 @@ namespace SLThree
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
 
-        internal ExecutionContext.ContextWrap definitionplace;
+        internal ContextWrap definitionplace;
         internal string contextName = "";
 
-        public ExecutionContext.ContextWrap DefinitionPlace => definitionplace;
+        public ContextWrap DefinitionPlace => definitionplace;
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ExecutionContext.ContextWrap definitionPlace, bool @implicit, bool recursive)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive)
         {
             Name = name;
             ParamNames = paramNames;

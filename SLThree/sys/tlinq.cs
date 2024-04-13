@@ -52,7 +52,7 @@ namespace SLThree.sys
         public static T sum<T>(IEnumerable<T> values) => sum_helper<T>.Sum(values);
         public static TOut sum<TIn, TOut>(IEnumerable<TIn> values, Method method)
             => sum_helper<TOut>.Sum(values, x => (TOut)method.GetValue(new object[1] { x }));
-        public static TOut sum<TIn, TOut>(IEnumerable<TIn> values, Method method, ExecutionContext.ContextWrap context)
+        public static TOut sum<TIn, TOut>(IEnumerable<TIn> values, Method method, ContextWrap context)
             => sum_helper<TOut>.Sum(values, x => (TOut)method.GetValue(context.pred, new object[1] { x }));
         private static class average_helper
         {
@@ -145,7 +145,7 @@ namespace SLThree.sys
         public static object average<T>(IEnumerable<T> values) => average_helper<T>.Average(values);
         public static object average<TIn, TOut>(IEnumerable<TIn> values, Method method)
             => average_helper<TOut>.Average(values, x => (TOut)method.GetValue(new object[1] { x }));
-        public static object average<TIn, TOut>(IEnumerable<TIn> values, Method method, ExecutionContext.ContextWrap context)
+        public static object average<TIn, TOut>(IEnumerable<TIn> values, Method method, ContextWrap context)
             => average_helper<TOut>.Average(values, x => (TOut)method.GetValue(context.pred, new object[1] { x }));
 
         public static IEnumerable<long> range(long end)
@@ -168,12 +168,12 @@ namespace SLThree.sys
         {
             return objects.Aggregate((x, y) => (T)method.GetValue(new object[2] { x, y }));
         }
-        public static T aggregate<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static T aggregate<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Aggregate((x, y) => (T)method.GetValue(context.pred, new object[2] { x, y }));
         }
 
-        public static T max<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static T max<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Max(x => (T)method.GetValue(context.pred, new object[] { x }));
         }
@@ -183,7 +183,7 @@ namespace SLThree.sys
         }
         public static T max<T>(IEnumerable<T> objects) => objects.Max();
 
-        public static T min<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static T min<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Min(x => (T)method.GetValue(context.pred, new object[] { x }));
         }
@@ -195,15 +195,15 @@ namespace SLThree.sys
 
         public static T max_by<T>(IEnumerable<T> objects, Method method)
             => objects.MaxBy(x => method.GetValue(new object[1] { x }));
-        public static T max_by<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static T max_by<T>(IEnumerable<T> objects, Method method, ContextWrap context)
             => objects.MaxBy(x => method.GetValue(context.pred, new object[1] { x }));
 
         public static T min_by<T>(IEnumerable<T> objects, Method method)
             => objects.MinBy(x => method.GetValue(new object[1] { x }));
-        public static T min_by<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static T min_by<T>(IEnumerable<T> objects, Method method, ContextWrap context)
             => objects.MinBy(x => method.GetValue(context.pred, new object[1] { x }));
 
-        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Method method, ExecutionContext.ContextWrap context)
+        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Method method, ContextWrap context)
         {
             return objects.Select(x => (TOut)method.GetValue(context.pred, new object[] { x }));
         }
@@ -217,7 +217,7 @@ namespace SLThree.sys
         {
             return objects.Select(x => (IEnumerable<TIn>)x).SelectMany(x => method.GetValue(new object[1] { x }) as IEnumerable<TOut>);
         }
-        public static IEnumerable<TOut> select_many<TIn, TOut>(IEnumerable<TIn> objects, Method method, ExecutionContext.ContextWrap context)
+        public static IEnumerable<TOut> select_many<TIn, TOut>(IEnumerable<TIn> objects, Method method, ContextWrap context)
         {
             return objects.Select(x => (IEnumerable<TIn>)x).SelectMany(x => method.GetValue(context.pred, new object[1] { x }) as IEnumerable<TOut>);
         }
@@ -227,7 +227,7 @@ namespace SLThree.sys
         {
             return objects.Any(x => (bool)method.GetValue(new object[1] { x }));
         }
-        public static bool any<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static bool any<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Any(x => (bool)method.GetValue(context.pred, new object[1] { x }));
         }
@@ -236,12 +236,12 @@ namespace SLThree.sys
         {
             return objects.All(x => (bool)method.GetValue(new object[1] { x }));
         }
-        public static bool all<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static bool all<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.All(x => (bool)method.GetValue(context.pred, new object[1] { x }));
         }
 
-        public static IEnumerable<T> where<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static IEnumerable<T> where<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Where(x => method.GetValue(context.pred, new object[] { x }).Cast<bool>());
         }
@@ -255,7 +255,7 @@ namespace SLThree.sys
         {
             return objects.Count(x => (bool)method.GetValue(new object[1] { x }));
         }
-        public static long count<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context)
+        public static long count<T>(IEnumerable<T> objects, Method method, ContextWrap context)
         {
             return objects.Count(x => (bool)method.GetValue(context.pred, new object[1] { x }));
         }
@@ -272,7 +272,7 @@ namespace SLThree.sys
 
         public static Dictionary<TKey, TValue> to_dict<T, TKey, TValue>(IEnumerable<T> objects, Method methodKey, Method methodValue)
             => objects.ToDictionary(x => (TKey)methodKey.GetValue(new object[1] { x }), x => (TValue)methodValue.GetValue(new object[1] { x }));
-        public static Dictionary<TKey, TValue> to_dict<T, TKey, TValue>(IEnumerable<T> objects, Method methodKey, Method methodValue, ExecutionContext.ContextWrap context)
+        public static Dictionary<TKey, TValue> to_dict<T, TKey, TValue>(IEnumerable<T> objects, Method methodKey, Method methodValue, ContextWrap context)
             => objects.ToDictionary(x => (TKey)methodKey.GetValue(context.pred, new object[1] { x }), x => (TValue)methodValue.GetValue(context.pred, new object[1] { x }));
         public static List<T> to_list<T>(IEnumerable<T> objects) => objects.ToList();
         public static ITuple to_tuple<T>(IEnumerable<T> objects) => CreatorTuple.Create(objects.Select(x => x as object).ToArray());
@@ -293,19 +293,19 @@ namespace SLThree.sys
 
         public static T first<T>(IEnumerable<T> objects) => objects.First();
         public static T first<T>(IEnumerable<T> objects, Method method) => objects.First(x => (bool)method.GetValue(new object[1] { x }));
-        public static T first<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context) => objects.First(x => (bool)method.GetValue(context.pred, new object[1] { x }));
+        public static T first<T>(IEnumerable<T> objects, Method method, ContextWrap context) => objects.First(x => (bool)method.GetValue(context.pred, new object[1] { x }));
 
         public static T last<T>(IEnumerable<T> objects) => objects.Last();
         public static T last<T>(IEnumerable<T> objects, Method method) => objects.Last(x => (bool)method.GetValue(new object[1] { x }));
-        public static T last<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context) => objects.Last(x => (bool)method.GetValue(context.pred, new object[1] { x }));
+        public static T last<T>(IEnumerable<T> objects, Method method, ContextWrap context) => objects.Last(x => (bool)method.GetValue(context.pred, new object[1] { x }));
 
         public static T first_or<T>(IEnumerable<T> objects, T or) where T : class => objects.FirstOrDefault() ?? or;
         public static T first_or<T>(IEnumerable<T> objects, Method method, T or) where T : class => objects.FirstOrDefault(x => (bool)method.GetValue(new object[1] { x })) ?? or;
-        public static T first_or<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context, T or) where T : class => objects.FirstOrDefault(x => (bool)method.GetValue(context.pred, new object[1] { x })) ?? or;
+        public static T first_or<T>(IEnumerable<T> objects, Method method, ContextWrap context, T or) where T : class => objects.FirstOrDefault(x => (bool)method.GetValue(context.pred, new object[1] { x })) ?? or;
 
         public static T last_or<T>(IEnumerable<T> objects, T or) where T: class => objects.LastOrDefault() ?? or;
         public static T last_or<T>(IEnumerable<T> objects, Method method, T or) where T : class => objects.LastOrDefault(x => (bool)method.GetValue(new object[1] { x })) ?? or;
-        public static T last_or<T>(IEnumerable<T> objects, Method method, ExecutionContext.ContextWrap context, T or) where T : class => objects.LastOrDefault(x => (bool)method.GetValue(context.pred, new object[1] { x })) ?? or;
+        public static T last_or<T>(IEnumerable<T> objects, Method method, ContextWrap context, T or) where T : class => objects.LastOrDefault(x => (bool)method.GetValue(context.pred, new object[1] { x })) ?? or;
 
         public static T element_at<T>(IEnumerable<T> objects, long index) => objects.ElementAt((int)index);
         private static Random RandomFor_element_rand = new Random();

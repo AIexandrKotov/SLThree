@@ -16,7 +16,7 @@ namespace SLThree.Embedding
             public LoadOption() { }
         }
 
-        private static ExecutionContext.ContextWrap Build(LoadOption loadOption)
+        private static ContextWrap Build(LoadOption loadOption)
         {
             var context = new ExecutionContext();
             if (loadOption.file != null)
@@ -31,7 +31,7 @@ namespace SLThree.Embedding
             return context.wrap;
         }
 
-        private static bool IsScriptLayout(ExecutionContext.ContextWrap context, out LoadOption loadOption)
+        private static bool IsScriptLayout(ContextWrap context, out LoadOption loadOption)
         {
             foreach (var x in context.pred.LocalVariables.GetAsDictionary())
             {
@@ -67,7 +67,7 @@ namespace SLThree.Embedding
             var context = new ExecutionContext();
 
             context.LocalVariables.SetValue("REFERENCE", ((Action<string>)Reference).Method);
-            context.LocalVariables.SetValue("LOADOPT", new MemberAccess.ClassAccess(typeof(LoadOption)));
+            context.LocalVariables.SetValue("LOADOPT", new ClassAccess(typeof(LoadOption)));
 
             st.GetValue(context);
 
@@ -82,7 +82,7 @@ namespace SLThree.Embedding
 
             foreach (var layout in context.LocalVariables.GetAsDictionary())
             {
-                if (layout.Value is ExecutionContext.ContextWrap wrap)
+                if (layout.Value is ContextWrap wrap)
                 {
                     if (IsScriptLayout(wrap, out var lp))
                     {
@@ -99,7 +99,7 @@ namespace SLThree.Embedding
 
             foreach (var layout in context.LocalVariables.GetAsDictionary())
             {
-                if (layout.Value is ExecutionContext.ContextWrap wrap)
+                if (layout.Value is ContextWrap wrap)
                 {
                     if (IsScriptLayout(wrap, out var lp))
                     {

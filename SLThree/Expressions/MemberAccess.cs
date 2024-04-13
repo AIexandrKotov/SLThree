@@ -10,74 +10,6 @@ namespace SLThree
 {
     public class MemberAccess : BinaryOperator
     {
-        public class ClassAccess
-        {
-            public Type Name;
-            public ClassAccess(Type name)
-            {
-                Name = name;
-            }
-
-            public override string ToString()
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"{Name.GetTypeString()} {{");
-                //var methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-                var static_methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
-                //var fields = Name.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                var static_fields = Name.GetFields(BindingFlags.Public | BindingFlags.Static);
-                //var props = Name.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                var static_props = Name.GetProperties(BindingFlags.Public | BindingFlags.Static);
-                foreach (var x in static_fields)
-                {
-                    sb.AppendLine($"    {x.FieldType.GetTypeString()} {x.Name};");
-                }
-                /*if (!Name.IsSealed && !Name.IsAbstract)
-                foreach (var x in fields)
-                {
-                    sb.AppendLine($"    {x.Name};");
-                }*/
-                foreach (var x in static_props)
-                {
-                    sb.Append($"    {x.PropertyType.GetTypeString()} {x.Name} {{ ");
-                    if (x.GetMethod != null) sb.Append("get; ");
-                    if (x.SetMethod != null) sb.Append("set; ");
-                    sb.AppendLine("}");
-                }
-                /*if (!Name.IsSealed && !Name.IsAbstract)
-                    foreach (var x in props)
-                {
-                    sb.Append($"    {x.Name} {{ ");
-                    if (x.GetMethod != null) sb.Append("get; ");
-                    if (x.SetMethod != null) sb.Append("set; ");
-                    sb.AppendLine("}");
-                }*/
-                foreach (var x in static_methods)
-                {
-                    if (x.Name.StartsWith("get_") || x.Name.StartsWith("set_")) continue;
-                    sb.Append($"    {x.ReturnType.GetTypeString()} {x.Name}");
-                    if (x.IsGenericMethodDefinition)
-                    {
-                        sb.Append($"<{x.GetGenericArguments().Select(a => a.Name).JoinIntoString(", ")}>");
-                    }
-                    sb.Append("(");
-                    sb.Append(x.GetParameters().ConvertAll(p => p.ParameterType.GetTypeString()).JoinIntoString(", "));
-                    sb.AppendLine(");");
-                }
-                /*if (!Name.IsSealed && !Name.IsAbstract)
-                    foreach (var x in methods)
-                {
-                    if (x.Name.StartsWith("get_") || x.Name.StartsWith("set_")) continue;
-                    sb.Append($"    {x.Name}(");
-                    sb.Append(x.GetParameters().ConvertAll(p => p.ParameterType.GetTypeString()).JoinIntoString(", "));
-                    sb.AppendLine(");");
-                }*/
-
-                sb.AppendLine("}");
-
-                return sb.ToString();
-            }
-        }
 
         public override string Operator => ".";
         public MemberAccess(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context) { }
@@ -105,19 +37,19 @@ namespace SLThree
 
             if (counted_contextwrapcache)
             {
-                if (is_super) return (left as ExecutionContext.ContextWrap).pred.super;
-                else if (is_upper) return (left as ExecutionContext.ContextWrap).pred.PreviousContext.wrap;
-                else return (left as ExecutionContext.ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+                if (is_super) return (left as ContextWrap).pred.super;
+                else if (is_upper) return (left as ContextWrap).pred.PreviousContext.wrap;
+                else return (left as ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
             {
-                if (is_unwrap) return (left as ExecutionContext.ContextWrap).pred;
-                else return (Right as InvokeExpression).GetValue((left as ExecutionContext.ContextWrap).pred, (Right as InvokeExpression).Arguments.ConvertAll(x => x.GetValue(context)));
+                if (is_unwrap) return (left as ContextWrap).pred;
+                else return (Right as InvokeExpression).GetValue((left as ContextWrap).pred, (Right as InvokeExpression).Arguments.ConvertAll(x => x.GetValue(context)));
             }
 
             if (left != null)
             {
-                if (left is ExecutionContext.ContextWrap pred)
+                if (left is ContextWrap pred)
                 {
                     if (Right is NameExpression predName)
                     {
@@ -195,13 +127,13 @@ namespace SLThree
 
             if (counted_other_context_assign)
             {
-                (left as ExecutionContext.ContextWrap).pred.LocalVariables.SetValue(other_context_name, value);
+                (left as ContextWrap).pred.LocalVariables.SetValue(other_context_name, value);
                 return;
             }
 
             if (left != null)
             {
-                if (left is ExecutionContext.ContextWrap wrap)
+                if (left is ContextWrap wrap)
                 {
                     context = wrap.pred;
                     //var has_access_2 = left is ClassAccess;
@@ -214,7 +146,7 @@ namespace SLThree
                         {
                             mth = mth.CloneWithNewName(nameExpression2.Name);
                             mth.UpdateContextName();
-                            mth.definitionplace = new ExecutionContext.ContextWrap(context);
+                            mth.definitionplace = new ContextWrap(context);
                             value = mth;
                         }
                         context.LocalVariables.SetValue(other_context_name, value);

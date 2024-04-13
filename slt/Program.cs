@@ -282,7 +282,7 @@ namespace slt
 
         private static object SafeFromContext(object value)
         {
-            if (value is ExecutionContext.ContextWrap wrap)
+            if (value is ContextWrap wrap)
                 return $"context {wrap.pred.Name}";
             if (value is null)
                 return "null";
@@ -384,7 +384,7 @@ namespace slt
         private static void SupportingFeatures()
         {
             RegisterNewSystemTypes();
-            ExecutionContext.ContextWrap.Decoration = GetOutput;
+            ContextWrap.Decoration = GetOutput;
         }
 
         private static void RegisterNewSystemTypes()
@@ -403,8 +403,8 @@ namespace slt
         public static void OutUsingClasses(ExecutionContext context, int table = -1)
         {
             var local_usings0 = context.LocalVariables.GetAsDictionary()
-                .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
-                .Select(x => new KeyValuePair<string, string>(x.Key, (x.Value as MemberAccess.ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
+                .Where(x => x.Value != null && (x.Value is ClassAccess))
+                .Select(x => new KeyValuePair<string, string>(x.Key, (x.Value as ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
             var local_usings = new Dictionary<string, List<string>>();
             foreach (var x in local_usings0)
             {
@@ -565,7 +565,7 @@ namespace slt
         public static void OutLocalVariables(ExecutionContext context, int table = -1, bool typed = false)
         {
             var local_variables = context.LocalVariables.GetAsDictionary()
-                .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
+                .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
             if (local_variables.Count == 0) return;
             OutAsWarning($"--- VARIABLES ---");
@@ -604,7 +604,7 @@ namespace slt
                 Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = x.Value is ExecutionContext.ContextWrap wrap ? $"context {wrap.pred.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
+                var output = x.Value is ContextWrap wrap ? $"context {wrap.pred.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -732,7 +732,7 @@ namespace slt
                     wrds.HasArgument("--global")
                     ? ExecutionContext.global.pred
                         : (wrds.TryGetArgument("--context", out var vname)
-                            ? SLThree.sys.slt.eval(vname).TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
+                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.pred ?? REPLContext
                             : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
@@ -766,13 +766,13 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    var ocontext = SLThree.sys.slt.eval(new ExecutionContext.ContextWrap(REPLContext), runfile_incontext);
+                    var ocontext = SLThree.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
                     switch (ocontext)
                     {
                         case ExecutionContext cc:
                             context = cc;
                             break;
-                        case ExecutionContext.ContextWrap wrap:
+                        case ContextWrap wrap:
                             context = wrap.pred;
                             break;
                     }

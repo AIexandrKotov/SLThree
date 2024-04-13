@@ -24,7 +24,7 @@ namespace SLThree
                     context.LocalVariables.SetValue(methodInfo.Name, methodInfo);
                     return methodInfo;
                 }
-                if (right is ExecutionContext.ContextWrap wrap)
+                if (right is ContextWrap wrap)
                 {
                     context.LocalVariables.SetValue(wrap.pred.Name, wrap);
                     return wrap;

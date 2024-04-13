@@ -36,7 +36,7 @@ namespace SLThree.sys
             return JIT.NameCollector.Collect(method, context).Item1;
         }
 
-        public static MethodInfo opt(Method method, ExecutionContext.ContextWrap context)
+        public static MethodInfo opt(Method method, ContextWrap context)
         {
             var rettype = method.ReturnType?.GetStaticValue();
             var ptypes = method.ParamTypes.ConvertAll(x => x.GetStaticValue());

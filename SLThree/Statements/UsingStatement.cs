@@ -21,7 +21,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            var @using = Using.GetValue(context).Cast<MemberAccess.ClassAccess>();
+            var @using = Using.GetValue(context).Cast<ClassAccess>();
             string name;
             if (Alias == null)
             {

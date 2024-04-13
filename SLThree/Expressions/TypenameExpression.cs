@@ -78,7 +78,7 @@ namespace SLThree
         public Type Isolate(object o)
         {
             if (o is Type type) return type;
-            if (o is MemberAccess.ClassAccess access) return access.Name;
+            if (o is ClassAccess access) return access.Name;
             throw new RuntimeError($"{o?.GetType().GetTypeString() ?? "null"} unconvertible to Type", SourceContext);
         }
 
