@@ -34,7 +34,7 @@ namespace SLThree.sys
         public static readonly Dictionary<string, Type> sys_types = Assembly
             .GetExecutingAssembly()
             .GetTypes()
-            .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x);
+            .Where(x => x.FullName.StartsWith("SLThree.sys.") && !x.Name.StartsWith("<") && x.IsPublic).ToDictionary(x => x.Name, x => x);
     }
 #pragma warning restore IDE1006 // Стили именования
 }
