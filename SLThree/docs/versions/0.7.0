@@ -1,6 +1,6 @@
 ------ 0.7.0 Typing Update ------ [~.~.~]
 Language:
-    - Ported to .NET platform (.NET Standard 2.1+)
+    - Supporting .NET platform (.NET Standard 2.1+)
     - Generic methods `<T>(...) => ...`
     - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
       `foreach (T x in ...)`
@@ -9,9 +9,10 @@ Language:
     - Tuples get specific types right away `(1, ) is tuple<i64>`
     - Array creator `-[x, y]`, `<T>-[x, y]`
     - Dot notation `d.x = y` for dictionaries`
+    - private context
     - Getting ConstructorInfo with `@T::new(...)`
     - Supporting unicode names
 Bugfixes:
-    - `continue;` is working correctly now
-    - fixed re-calling functions with `new T`, `as T`, etc.;
-    - fixed names starting with special names
+    - `continue;` is working correctly now (#112)
+    - fixed re-calling functions with `new T`, `as T`, etc.; (#113)
+    - fixed names starting with special names (#114)

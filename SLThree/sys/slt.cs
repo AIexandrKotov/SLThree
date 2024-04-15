@@ -13,7 +13,7 @@ namespace SLThree.sys
         public static BaseStatement parse(string s) => Parser.This.ParseScript(s);
         public static BaseExpression parse_expr(string s) => Parser.This.ParseExpression(s);
         public static object eval(string s) => Parser.This.EvalExpression(s);
-        public static object eval(ContextWrap context, string s) => Parser.This.EvalExpression(s, context.pred);
+        public static object eval(ContextWrap context, string s) => Parser.This.EvalExpression(s, context.Context);
 
         public static string repr(object o) => TreeViewer.GetView(o);
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());

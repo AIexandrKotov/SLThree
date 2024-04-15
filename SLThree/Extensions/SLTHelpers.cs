@@ -215,11 +215,11 @@ namespace SLThree.Extensions
                 var wrapper = NonGenericWrapper.GetWrapper(casting_type);
                 if (casting_type.IsAbstract)
                 {
-                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ContextWrap)o).pred);
-                    else wrapper.UnwrapStatic(((ContextWrap)o).pred);
+                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ContextWrap)o).Context);
+                    else wrapper.UnwrapStatic(((ContextWrap)o).Context);
                     return null;
                 }
-                else return wrapper.Unwrap(((ContextWrap)o).pred);
+                else return wrapper.Unwrap(((ContextWrap)o).Context);
             }
             if (casting_type.IsEnum)
             {

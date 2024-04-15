@@ -69,7 +69,7 @@ namespace SLThree
                     {
                         @this = definitionplace
                     };
-                    ret.SuperContext = ret.@this.pred?.SuperContext;
+                    ret.SuperContext = ret.@this.Context?.SuperContext;
                     cached_method_contextes.Add(this, ret);
                 }
                 ret.Name = contextName;

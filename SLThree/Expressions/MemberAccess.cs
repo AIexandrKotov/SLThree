@@ -37,14 +37,14 @@ namespace SLThree
 
             if (counted_contextwrapcache)
             {
-                if (is_super) return (left as ContextWrap).pred.super;
-                else if (is_upper) return (left as ContextWrap).pred.PreviousContext.wrap;
-                else return (left as ContextWrap).pred.LocalVariables.GetValue(variable_name).Item1;
+                if (is_super) return (left as ContextWrap).Context.super;
+                else if (is_upper) return (left as ContextWrap).Context.PreviousContext.wrap;
+                else return (left as ContextWrap).Context.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
             {
-                if (is_unwrap) return (left as ContextWrap).pred;
-                else return (Right as InvokeExpression).GetValue((left as ContextWrap).pred, (Right as InvokeExpression).Arguments.ConvertAll(x => x.GetValue(context)));
+                if (is_unwrap) return (left as ContextWrap).Context;
+                else return (Right as InvokeExpression).GetValue((left as ContextWrap).Context, (Right as InvokeExpression).Arguments.ConvertAll(x => x.GetValue(context)));
             }
 
             if (left != null)
@@ -57,17 +57,17 @@ namespace SLThree
                         {
                             counted_contextwrapcache = true;
                             is_super = true;
-                            return pred.pred.super;
+                            return pred.Context.super;
                         }
                         else if (predName.Name == "upper")
                         {
                             counted_contextwrapcache = true;
                             is_upper = true;
-                            return pred.pred.PreviousContext?.wrap;
+                            return pred.Context.PreviousContext?.wrap;
                         }
                         variable_name = predName.ExpressionToString().Replace(" ", "");
                         counted_contextwrapcache = true;
-                        return pred.pred.LocalVariables.GetValue(variable_name).Item1;
+                        return pred.Context.LocalVariables.GetValue(variable_name).Item1;
                     }
                     else if (Right is InvokeExpression invokeExpression)
                     {
@@ -75,13 +75,13 @@ namespace SLThree
                         if (invokeExpression.Left?.TryCastRef<NameExpression>()?.Name == "unwrap" && invokeExpression.Arguments.Length == 0)
                         {
                             is_unwrap = true;
-                            return pred.pred;
+                            return pred.Context;
                         }
-                        return invokeExpression.GetValue(pred.pred, invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
+                        return invokeExpression.GetValue(pred.Context, invokeExpression.Arguments.Select(x => x.GetValue(context)).ToArray());
                     }
                     else if (Right is InvokeGenericExpression invokeGenericExpression)
                     {
-                        return invokeGenericExpression.GetValue(pred.pred,
+                        return invokeGenericExpression.GetValue(pred.Context,
                             invokeGenericExpression.GenericArguments.ConvertAll(x => (Type)x.GetValue(context)),
                             invokeGenericExpression.Arguments.ConvertAll(x => x.GetValue(context)));
                     }
@@ -127,7 +127,7 @@ namespace SLThree
 
             if (counted_other_context_assign)
             {
-                (left as ContextWrap).pred.LocalVariables.SetValue(other_context_name, value);
+                (left as ContextWrap).Context.LocalVariables.SetValue(other_context_name, value);
                 return;
             }
 
@@ -135,7 +135,7 @@ namespace SLThree
             {
                 if (left is ContextWrap wrap)
                 {
-                    context = wrap.pred;
+                    context = wrap.Context;
                     //var has_access_2 = left is ClassAccess;
                     //var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameExpression nameExpression2)

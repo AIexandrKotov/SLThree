@@ -9,11 +9,11 @@ namespace SLThree
 {
     public class ContextWrap : IEnumerable<object>
     {
-        public readonly ExecutionContext pred;
+        public readonly ExecutionContext Context;
 
-        public ContextWrap(ExecutionContext pred)
+        public ContextWrap(ExecutionContext context)
         {
-            this.pred = pred;
+            this.Context = context;
         }
 
         public static Func<object, object> Decoration = o => o;
@@ -23,14 +23,14 @@ namespace SLThree
             var sb = new StringBuilder();
             outed_contexts.Add(this);
 
-            sb.AppendLine($"context {pred.Name} {{");
-            foreach (var x in pred.LocalVariables.GetAsDictionary())
+            sb.AppendLine($"context {Context.Name} {{");
+            foreach (var x in Context.LocalVariables.GetAsDictionary())
             {
 
                 sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
                 if (x.Value is ContextWrap wrap)
                 {
-                    if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.pred.Name}; //already printed");
+                    if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.Context.Name}; //already printed");
                     else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
                 }
                 else if (x.Value is ClassAccess ca)
@@ -57,12 +57,12 @@ namespace SLThree
 
             var index = 1;
 
-            sb.AppendLine($"context {pred.Name} {{");
-            foreach (var x in pred.LocalVariables.GetAsDictionary())
+            sb.AppendLine($"context {Context.Name} {{");
+            foreach (var x in Context.LocalVariables.GetAsDictionary())
             {
 
                 sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
-                if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.pred.Name};");
+                if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.Context.Name};");
                 else if (x.Value is ClassAccess maca) sb.AppendLine($"access to {maca.Name.GetTypeString()};");
                 else sb.AppendLine((Decoration(x.Value)?.ToString() ?? "null") + ";");
             }
@@ -75,13 +75,13 @@ namespace SLThree
 
         public object this[string index]
         {
-            get => pred.LocalVariables.GetValue(index).Item1;
-            set => pred.LocalVariables.SetValue(index, value);
+            get => Context.LocalVariables.GetValue(index).Item1;
+            set => Context.LocalVariables.SetValue(index, value);
         }
 
         public IEnumerator<object> GetEnumerator()
         {
-            return pred.LocalVariables.Variables.Where(x => x != null).GetEnumerator();
+            return Context.LocalVariables.Variables.Where(x => x != null).GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

@@ -283,7 +283,7 @@ namespace slt
         private static object SafeFromContext(object value)
         {
             if (value is ContextWrap wrap)
-                return $"context {wrap.pred.Name}";
+                return $"context {wrap.Context.Name}";
             if (value is null)
                 return "null";
             else return value;
@@ -604,7 +604,7 @@ namespace slt
                 Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = x.Value is ContextWrap wrap ? $"context {wrap.pred.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
+                var output = x.Value is ContextWrap wrap ? $"context {wrap.Context.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -730,9 +730,9 @@ namespace slt
                 var typed = wrds.HasArgument("--typed");
                 var context =
                     wrds.HasArgument("--global")
-                    ? ExecutionContext.global.pred
+                    ? ExecutionContext.global.Context
                         : (wrds.TryGetArgument("--context", out var vname)
-                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.pred ?? REPLContext
+                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
                             : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
@@ -773,7 +773,7 @@ namespace slt
                             context = cc;
                             break;
                         case ContextWrap wrap:
-                            context = wrap.pred;
+                            context = wrap.Context;
                             break;
                     }
                 }

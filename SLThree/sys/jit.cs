@@ -46,7 +46,7 @@ namespace SLThree.sys
             try
             {
                 mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
-                var ng = new JIT.NETGenerator(method, context.pred, mb, mb.GetILGenerator());
+                var ng = new JIT.NETGenerator(method, context.Context, mb, mb.GetILGenerator());
                 ng.Visit(method);
             }
             catch

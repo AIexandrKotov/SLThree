@@ -33,7 +33,7 @@ namespace SLThree.Embedding
 
         private static bool IsScriptLayout(ContextWrap context, out LoadOption loadOption)
         {
-            foreach (var x in context.pred.LocalVariables.GetAsDictionary())
+            foreach (var x in context.Context.LocalVariables.GetAsDictionary())
             {
                 if (x.Value is LoadOption lp)
                 {
@@ -76,7 +76,7 @@ namespace SLThree.Embedding
 
         public static void ExecuteFile(string filename, ExecutionContext targetContext = null)
         {
-            if (targetContext == null) targetContext = ExecutionContext.global.pred;
+            if (targetContext == null) targetContext = ExecutionContext.global.Context;
 
             var context = Prepare(ParseFile(filename));
 
@@ -93,7 +93,7 @@ namespace SLThree.Embedding
         }
         public static void Execute(string code, ExecutionContext targetContext = null)
         {
-            if (targetContext == null) targetContext = ExecutionContext.global.pred;
+            if (targetContext == null) targetContext = ExecutionContext.global.Context;
 
             var context = Prepare(ParseCode(code));
 

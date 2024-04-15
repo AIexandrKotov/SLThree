@@ -26,7 +26,7 @@ namespace SLThree
                 }
                 if (right is ContextWrap wrap)
                 {
-                    context.LocalVariables.SetValue(wrap.pred.Name, wrap);
+                    context.LocalVariables.SetValue(wrap.Context.Name, wrap);
                     return wrap;
                 }
                 NonGenericWrapper wrapper;

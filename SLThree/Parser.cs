@@ -56,6 +56,7 @@ namespace SLThree
                 case "this": return new ThisLiteral(expression.SourceContext);
                 case "super": return new SuperLiteral(expression.SourceContext);
                 case "upper": return new UpperLiteral(expression.SourceContext);
+                case "private": return new PrivateLiteral(expression.SourceContext);
                 case "true":
                 case "false":
                     return new BoolLiteral(bool.Parse(expression.Name), expression.SourceContext);

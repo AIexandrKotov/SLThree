@@ -25,7 +25,7 @@ namespace TestSuite
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("");
                 Console.Write($"{current_assert_id++,6}  ");
-                if (expression.GetValue(context.pred).Cast<bool>())
+                if (expression.GetValue(context.Context).Cast<bool>())
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write($"SUCCESS ");
