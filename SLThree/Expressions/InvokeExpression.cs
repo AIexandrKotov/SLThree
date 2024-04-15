@@ -46,6 +46,10 @@ namespace SLThree
                 else return mi.Invoke(null, args);
             }
             else if (o is ExecutionContext.IExecutable bl) return bl.GetValue(context);
+            else if (o is ConstructorInfo ci)
+            {
+                return ci.Invoke(args);
+            }
             else
             {
                 var type = o.GetType();
