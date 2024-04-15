@@ -177,9 +177,9 @@ namespace SLThree.sys
         {
             return objects.Max(x => (T)method.GetValue(context.pred, new object[] { x }));
         }
-        public static T max<T>(IEnumerable<T> objects, Func<T, T> func)
+        public static T max<T>(IEnumerable<T> objects, Method method)
         {
-            return objects.Max(x => func(x));
+            return objects.Max(x => (T)method.GetValue(new object[] { x }));
         }
         public static T max<T>(IEnumerable<T> objects) => objects.Max();
 
