@@ -16,3 +16,4 @@ Bugfixes:
     - `continue;` is working correctly now (#112)
     - fixed re-calling functions with `new T`, `as T`, etc.; (#113)
     - fixed names starting with special names (#114)
+    - fixed negative numeric literals (#118)
