@@ -41,12 +41,11 @@ namespace SLThree
 
             if (o is Method method)
             {
+                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 if (o is GenericMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args).GetValue(context, args);
 
                 throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
-                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
-                return method.GetValue(context, args);
             }
             else if (o is MethodInfo mi)
             {
