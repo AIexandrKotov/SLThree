@@ -23,6 +23,7 @@ namespace SLThree
         private PropertyInfo prop;
         private Type nest_type;
         private bool null_conditional;
+        public bool NullConditional => null_conditional;
 
         private bool counted_contextwrapcache;
         private string variable_name;

@@ -12,6 +12,7 @@ namespace SLThree
         public TypenameExpression[] GenericArguments;
         public BaseExpression[] Arguments;
         private bool null_conditional;
+        public bool NullConditional => null_conditional;
 
         public InvokeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, BaseExpression[] arguments, SourceContext context) : base(context)
         {
@@ -27,7 +28,7 @@ namespace SLThree
             this.null_conditional = null_conditional;
         }
 
-        public override string ExpressionToString() => $"{Left}{(null_conditional ? "?" : "")}<{GenericArguments.JoinIntoString(", ")}>({Arguments.JoinIntoString(", ")})";
+        public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}<{GenericArguments.JoinIntoString(", ")}>({Arguments.JoinIntoString(", ")})";
 
         public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
         {

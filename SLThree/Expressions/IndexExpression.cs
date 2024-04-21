@@ -12,6 +12,7 @@ namespace SLThree
         public BaseExpression Expression;
         public BaseExpression[] Arguments;
         private bool null_conditional;
+        public bool NullConditional => null_conditional;
 
         public IndexExpression(BaseExpression expression, BaseExpression[] arguments, SourceContext context) : base(context)
         {
@@ -109,7 +110,7 @@ namespace SLThree
             return value;
         }
 
-        public override string ExpressionToString() => $"{Expression}[{Arguments.JoinIntoString(", ")}]";
+        public override string ExpressionToString() => $"{Expression}{(null_conditional ? ".?" : "")}[{Arguments.JoinIntoString(", ")}]";
 
         public override object Clone()
         {

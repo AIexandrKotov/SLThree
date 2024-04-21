@@ -10,6 +10,7 @@ namespace SLThree
         public BaseExpression Left;
         public BaseExpression[] Arguments;
         private bool null_conditional;
+        public bool NullConditional => null_conditional;
 
         public InvokeExpression(BaseExpression name, BaseExpression[] arguments, SourceContext context) : base(context)
         {
@@ -23,7 +24,7 @@ namespace SLThree
             this.null_conditional = null_conditional;
         }
 
-        public override string ExpressionToString() => $"{Left}{(null_conditional ? "?" : "")}({Arguments.JoinIntoString(", ")})";
+        public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}({Arguments.JoinIntoString(", ")})";
 
         public object GetValue(ExecutionContext context, object[] args)
         {

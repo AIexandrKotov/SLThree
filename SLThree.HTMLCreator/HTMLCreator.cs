@@ -75,19 +75,25 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(GetString($"\"{GetEscaped(expression.Value.ToString())}\""));
             else if (expression is CharLiteral c)
                 CurrentString.Append(GetString($"'{GetEscaped(c.ToString())}'"));
+            else if (expression is BoolLiteral b)
+                CurrentString.Append($"{GetKeyword1(b.ToString().ToLower())}");
             else CurrentString.Append(GetDigit(expression.RawRepresentation));
         }
         public override void VisitExpression(BinaryOperator expression)
         {
             VisitExpression(expression.Left);
-            CurrentString.Append($" {expression.Operator} ");
+            if (expression is BinaryIs)
+                CurrentString.Append(GetKeyword1(" is "));
+            else CurrentString.Append($" {expression.Operator} ");
             VisitExpression(expression.Right);
         }
         public override void VisitExpression(CastExpression expression)
         {
             VisitExpression(expression.Left);
-            CurrentString.Append($" as ");
-            VisitExpression(expression.Type);
+            CurrentString.Append(GetKeyword1($" as "));
+            if (expression.as_is)
+                CurrentString.Append(GetKeyword1(" is"));
+            else VisitExpression(expression.Type);
         }
         public override void VisitExpression(TypenameExpression expression)
         {
@@ -137,11 +143,13 @@ namespace SLThree.HTMLCreator
         }
         public override void VisitExpression(CreatorContext expression)
         {
-            VisitExpression(expression, false, true);
+            VisitExpression(expression, ContextElementNewLine, true);
         }
         public override void VisitExpression(MemberAccess expression)
         {
             VisitExpression(expression.Left);
+            if (expression.NullConditional)
+                CurrentString.Append("?");
             CurrentString.Append(".");
             VisitExpression(expression.Right);
         }
@@ -151,9 +159,19 @@ namespace SLThree.HTMLCreator
             if (expression.Left is NameExpression nameExpression)
                 CurrentString.Append(GetCall(nameExpression.Name));
             else if (expression.Left is MemberAccess memberAccess)
+            {
                 if (memberAccess.Right is NameExpression nameExpression1)
                     CurrentString.Append(GetCall(nameExpression1.Name));
+            }
+            else if (expression.Left is LambdaExpression lambda)
+            {
+                CurrentString.Append("(");
+                VisitExpression(lambda);
+                CurrentString.Append(")");
+            }
             else VisitExpression(expression.Left);
+            if (expression.NullConditional)
+                CurrentString.Append(".?");
             CurrentString.Append("(");
             for (var i = 0; i < expression.Arguments.Length; i++)
             {
@@ -170,6 +188,8 @@ namespace SLThree.HTMLCreator
                 if (memberAccess.Right is NameExpression nameExpression1)
                     CurrentString.Append(GetCall(nameExpression1.Name));
                 else VisitExpression(expression.Left);
+            if (expression.NullConditional)
+                CurrentString.Append(".?");
             CurrentString.Append(Replace("<"));
             for (var i = 0; i < expression.GenericArguments.Length; i++)
             {
@@ -256,7 +276,7 @@ namespace SLThree.HTMLCreator
                 {
                     var x = expression.Expressions[i];
                     VisitExpression(x);
-                    if (i != expression.Expressions.Length - 1) CurrentString.Append(", ");
+                    if (i != expression.Expressions.Length - 1 || expression.Expressions.Length == 1) CurrentString.Append(", ");
                 }
             }
             else
@@ -348,6 +368,8 @@ namespace SLThree.HTMLCreator
         public override void VisitExpression(IndexExpression expression)
         {
             VisitExpression(expression.Expression);
+            if (expression.NullConditional)
+                CurrentString.Append(".?");
             CurrentString.Append("[");
             for (var i = 0; i < expression.Arguments.Length; i++)
             {
@@ -408,8 +430,8 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(": ");
                 VisitExpression(expression.ReturnTypeHint);
             }
-            CurrentString.Append(" => ");
-            if (expression.Right.Statements.Length == 1 && expression.Right.Statements[0] is ReturnStatement ret)
+            CurrentString.Append(Replace(" => "));
+            if (expression.Right.Statements.Length == 1 && expression.Right.Statements[0] is ReturnStatement ret && ret.Expression != null)
             {
                 VisitExpression(ret.Expression);
             }
@@ -434,13 +456,13 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(GetKeyword1(x));
                 CurrentString.Append(" ");
             }
-            CurrentString.Append("<");
+            CurrentString.Append(Replace("<"));
             for (var i = 0; i < expression.Generics.Length; i++)
             {
                 CurrentString.Append(GetTypeSpan(expression.Generics[i].Name));
                 if (i != expression.Generics.Length - 1) CurrentString.Append(", ");
             }
-            CurrentString.Append(">");
+            CurrentString.Append(Replace(">"));
             CurrentString.Append("(");
             for (var i = 0; i < expression.Left.Arguments.Length; i++)
             {
@@ -453,7 +475,7 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(": ");
                 VisitExpression(expression.ReturnTypeHint);
             }
-            CurrentString.Append(" => ");
+            CurrentString.Append(Replace(" => "));
             if (expression.Right.Statements.Length == 1 && expression.Right.Statements[0] is ReturnStatement ret)
             {
                 VisitExpression(ret.Expression);
@@ -525,7 +547,7 @@ namespace SLThree.HTMLCreator
 
         public override void VisitStatement(ContextStatement statement)
         {
-            VisitExpression(statement.Creator, true, false);
+            VisitExpression(statement.Creator, ContextElementNewLine, false);
         }
         public override void VisitStatement(BreakStatement statement)
         {
@@ -744,7 +766,9 @@ namespace SLThree.HTMLCreator
                 Newline();
                 VisitStatement(line);
             }
-            
+
+            if (CodeStrings.Count > 0 && CodeStrings[0] == "")
+                CodeStrings.RemoveAt(0);
             if (CurrentString.Length > 0) CodeStrings.Add(CurrentString.ToString());
             CurrentString.Clear();
 
