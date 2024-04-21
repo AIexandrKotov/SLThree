@@ -208,9 +208,9 @@ namespace SLThree.sys
         {
             return objects.Select(x => (TOut)method.GetValue(context.Context, new object[] { x }));
         }
-        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Func<TIn, TOut> method)
+        public static IEnumerable<TOut> select<TIn, TOut>(IEnumerable<TIn> objects, Method method)
         {
-            return objects.Select(x => method.Invoke(x));
+            return objects.Select(x => (TOut)method.Invoke(x));
         }
 
         public static IEnumerable<T> select_many<T>(IEnumerable<T> objects) => objects.Select(x => (IEnumerable<T>)x).SelectMany(x => x);

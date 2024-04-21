@@ -19,7 +19,7 @@ namespace SLThree.sys
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());
         public static string xml_repr(object o) => XmlViewer.GetView(o);
 
-        public static Method make_generic(GenericMethod method, Type[] generic_args) => method.MakeGenericMethod(generic_args);
+        public static Method make_generic(GenericMethod method, IList<object> generic_args) => method.MakeGenericMethod(generic_args.Select(x => (Type)x).ToArray());
         public static Method make_generic<T1>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1) });
         public static Method make_generic<T1, T2>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2) });
         public static Method make_generic<T1, T2, T3>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2), typeof(T3) });
