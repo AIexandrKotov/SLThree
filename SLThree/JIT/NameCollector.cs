@@ -57,8 +57,9 @@ namespace SLThree.JIT
 
         public override void VisitStatement(ReturnStatement statement)
         {
-            if (statement.Expression != null)
-                Returnings.Add(GetAutotype(statement.Expression));
+            //todo collect returning in other visitor
+            //if (statement.Expression != null)
+            //    Returnings.Add(GetAutotype(statement.Expression));
             base.VisitExpression(statement.Expression);
         }
 

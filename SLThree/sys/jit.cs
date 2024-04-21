@@ -43,22 +43,25 @@ namespace SLThree.sys
             var dt = Module.DefineType($"type{index++}", TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed);
             Type t;
             var mb = default(MethodBuilder);
+            var rethrow = default(Exception);
             try
             {
                 mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
                 var ng = new JIT.NETGenerator(method, context.Context, mb, mb.GetILGenerator());
                 ng.Visit(method);
             }
-            catch
+            catch (Exception e)
             {
                 var il = mb.GetILGenerator();
                 il.Emit(OpCodes.Ldnull);
                 il.Emit(OpCodes.Ret);
+                rethrow = e;
             }
             finally
             {
                 t = dt.CreateType();
             }
+            if (rethrow != null) throw rethrow;
             return t.GetMethod(method.Name);
         }
 
