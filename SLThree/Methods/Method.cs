@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {
@@ -94,22 +95,114 @@ namespace SLThree
             return null;
         }
 
+        #region Invoke [auto-generated]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Invoke()
-            => GetValue(new object[0]);
-        public object Invoke<T>(T arg1)
+            => GetValue(new object[0] { });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1)
             => GetValue(new object[1] { arg1 });
-        public object Invoke<T1, T2>(T1 arg1, T2 arg2)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2)
             => GetValue(new object[2] { arg1, arg2 });
-        public object Invoke<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3)
             => GetValue(new object[3] { arg1, arg2, arg3 });
-        public object Invoke(ExecutionContext old_context)
-            => GetValue(old_context, new object[0]);
-        public object Invoke<T>(ExecutionContext old_context, T arg1)
-            => GetValue(old_context, new object[1] { arg1 });
-        public object Invoke<T1, T2>(ExecutionContext old_context, T1 arg1, T2 arg2)
-            => GetValue(old_context, new object[2] { arg1, arg2 });
-        public object Invoke<T1, T2, T3>(ExecutionContext old_context, T1 arg1, T2 arg2, T3 arg3)
-            => GetValue(old_context, new object[3] { arg1, arg2, arg3 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4)
+            => GetValue(new object[4] { arg1, arg2, arg3, arg4 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5)
+            => GetValue(new object[5] { arg1, arg2, arg3, arg4, arg5 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6)
+            => GetValue(new object[6] { arg1, arg2, arg3, arg4, arg5, arg6 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7)
+            => GetValue(new object[7] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8)
+            => GetValue(new object[8] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9)
+            => GetValue(new object[9] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10)
+            => GetValue(new object[10] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11)
+            => GetValue(new object[11] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12)
+            => GetValue(new object[12] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13)
+            => GetValue(new object[13] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14)
+            => GetValue(new object[14] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14, object arg15)
+            => GetValue(new object[15] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Invoke(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14, object arg15, object arg16)
+            => GetValue(new object[16] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16 });
+        #endregion
+
+        #region InvokeWithContext [auto-generated]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from)
+            => GetValue(from, new object[0] { });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1)
+            => GetValue(from, new object[1] { arg1 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2)
+            => GetValue(from, new object[2] { arg1, arg2 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3)
+            => GetValue(from, new object[3] { arg1, arg2, arg3 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4)
+            => GetValue(from, new object[4] { arg1, arg2, arg3, arg4 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5)
+            => GetValue(from, new object[5] { arg1, arg2, arg3, arg4, arg5 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6)
+            => GetValue(from, new object[6] { arg1, arg2, arg3, arg4, arg5, arg6 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7)
+            => GetValue(from, new object[7] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8)
+            => GetValue(from, new object[8] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9)
+            => GetValue(from, new object[9] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10)
+            => GetValue(from, new object[10] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11)
+            => GetValue(from, new object[11] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12)
+            => GetValue(from, new object[12] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13)
+            => GetValue(from, new object[13] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14)
+            => GetValue(from, new object[14] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14, object arg15)
+            => GetValue(from, new object[15] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object InvokeWithContext(ExecutionContext from, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, object arg11, object arg12, object arg13, object arg14, object arg15, object arg16)
+            => GetValue(from, new object[16] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16 });
+
+        #endregion
 
         public static MethodInfo Create<TResult>(Func<TResult> func) => func.Method;
         public static MethodInfo Create<T1, TResult>(Func<T1, TResult> func) => func.Method;
