@@ -84,5 +84,10 @@ namespace SLThree
             return Context.LocalVariables.Variables.Where(x => x != null).GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override bool Equals(object obj)
+        {
+            return Context.Equals(obj is ContextWrap wrap ? wrap.Context : null);
+        }
     }
 }
