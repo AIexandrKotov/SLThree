@@ -27,6 +27,7 @@ namespace SLThree
             {
                 var type_name = Using.GetTypenameWithoutGenerics();
                 name = type_name.Contains(".") ? @using.Name.Name : type_name;
+                name = name.Contains("`") ? name.Substring(0, name.IndexOf("`")) : name;
             }
             else name = Alias.Name;
             context.LocalVariables.SetValue(name, @using);
