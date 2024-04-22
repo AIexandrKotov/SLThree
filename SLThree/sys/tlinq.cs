@@ -13,9 +13,7 @@ namespace SLThree.sys
     //Typed linq
     public static class tlinq
     {
-        //todo group_by, order_by
-
-        private static class sum_helper
+        internal static class sum_helper
         {
             public static Type EnumerableType = typeof(Enumerable);
             public static Dictionary<Type, Delegate> methods = new Dictionary<Type, Delegate>()
@@ -32,7 +30,7 @@ namespace SLThree.sys
                 { typeof(decimal?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<decimal?>) }).CreateDelegate(typeof(Func<IEnumerable<decimal?>, decimal?>)) },
             };
         }
-        private static class sum_helper<T>
+        internal static class sum_helper<T>
         {
             private static Func<IEnumerable<T>, T> sum_1;
 
@@ -55,7 +53,7 @@ namespace SLThree.sys
             => sum_helper<TOut>.Sum(values, x => (TOut)method.GetValue(new object[1] { x }));
         public static TOut sum<TIn, TOut>(IEnumerable<TIn> values, Method method, ContextWrap context)
             => sum_helper<TOut>.Sum(values, x => (TOut)method.GetValue(context.Context, new object[1] { x }));
-        private static class average_helper
+        internal static class average_helper
         {
             public static Type EnumerableType = typeof(Enumerable);
             public static Dictionary<Type, (int, Delegate)> methods = new Dictionary<Type, (int, Delegate)>()
@@ -72,7 +70,7 @@ namespace SLThree.sys
                 { typeof(decimal?), (6, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<decimal?>)}).CreateDelegate(typeof(Func<IEnumerable<decimal?>, decimal?>))) },
             };
         }
-        private static class average_helper<T>
+        internal static class average_helper<T>
         {
             private static int mode;
             private static Func<IEnumerable<T>, double> average_1;
@@ -174,23 +172,23 @@ namespace SLThree.sys
             return objects.Aggregate((x, y) => (T)method.GetValue(context.Context, new object[2] { x, y }));
         }
 
-        public static T max<T>(IEnumerable<T> objects, Method method, ContextWrap context)
+        public static TOut max<TIn, TOut>(IEnumerable<TIn> objects, Method method, ContextWrap context)
         {
-            return objects.Max(x => (T)method.GetValue(context.Context, new object[] { x }));
+            return objects.Max(x => (TOut)method.GetValue(context.Context, new object[] { x }));
         }
-        public static T max<T>(IEnumerable<T> objects, Method method)
+        public static TOut max<TIn, TOut>(IEnumerable<TIn> objects, Method method)
         {
-            return objects.Max(x => (T)method.GetValue(new object[] { x }));
+            return objects.Max(x => (TOut)method.GetValue(new object[] { x }));
         }
         public static T max<T>(IEnumerable<T> objects) => objects.Max();
 
-        public static T min<T>(IEnumerable<T> objects, Method method, ContextWrap context)
+        public static TOut min<TIn, TOut>(IEnumerable<TIn> objects, Method method, ContextWrap context)
         {
-            return objects.Min(x => (T)method.GetValue(context.Context, new object[] { x }));
+            return objects.Min(x => (TOut)method.GetValue(context.Context, new object[] { x }));
         }
-        public static T min<T>(IEnumerable<T> objects, Method method)
+        public static TOut min<TIn, TOut>(IEnumerable<TIn> objects, Method method)
         {
-            return objects.Min(x => (T)method.GetValue(new object[] { x }));
+            return objects.Min(x => (TOut)method.GetValue(new object[] { x }));
         }
         public static T min<T>(IEnumerable<T> objects) => objects.Min();
 
@@ -261,9 +259,9 @@ namespace SLThree.sys
             return objects.Count(x => (bool)method.GetValue(context.Context, new object[1] { x }));
         }
 
-        public static IEnumerable<(int, T)> enumerate<T>(IEnumerable<T> objects)
+        public static IEnumerable<(long, T)> enumerate<T>(IEnumerable<T> objects)
         {
-            var i = 0;
+            var i = 0L;
             foreach (var x in objects)
             {
                 yield return (i, x);
@@ -314,6 +312,21 @@ namespace SLThree.sys
         {
             return objects[RandomFor_element_rand.Next(objects.Count)];
         }
+
+        public static IOrderedEnumerable<T> order_by<T, TKey>(IEnumerable<T> objects, Method method)
+            => objects.OrderBy(x => (TKey)method.Invoke(x));
+        public static IOrderedEnumerable<T> order_by<T, TKey>(IEnumerable<T> objects, Method method, ContextWrap context)
+            => objects.OrderBy(x => (TKey)method.InvokeWithContext(context.Context, x));
+
+        public static IOrderedEnumerable<T> order_by_desc<T, TKey>(IEnumerable<T> objects, Method method)
+            => objects.OrderByDescending(x => (TKey)method.Invoke(x));
+        public static IOrderedEnumerable<T> order_by_desc<T, TKey>(IEnumerable<T> objects, Method method, ContextWrap context)
+            => objects.OrderByDescending(x => (TKey)method.InvokeWithContext(context.Context, x));
+
+        public static IEnumerable<IGrouping<TKey, T>> group_by<T, TKey>(IEnumerable<T> objects, Method method)
+            => objects.GroupBy(x => (TKey)method.Invoke(x));
+        public static IEnumerable<IGrouping<TKey, T>> group_by<T, TKey>(IEnumerable<T> objects, Method method, ContextWrap context)
+            => objects.GroupBy(x => (TKey)method.InvokeWithContext(context.Context, x));
 
         public static string jts<T>(IEnumerable<T> objects, string str) => objects.JoinIntoString(str);
         public static string jts<T>(IEnumerable<T> objects) => objects.JoinIntoString(" ");
