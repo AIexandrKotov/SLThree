@@ -113,6 +113,5 @@ namespace SLThree
         }
 
         public readonly LocalVariablesContainer LocalVariables = new LocalVariablesContainer();
-        public readonly LocalVariablesContainer PrivateVariables = new LocalVariablesContainer();
     }
 }

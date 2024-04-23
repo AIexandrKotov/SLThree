@@ -70,10 +70,23 @@ namespace SLThree.Visitors
                 case CreatorArray expr: VisitExpression(expr); return;
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
+                case MatchExpression expr: VisitExpression(expr); return;
             }
             Executables.Remove(expression);
         }
 
+        public virtual void VisitExpression(MatchExpression expression)
+        {
+            VisitExpression(expression.Matching);
+            for (var i = 0; i < expression.Matches.Length; i++)
+            {
+                for (var j = 0; j > expression.Matches[i].Length;j++)
+                    VisitExpression(expression.Matches[i][j]);
+                VisitStatement(expression.Cases[i]);
+            }
+            if (expression.InDefault != null)
+                VisitStatement(expression.InDefault);
+        }
         public virtual void VisitExpression(CastExpression expression)
         {
             VisitExpression(expression.Left);
@@ -280,7 +293,6 @@ namespace SLThree.Visitors
                 case ExpressionStatement st: VisitStatement(st); return;
                 case ConditionStatement st: VisitStatement(st); return;
                 case ReturnStatement st: VisitStatement(st); return;
-                case SwitchStatement st: VisitStatement(st); return;
                 case UsingStatement st: VisitStatement(st); return;
                 case StatementList st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
@@ -322,16 +334,6 @@ namespace SLThree.Visitors
         public virtual void VisitStatement(ReturnStatement statement)
         {
             if (!statement.VoidReturn) VisitExpression(statement.Expression);
-        }
-
-        public virtual void VisitStatement(SwitchStatement statement)
-        {
-            VisitExpression(statement.Value);
-            foreach (var x in statement.Cases)
-            {
-                VisitExpression(x.Value);
-                VisitStatement(x.Statements);
-            }
         }
 
         public virtual void VisitStatement(ContextStatement statement)

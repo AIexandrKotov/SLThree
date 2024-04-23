@@ -82,10 +82,15 @@ namespace SLThree.HTMLCreator
         public override void VisitExpression(BinaryOperator expression)
         {
             VisitExpression(expression.Left);
-            if (expression is BinaryIs)
+            if (expression is BinaryIs || expression is BinaryIsAssign)
                 CurrentString.Append(GetKeyword1(" is "));
             else CurrentString.Append($" {expression.Operator} ");
             VisitExpression(expression.Right);
+            if (expression is BinaryIsAssign bia)
+            {
+                CurrentString.Append(" ");
+                VisitExpression(bia.Variable);
+            }
         }
         public override void VisitExpression(CastExpression expression)
         {
@@ -153,7 +158,6 @@ namespace SLThree.HTMLCreator
             CurrentString.Append(".");
             VisitExpression(expression.Right);
         }
-
         public override void VisitExpression(InvokeExpression expression)
         {
             if (expression.Left is NameExpression nameExpression)
@@ -343,6 +347,70 @@ namespace SLThree.HTMLCreator
                 CurrentTab -= 1;
                 Newline();
             }
+            CurrentString.Append("}");
+        }
+        public override void VisitExpression(MatchExpression expression)
+        {
+            CurrentString.Append(GetKeyword2("match"));
+            CurrentString.Append(" (");
+            VisitExpression(expression.Matching);
+            CurrentString.Append(") {");
+            for (var i = 0; i < expression.Matches.Length; i++)
+            {
+                CurrentTab += 1;
+                Newline();
+                for (var j = 0; j < expression.Matches[i].Length; j++)
+                {
+                    VisitExpression(expression.Matches[i][j]);
+                    if (j != expression.Matches[i].Length - 1) CurrentString.Append(", ");
+                }
+                CurrentString.Append(" ==> ");
+                if (expression.Cases[i] is ExpressionStatement ret && ret.Expression != null)
+                {
+                    VisitExpression(ret.Expression);
+                    CurrentString.Append(";");
+                }
+                else
+                {
+                    CurrentString.Append(" {");
+                    CurrentTab += 1;
+                    foreach (var x in (expression.Cases[i] as StatementList).Statements)
+                    {
+                        Newline();
+                        VisitStatement(x);
+                    }
+                    CurrentTab -= 1;
+                    Newline();
+                    CurrentString.Append("};");
+                }
+                CurrentTab -= 1;
+            }
+            if (expression.InDefault != null)
+            {
+                CurrentTab += 1;
+                Newline();
+                CurrentString.Append("() ==> ");
+                if (expression.InDefault is ExpressionStatement ret && ret.Expression != null)
+                {
+                    VisitExpression(ret.Expression);
+                    CurrentString.Append(";");
+                }
+                else
+                {
+                    CurrentString.Append(" {");
+                    CurrentTab += 1;
+                    foreach (var x in (expression.InDefault as StatementList).Statements)
+                    {
+                        Newline();
+                        VisitStatement(x);
+                    }
+                    CurrentTab -= 1;
+                    Newline();
+                    CurrentString.Append("};");
+                }
+                CurrentTab -= 1;
+            }
+            Newline();
             CurrentString.Append("}");
         }
         public override void VisitExpression(NameExpression expression)
@@ -588,7 +656,7 @@ namespace SLThree.HTMLCreator
             CurrentString.Append(GetKeyword2(" catch"));
             if (statement.CatchVariable != null)
             {
-                CurrentString.Append("(");
+                CurrentString.Append(" (");
                 VisitExpression(statement.CatchVariable);
                 CurrentString.Append(")");
             }

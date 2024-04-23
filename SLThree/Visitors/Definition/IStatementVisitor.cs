@@ -12,7 +12,6 @@
         void VisitStatement(ForeachLoopStatement statement);
         void VisitStatement(ReturnStatement statement);
         void VisitStatement(StatementList statement);
-        void VisitStatement(SwitchStatement statement);
         void VisitStatement(ThrowStatement statement);
         void VisitStatement(TryStatement statement);
         void VisitStatement(UsingStatement statement);

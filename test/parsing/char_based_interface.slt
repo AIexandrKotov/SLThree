@@ -1,5 +1,4 @@
-out_help = () => 
-{
+out_help = () => {
     using console;
     console.writeln("0 - Выйти");
     console.writeln("h - Вывести ещё раз");
@@ -9,8 +8,7 @@ out_help = () =>
     console.writeln($"a - Заполнить a (Сейчас: {global.a})");
     console.writeln($"b - Заполнить b (Сейчас: {global.b})");
 };
-read = str =>
-{
+read = str => {
     using console;
     console.write(str);
     return console.readln().Trim() as i64;
@@ -19,35 +17,16 @@ read = str =>
 using console;
 global.a = global.b = 2;
 out_help();
-while (true) 
-{
+while (true) {
     console.write(">>> ");
     input = console.readln().Trim();
-    switch (input)
-    {
-        case "0":
-            break;
-        case "h":
-            out_help();
-        case "+":
-            {
-                console.writeln($"Вывод: {global.a + global.b}");
-            }
-        case "*":
-            {
-                console.writeln($"Вывод: {global.a * global.b}");
-            }
-        case "%":
-            {
-                console.writeln($"Вывод: {global.a % global.b}");
-            }
-        case "a":
-            {
-                global.a = read("Введите a: ");
-            }
-        case "b":
-            {
-                global.b = read("Введите b: ");
-            }
-    }
+    match (input) {
+        "0" ==> { break; };
+        "h" ==> out_help();
+        "+" ==> console.writeln($"Вывод: {global.a + global.b}");
+        "*" ==> console.writeln($"Вывод: {global.a * global.b}");
+        "%" ==> console.writeln($"Вывод: {global.a % global.b}");
+        "a" ==> global.a = read("Введите a: ");
+        "b" ==> global.b = read("Введите b: ");
+    };
 }

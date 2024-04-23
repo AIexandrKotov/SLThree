@@ -144,6 +144,7 @@ binary_5 <BaseExpression> -memoize
 binary_4 <BaseExpression> -memoize
     = left:binary_4 _ "==" _ right:binary_3 { new BinaryEquals(left, right, state) }
     / left:binary_4 _ "!=" _ right:binary_3 { new BinaryUnequals(left, right, state) }
+    / left:binary_4 _ "is" _required_ right:typename _ expr:primary { new BinaryIsAssign(left, right, expr, state) }
     / left:binary_4 _ "is" _required_ right:typename { new BinaryIs(left, right, state) }
     / binary_3
 
@@ -198,7 +199,22 @@ unary <BaseExpression>
     / "*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
     / "@" _ left:typename { new UnaryReflection(left, state) }
+    / match
+
+match <BaseExpression>
+    = "match" _ "(" _ expr:expression _ ")" _ "{" _ 
+          matches:match_node<1,,";" _>
+          _ ";"?
+    _ "}" { new MatchExpression(expr, matches, state) }
     / primary
+
+match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
+    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:expression<1,,"," _> { exprs })
+      _ "==>" _ right:(
+        <BaseStatement>
+        expr:expression { new ExpressionStatement(expr, state) }
+        / block_statement
+    ) { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
 
 primary <BaseExpression> -memoize
     = left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
@@ -379,8 +395,8 @@ num_literal <BaseExpression>
     
 keyword
     = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" 
-    / "using" / "context" / "new"
-    / "self" / "upper" / "this" / "global" / "super"
+    / "using" / "context" / "new" / "match"
+    / "self" / "upper" / "this" / "global" / "super" / "private"
     / "try" / "catch" / "finally" / "throw"
 
 name <NameExpression>

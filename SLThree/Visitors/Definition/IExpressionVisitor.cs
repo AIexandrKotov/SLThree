@@ -25,6 +25,7 @@
         void VisitExpression(NewExpression expression);
         void VisitExpression(ReflectionExpression expression);
         void VisitExpression(TypenameExpression expression);
+        void VisitExpression(MatchExpression expression);
 
         void VisitExpression(Special expression);
         void VisitExpression(Literal expression);
