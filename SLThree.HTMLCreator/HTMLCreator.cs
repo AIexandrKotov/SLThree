@@ -75,8 +75,8 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(GetString($"\"{GetEscaped(expression.Value.ToString())}\""));
             else if (expression is CharLiteral c)
                 CurrentString.Append(GetString($"'{GetEscaped(c.ToString())}'"));
-            else if (expression is BoolLiteral b)
-                CurrentString.Append($"{GetKeyword1(b.ToString().ToLower())}");
+            else if (expression is BoolLiteral || expression is NullLiteral)
+                CurrentString.Append($"{GetKeyword1(expression.ToString().ToLower())}");
             else CurrentString.Append(GetDigit(expression.RawRepresentation));
         }
         public override void VisitExpression(BinaryOperator expression)

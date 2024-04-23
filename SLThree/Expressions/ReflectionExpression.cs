@@ -55,7 +55,7 @@ namespace SLThree
                 else
                 {
                     var method = left.GetMethod(name, MethodArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
-                    if (MethodGenericArguments != null) method.MakeGenericMethod(MethodGenericArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
+                    if (MethodGenericArguments != null) method = method.MakeGenericMethod(MethodGenericArguments.ConvertAll(x => x.GetValue(context).Cast<Type>()));
                     return method;
                 }
             }

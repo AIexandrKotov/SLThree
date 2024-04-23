@@ -12,6 +12,7 @@ Language:
     - Dot notation `d.x = y` for dictionaries`
     - private context
     - Getting ConstructorInfo with `@T::new(...)`
+    - Removed `switch` statement
     - Supporting unicode names
 Bugfixes:
     - `continue;` is working correctly now (#112)

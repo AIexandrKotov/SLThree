@@ -18,7 +18,6 @@ statement <BaseStatement>
     / using_statement
     / context_statement
     / condition_statement
-    / switch_statement
     / foreach_statement
     / while_statement
     / try_statement
@@ -46,13 +45,6 @@ break_statement <BreakStatement>
 continue_statement <ContinueStatement>
     = "continue" _ ";" { new ContinueStatement(state) }
     / "continue" _ { Panic<ContinueStatement>(new SyntaxError("Expected `;`", state)) }
-
-switch_statement <SwitchStatement>
-    = "switch" _ "(" _ expr:expression _ ")" _ "{" _ st:case_node* _ "}" { new SwitchStatement(expr, st, state) }
-
-case_node <SwitchStatement.Node>
-    = "case" _ expr:expression _ ":" _ st:statement _ { new SwitchStatement.Node(expr, st, false) }
-    / "case" _ expr:expression _ ":" _ { new SwitchStatement.Node(expr, null, true) }
 
 block_statement <StatementList>
     = "{" _ st:statement_list _ "}" { st }
