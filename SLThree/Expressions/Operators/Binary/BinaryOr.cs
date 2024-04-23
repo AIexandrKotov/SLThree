@@ -22,8 +22,7 @@ namespace SLThree
                 }
             }
             right = right_counted ? right : Right.GetValue(context);
-            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
 
         public override object Clone()

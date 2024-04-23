@@ -32,8 +32,7 @@ namespace SLThree
             {
                 if (right is ulong u2) return u1 ^ u2;
             }
-            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
 
         public override object Clone()

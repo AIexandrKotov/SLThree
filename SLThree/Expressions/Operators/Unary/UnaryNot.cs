@@ -23,8 +23,7 @@ namespace SLThree
             {
                 case bool b: return !b;
             }
-            context.Errors.Add(new OperatorError(this, left?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType());
         }
 
         public override object Clone()

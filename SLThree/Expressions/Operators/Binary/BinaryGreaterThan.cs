@@ -41,8 +41,7 @@ namespace SLThree
             }
             if (!context.ForbidImplicit)
                 return (left as IComparable).CompareTo(right) > 0;
-            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
 
         public override object Clone()

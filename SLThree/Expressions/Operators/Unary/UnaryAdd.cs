@@ -26,8 +26,7 @@ namespace SLThree
                 case ulong v: return +v;
                 case double v: return +v;
             }
-            context.Errors.Add(new OperatorError(this, left?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType());
         }
 
         public override object Clone()
