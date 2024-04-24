@@ -11,7 +11,7 @@ namespace SLThree
         public BaseStatement[] CatchBody;
         public BaseStatement[] FinallyBody;
 
-        public TryStatement(StatementListStatement tryBody, BaseExpression catchVariable, StatementListStatement catchBody, StatementListStatement finallyBody, SourceContext context)
+        public TryStatement(StatementList tryBody, BaseExpression catchVariable, StatementList catchBody, StatementList finallyBody, SourceContext context)
             : this(tryBody?.Statements.ToArray(), catchVariable, catchBody?.Statements.ToArray(), finallyBody?.Statements.ToArray(), context) { }
         public TryStatement(BaseStatement[] tryBody, BaseExpression catchVariable, BaseStatement[] catchBody, BaseStatement[] finallyBody, SourceContext context)
             : base(context)

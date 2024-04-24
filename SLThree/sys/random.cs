@@ -4,12 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.sys
 {
+#pragma warning disable IDE1006 // Стили именования
     public class random
     {
         public static object choose(IChooser chooser) => chooser.Choose();
@@ -34,25 +32,28 @@ namespace SLThree.sys
             throw new ArgumentException($"{o?.GetType().GetTypeString() ?? "null"} is not convertable to chooser<{type.GetTypeString()}>");
         }
 
+#pragma warning disable IDE0051 // Удалите неиспользуемые закрытые члены
         private static EqualchanceChooser<T> internal_chooser2<T>(IEnumerable enumerable)
         {
             var ret = new List<T>();
             foreach (var x in enumerable)
-                ret.Add((T)x);
+                ret.Add(x.CastToType<T>());
             return new EqualchanceChooser<T>(ret);
         }
         private static ChanceChooser<T> internal_chooser1<T>(IDictionary dictionary)
+#pragma warning restore IDE0051 // Удалите неиспользуемые закрытые члены
         {
             var lst = new List<(T, double)>();
             foreach (var key in dictionary.Keys)
-                lst.Add((key.Cast<T>(), dictionary[key].Cast<double>()));
+                lst.Add((key.CastToType<T>(), dictionary[key].Cast<double>()));
             return new ChanceChooser<T>(lst);
         }
-        private static MethodInfo i_c1 = typeof(random).GetMethod("internal_chooser1", BindingFlags.NonPublic | BindingFlags.Static);
-        private static MethodInfo i_c2 = typeof(random).GetMethod("internal_chooser2", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo i_c1 = typeof(random).GetMethod("internal_chooser1", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo i_c2 = typeof(random).GetMethod("internal_chooser2", BindingFlags.NonPublic | BindingFlags.Static);
         private static object internal_chooser1reflected(IDictionary dictionary, Type type)
             => i_c1.MakeGenericMethod(new Type[1] { type }).Invoke(null, new object[1] { dictionary });
         private static object internal_chooser2reflected(IEnumerable enumerable, Type type)
             => i_c2.MakeGenericMethod(new Type[1] { type }).Invoke(null, new object[1] { enumerable });
     }
+#pragma warning restore IDE1006 // Стили именования
 }

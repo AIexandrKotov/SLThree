@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{06A97274-8266-4F25-A78B-8CF615B12771}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SLThree</RootNamespace>
+    <AssemblyName>SLThree</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Pegasus.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=28c69b6c6d100f4a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pegasus.4.1.0\lib\net45\Pegasus.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Embedding\EmbeddingExtensions.cs" />
+    <Compile Include="Embedding\ScriptLayout.cs" />
+    <Compile Include="Exceptions\SLTException.cs" />
+    <Compile Include="Exceptions\OperatorError.cs" />
+    <Compile Include="Exceptions\UnexpectedError.cs" />
+    <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Expressions\Creators\CreatorArray.cs" />
+    <Compile Include="Expressions\Creators\CreatorNewArray.cs" />
+    <Compile Include="Expressions\Creators\CreatorRange.cs" />
+    <Compile Include="Expressions\InvokeGenericExpression.cs" />
+    <Compile Include="Expressions\LambdaGenericExpression.cs" />
+    <Compile Include="Expressions\Literals\Special\Special.cs" />
+    <Compile Include="Expressions\Literals\Special\SuperLiteral.cs" />
+    <Compile Include="Expressions\Literals\Special\UpperLiteral.cs" />
+    <Compile Include="Expressions\Operators\Binary\NullCoalescing.cs" />
+    <Compile Include="Expressions\Operators\Binary\SafeExpression.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryChoose.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryGetChooser.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryReflection.cs" />
+    <Compile Include="Expressions\Creators\CreatorUsing.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryStaticReflection.cs" />
+    <Compile Include="Expressions\TypenameExpression.cs" />
+    <Compile Include="Extensions\CloningExtensions.cs" />
+    <Compile Include="Extensions\SLThreeExtensions.cs" />
+    <Compile Include="Expressions\Creators\CreatorContext.cs" />
+    <Compile Include="Expressions\Creators\CreatorList.cs" />
+    <Compile Include="Expressions\CastExpression.cs" />
+    <Compile Include="Expressions\Creators\CreatorDictionary.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryAnd.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryAssign.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryAssignUnknown.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryBitAnd.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryBitOr.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryBitXor.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryIs.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryOr.cs" />
+    <Compile Include="Expressions\Operators\TernaryOperator.cs" />
+    <Compile Include="Expressions\MemberAccess.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryEquals.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryGreaterThan.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryGreaterThanEquals.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryLessThan.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryLessThanEquals.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryMod.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryUnequals.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryAdd.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryBitNot.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryNot.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryRem.cs" />
+    <Compile Include="Extensions\GenericExtensions.cs" />
+    <Compile Include="Extensions\SLTHelpers.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryDivide.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryMultiply.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryAdd.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryOperator.cs" />
+    <Compile Include="Expressions\Operators\Binary\BinaryRem.cs" />
+    <Compile Include="Expressions\Operators\Unary\UnaryOperator.cs" />
+    <Compile Include="Expressions\IndexExpression.cs" />
+    <Compile Include="Expressions\InterpolatedString.cs" />
+    <Compile Include="Expressions\InvokeExpression.cs" />
+    <Compile Include="Expressions\LambdaExpression.cs" />
+    <Compile Include="Expressions\Literals\BoolLiteral.cs" />
+    <Compile Include="Expressions\Literals\ByteLiteral.cs" />
+    <Compile Include="Expressions\Literals\CharLiteral.cs" />
+    <Compile Include="Expressions\Literals\FloatLiteral.cs" />
+    <Compile Include="Expressions\Literals\Special\GlobalLiteral.cs" />
+    <Compile Include="Expressions\Literals\IntLiteral.cs" />
+    <Compile Include="Expressions\Literals\LongLiteral.cs" />
+    <Compile Include="Expressions\Literals\Literal.cs" />
+    <Compile Include="Expressions\Literals\NullLiteral.cs" />
+    <Compile Include="Expressions\Literals\SByteLiteral.cs" />
+    <Compile Include="Expressions\Literals\Special\SelfLiteral.cs" />
+    <Compile Include="Expressions\Literals\ShortLiteral.cs" />
+    <Compile Include="Expressions\Literals\StringLiteral.cs" />
+    <Compile Include="Expressions\Literals\Special\ThisLiteral.cs" />
+    <Compile Include="Expressions\Literals\UIntLiteral.cs" />
+    <Compile Include="Expressions\Literals\UShortLiteral.cs" />
+    <Compile Include="Expressions\NewExpression.cs" />
+    <Compile Include="Expressions\Creators\CreatorTuple.cs" />
+    <Compile Include="Expressions\ReflectionExpression.cs" />
+    <Compile Include="Methods\GenericMethod.cs" />
+    <Compile Include="SLThreeJIT.cs" />
+    <Compile Include="JIT\NETGenerator.cs" />
+    <Compile Include="JIT\NameCollector.cs" />
+    <Compile Include="JIT\AbstractNameInfo.cs" />
+    <Compile Include="JIT\NameType.cs" />
+    <Compile Include="Methods\NewMethod.cs" />
+    <Compile Include="Statements\ContextStatement.cs" />
+    <Compile Include="Statements\ThrowStatement.cs" />
+    <Compile Include="Statements\TryStatement.cs" />
+    <Compile Include="sys\console.cs" />
+    <Compile Include="sys\jit.cs" />
+    <Compile Include="sys\linq.cs" />
+    <Compile Include="LocalVariablesContainer.cs" />
+    <Compile Include="Methods\Method.cs" />
+    <Compile Include="Expressions\NameExpression.cs" />
+    <Compile Include="Expressions\Literals\DoubleLiteral.cs" />
+    <Compile Include="Expressions\BaseExpression.cs" />
+    <Compile Include="Expressions\Literals\ULongLiteral.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="SourceContext.cs" />
+    <Compile Include="Statements\BreakStatement.cs" />
+    <Compile Include="Statements\ContinueStatement.cs" />
+    <Compile Include="Statements\ForeachLoopStatement.cs" />
+    <Compile Include="Statements\ReturnStatement.cs" />
+    <Compile Include="Statements\SwitchStatement.cs" />
+    <Compile Include="Statements\ConditionStatement.cs" />
+    <Compile Include="Statements\ExpressionStatement.cs" />
+    <Compile Include="Statements\StatementList.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statements\BaseStatement.cs" />
+    <Compile Include="Statements\UsingStatement.cs" />
+    <Compile Include="Statements\WhileLoopStatement.cs" />
+    <Compile Include="sys\convert.cs" />
+    <Compile Include="sys\tlinq.cs" />
+    <Compile Include="sys\random.cs" />
+    <Compile Include="sys\slt.cs" />
+    <Compile Include="Tools\ChanceChooser.cs" />
+    <Compile Include="Tools\RangeChooser.cs" />
+    <Compile Include="Tools\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\ChanceChooser.cs" />
+    <Compile Include="Tools\Generic\EqualchanceChooser.cs" />
+    <Compile Include="Tools\Generic\IChooser.cs" />
+    <Compile Include="Tools\IChooser.cs" />
+    <Compile Include="Visitors\Definition\AbstractVisitor.cs" />
+    <Compile Include="Visitors\Definition\IExpressionVisitor.cs" />
+    <Compile Include="Visitors\Definition\IVisitor.cs" />
+    <Compile Include="Visitors\Definition\IStatementVisitor.cs" />
+    <Compile Include="Visitors\TreeViewer.cs" />
+    <Compile Include="Wrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\versions\0.1.1" />
+    <EmbeddedResource Include="docs\versions\0.1.0" />
+    <EmbeddedResource Include="docs\specification" />
+    <EmbeddedResource Include="docs\versions\0.2.0" />
+    <EmbeddedResource Include="docs\versions\0.4.0" />
+    <EmbeddedResource Include="docs\versions\0.5.0" />
+    <EmbeddedResource Include="docs\versions\0.5.1" />
+    <EmbeddedResource Include="docs\versions\0.5.2" />
+    <EmbeddedResource Include="docs\versions\0.6.0" />
+    <EmbeddedResource Include="docs\versions\0.7.0" />
+    <None Include="packages.config" />
+    <PegGrammar Include="syntax.peg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="docs\versions\0.3.0" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Pegasus.4.1.0\build\Pegasus.targets" Condition="Exists('..\packages\Pegasus.4.1.0\build\Pegasus.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Pegasus.4.1.0\build\Pegasus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pegasus.4.1.0\build\Pegasus.targets'))" />
+  </Target>
+  <PropertyGroup>
+    <PreBuildEvent>../building/IncRevision.bat</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

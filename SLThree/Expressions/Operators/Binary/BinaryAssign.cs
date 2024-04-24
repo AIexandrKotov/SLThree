@@ -1,7 +1,5 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions.Cloning;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace SLThree
 {
@@ -28,33 +26,33 @@ namespace SLThree
                 {
                     if (right is Method mth)
                     {
-                        mth = mth.CloneCast();
-                        mth.Name = nl.Name;
-                        mth.UpdateContextName();
-                        mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
-                        right = mth;
+                        var m2 = mth.CloneWithNewName(nl.Name);
+                        m2.UpdateContextName();
+                        if (m2.Binded) m2.definitionplace = mth.definitionplace;
+                        else m2.definitionplace = new ContextWrap(context);
+                        right = m2;
                     }
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
                     is_name_expr = true;
                     counted_invoked = context;
                     return right;
                 }
-                else return assignToValue(context, Left, right);
+                else return InternalAssignToValue(context, Left, right);
             }
             throw new OperatorError(this, Left?.GetType(), right?.GetType());
         }
 
-        private static object assignToValue(ExecutionContext context, BaseExpression Left, object right)
+        private static object InternalAssignToValue(ExecutionContext context, BaseExpression Left, object right)
         {
             if (Left is NameExpression nl)
             {
                 if (right is Method mth)
                 {
-                    mth = mth.CloneCast();
-                    mth.Name = nl.Name;
-                    mth.UpdateContextName();
-                    mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
-                    right = mth;
+                    var m2 = mth.CloneWithNewName(nl.Name);
+                    m2.UpdateContextName();
+                    if (m2.Binded) m2.definitionplace = mth.definitionplace;
+                    else m2.definitionplace = new ContextWrap(context);
+                    right = m2;
                 }
                 context.LocalVariables.SetValue(nl.Name, right);
                 return right;
@@ -89,11 +87,11 @@ namespace SLThree
             {
                 if (right is Method mth)
                 {
-                    mth = mth.CloneCast();
-                    mth.Name = nl.Name;
-                    mth.UpdateContextName();
-                    mth.DefinitionPlace = new ExecutionContext.ContextWrap(context);
-                    right = mth;
+                    var m2 = mth.CloneWithNewName(nl.Name);
+                    m2.UpdateContextName();
+                    if (m2.Binded) m2.definitionplace = mth.definitionplace;
+                    else m2.definitionplace = new ContextWrap(context);
+                    right = m2;
                 }
                 variable_index = context.LocalVariables.SetValue(nl.Name, right);
                 is_name_expr = true;

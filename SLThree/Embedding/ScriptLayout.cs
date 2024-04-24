@@ -1,13 +1,8 @@
 ﻿using SLThree.sys;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Embedding
 {
@@ -16,12 +11,12 @@ namespace SLThree.Embedding
         private class LoadOption
         {
             public string file = null;
-            public string dir;
+            public string dir = null;
             public bool all = false;
             public LoadOption() { }
         }
 
-        private static ExecutionContext.ContextWrap Build(LoadOption loadOption)
+        private static ContextWrap Build(LoadOption loadOption)
         {
             var context = new ExecutionContext();
             if (loadOption.file != null)
@@ -36,9 +31,9 @@ namespace SLThree.Embedding
             return context.wrap;
         }
 
-        private static bool IsScriptLayout(ExecutionContext.ContextWrap context, out LoadOption loadOption)
+        private static bool IsScriptLayout(ContextWrap context, out LoadOption loadOption)
         {
-            foreach (var x in context.pred.LocalVariables.GetAsDictionary())
+            foreach (var x in context.Context.LocalVariables.GetAsDictionary())
             {
                 if (x.Value is LoadOption lp)
                 {
@@ -72,7 +67,7 @@ namespace SLThree.Embedding
             var context = new ExecutionContext();
 
             context.LocalVariables.SetValue("REFERENCE", ((Action<string>)Reference).Method);
-            context.LocalVariables.SetValue("LOADOPT", new MemberAccess.ClassAccess(typeof(LoadOption)));
+            context.LocalVariables.SetValue("LOADOPT", new ClassAccess(typeof(LoadOption)));
 
             st.GetValue(context);
 
@@ -81,13 +76,13 @@ namespace SLThree.Embedding
 
         public static void ExecuteFile(string filename, ExecutionContext targetContext = null)
         {
-            if (targetContext == null) targetContext = ExecutionContext.global.pred;
+            if (targetContext == null) targetContext = ExecutionContext.global.Context;
 
             var context = Prepare(ParseFile(filename));
 
             foreach (var layout in context.LocalVariables.GetAsDictionary())
             {
-                if (layout.Value is ExecutionContext.ContextWrap wrap)
+                if (layout.Value is ContextWrap wrap)
                 {
                     if (IsScriptLayout(wrap, out var lp))
                     {
@@ -98,13 +93,13 @@ namespace SLThree.Embedding
         }
         public static void Execute(string code, ExecutionContext targetContext = null)
         {
-            if (targetContext == null) targetContext = ExecutionContext.global.pred;
+            if (targetContext == null) targetContext = ExecutionContext.global.Context;
 
             var context = Prepare(ParseCode(code));
 
             foreach (var layout in context.LocalVariables.GetAsDictionary())
             {
-                if (layout.Value is ExecutionContext.ContextWrap wrap)
+                if (layout.Value is ContextWrap wrap)
                 {
                     if (IsScriptLayout(wrap, out var lp))
                     {

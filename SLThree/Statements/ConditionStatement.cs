@@ -1,12 +1,5 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
-using SLThree.Extensions.Cloning;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.PerformanceData;
+﻿using SLThree.Extensions.Cloning;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree
 {
@@ -24,7 +17,7 @@ namespace SLThree
             this.falsestart = falsestart;
         }
 
-        public ConditionStatement(BaseExpression condition, StatementListStatement trueBlock, StatementListStatement falseBlock, SourceContext context) : base(context)
+        public ConditionStatement(BaseExpression condition, StatementList trueBlock, StatementList falseBlock, SourceContext context) : base(context)
         {
             Condition = condition;
             count = trueBlock.Statements.Length + falseBlock.Statements.Length;
@@ -35,6 +28,9 @@ namespace SLThree
         }
         private int count;
         private int falsestart;
+
+        public BaseStatement[] IfBody => Body.Take(falsestart).ToArray();
+        public BaseStatement[] ElseBody => Body.Skip(falsestart).ToArray();
 
         public override string ToString() => $"if ({Condition}) {{{Body}}}";
 

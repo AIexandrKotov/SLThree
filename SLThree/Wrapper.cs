@@ -1,16 +1,11 @@
-﻿    using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.sys;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Contexts;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree
 {
@@ -25,7 +20,6 @@ namespace SLThree
             if (type.IsArray) return true;
             if (type.IsGenericType)
             {
-                var gen_a = type.GetGenericTypeDefinition();
                 if (type == generic_list) return true;
                 if (type == generic_dict) return true;
             }
@@ -347,7 +341,7 @@ namespace SLThree
         public object Unwrap(ExecutionContext context)
         {
             var ret = Activator.CreateInstance(type);
-            if (InjectContextName != null) InjectContextName.SetValue(ret, context.Name);
+            InjectContextName?.SetValue(ret, context.Name);
             foreach (var name in context.LocalVariables.GetAsDictionary())
             {
                 if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
@@ -361,7 +355,7 @@ namespace SLThree
             var ret = Activator.CreateInstance(type);
             try
             {
-                if (InjectContextName != null) InjectContextName.SetValue(ret, context.Name);
+                InjectContextName?.SetValue(ret, context.Name);
             }
             catch (Exception e)
             {

@@ -1,0 +1,2 @@
+using System.Collections.Generic.List<any>;
+ASSERT(self, (List != null) as is);

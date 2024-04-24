@@ -4,7 +4,7 @@ namespace SLThree
 {
     public class UnexpectedError : LexicalError
     {
-        private static string to_str(char c)
+        private static string To_str(char c)
         {
             switch (c)
             {
@@ -14,6 +14,6 @@ namespace SLThree
                 default: return c.ToString();
             }
         }
-        public UnexpectedError(char c, Cursor cursor) : base($"Unexpected char '{to_str(c)}'", cursor) { }
+        public UnexpectedError(char c, Cursor cursor) : base($"Unexpected char '{To_str(c)}'", cursor) { }
     }
 }

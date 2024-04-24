@@ -1,4 +1,7 @@
-﻿using System;
+﻿using slt.sys;
+using SLThree;
+using SLThree.Extensions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,14 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
-using System.Threading.Tasks;
-using Pegasus.Common;
-using SLThree;
-using SLThree.Extensions;
-using SLThree.sys;
 
 namespace slt
 {
@@ -21,6 +17,16 @@ namespace slt
     {
         static Program()
         {
+#if NET6_0_OR_GREATER
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            EncodingAliases = new Dictionary<string, Encoding>()
+            {
+                { "utf-8", Encoding.UTF8 },
+                { "utf-16", Encoding.Unicode },
+                { "unicode", Encoding.Unicode },
+                { "ansi", Encoding.GetEncoding(1250) },
+            };
+#endif
             InitSLThreeAssemblyInfo();
             SupportingFeatures();
         }
@@ -38,22 +44,23 @@ namespace slt
             { "-D", "--repl-diff" },
         };
         private static string[] RunArguments;
-        private static Dictionary<string, Encoding> EncodingAliases = new Dictionary<string, Encoding>()
+        private static Dictionary<string, Encoding> EncodingAliases
+#if NETFRAMEWORK
+            = new Dictionary<string, Encoding>()
         {
             { "utf-8", Encoding.UTF8 },
             { "utf-16", Encoding.Unicode },
             { "unicode", Encoding.Unicode },
             { "ansi", Encoding.GetEncoding(1250) },
-        };
+        }
+#endif
+            ;
         internal static Assembly SLThreeAssembly;
-        private static Version SLThreeFullVersion;
-        private static string SLTVersionWithoutRevision;
-        private static string SLTRevision;
-        private static long SLTTime;
+        private static SLTVersion.Reflected SLThreeVersion;
+        private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
         private static string[] Specification;
-        private static string SLTEdition;
-        private static bool HasArgument(string arg) 
+        private static bool HasArgument(string arg)
             => RunArguments.HasArgument(arg, ShortCommands);
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
             => RunArguments.TryGetArgument(arg, out value, not_found, ShortCommands);
@@ -61,13 +68,9 @@ namespace slt
         private static void InitSLThreeAssemblyInfo()
         {
             SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
-            var ver = SLThreeAssembly.GetName().Version;
-            SLThreeFullVersion = ver;
-            SLTVersionWithoutRevision = $"{ver.Major}.{ver.Minor}.{ver.Build}";
-            SLTRevision = ver.Revision.ToString();
+            SLThreeVersion = new SLTVersion.Reflected();
+            SLTREPLVersion = new REPLVersion.Reflected();
             var sltver = SLThreeAssembly.GetType("SLTVersion");
-            SLTTime = sltver.GetField("LastUpdate").GetValue(null).Cast<long>();
-            SLTEdition = sltver.GetProperty("Edition").GetValue(null).Cast<string>();
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
             Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
         }
@@ -84,7 +87,7 @@ namespace slt
                     if (int.TryParse(str, out var result)) return Encoding.GetEncoding(result);
                     else return Encoding.GetEncoding(str);
                 }
-                catch (ArgumentException e)
+                catch (ArgumentException)
                 {
                     Console.WriteLine($"Encoding {str} not found. using utf-8");
                     return Encoding.UTF8;
@@ -124,40 +127,29 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(REPLVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {REPLVersion.VersionWithoutRevision} ");
+            Console.Write($" {SLTREPLVersion.VersionWithoutRevision} ");
             Console.ResetColor();
-            var time2 = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(REPLVersion.LastUpdate), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{REPLVersion.Revision}");
-            Console.ResetColor();
-            Console.Write($" by ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{time2}");
+            Console.WriteLine($"{SLTREPLVersion.Revision}");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(SLTVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLTVersionWithoutRevision} ");
+            Console.Write($" {SLThreeVersion.VersionWithoutRevision} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{SLTEdition} ");
+            Console.Write($"{SLTVersion.Edition} ");
             Console.ResetColor();
-            var time = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(SLTTime), TimeZoneInfo.Local).ToString("dd.MM.yy HH:mm");
             Console.Write("rev ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLTRevision}");
+            Console.WriteLine($"{SLThreeVersion.Revision}");
             Console.ResetColor();
-            Console.Write($" by ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{time}");
-            Console.ResetColor();
-
         }
 
         public static void OutVersion(string version)
         {
-            if (SLThreeVersions.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
+            if (SLThreeVersions.TryGetValue(version.Replace("last", SLThreeVersion.VersionWithoutRevision), out var data))
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(data.JoinIntoString("\n"));
@@ -168,7 +160,7 @@ namespace slt
 
         public static void OutREPLVersion(string version)
         {
-            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTVersionWithoutRevision), out var data))
+            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTREPLVersion.VersionWithoutRevision), out var data))
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(data.JoinIntoString("\n"));
@@ -255,7 +247,7 @@ namespace slt
         }
         #endregion
 
-        #endregion
+#endregion
 
         #region Universal outs
         private static bool out_extended_exceptions
@@ -288,12 +280,54 @@ namespace slt
             Console.ResetColor();
         }
 
+        private static object SafeFromContext(object value)
+        {
+            if (value is ContextWrap wrap)
+                return $"context {wrap.Context.Name}";
+            if (value is null)
+                return "null";
+            else return value;
+        }
+
+        private static object GetChoosersOutput(object value)
+        {
+            if (value == null) return value;
+            if (value is ITuple tuple)
+            {
+                var xvalue = tuple.Enumerate(); value =
+                    $"({(xvalue.Count() <= repl.count ? xvalue.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : xvalue.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")})";
+            }
+            if (value is IList list) value =
+                    $"[{(list.Count <= repl.count ? list.Enumerate().Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") : list.Enumerate().Take(repl.count).Select(x => SafeFromContext(GetOutput(x))).JoinIntoString(", ") + "...")}]";
+            if (value is IDictionary dict) value =
+                    $"{{{(dict.Count <= repl.count ? dict.Keys.Enumerate().Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") : dict.Keys.Enumerate().Take(repl.count).Select(x => $"{SafeFromContext(GetOutput(x))}: {SafeFromContext(GetOutput(dict[x]))}").JoinIntoString(", ") + "...")}}}";
+            var type = value.GetType();
+            if (value is IChooser)
+            {
+                if (value is IChanceChooser chanceChooser)
+                {
+                    var values = chanceChooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")}...)"
+                        : $"({values.Select(x => $"{x.Item1}: {x.Item2.ToDynamicPercents()}").JoinIntoString(" \\ ")})";
+                }
+                else if (value is IEqualchanceChooser chooser)
+                {
+                    var values = chooser.Values;
+                    value = values.Count > repl.count
+                        ? $"({values.Take(repl.count).JoinIntoString(" \\ ")}...)"
+                        : $"({values.JoinIntoString(" \\ ")})";
+                }
+            }
+            return value;
+        }
+
         public static object GetOutput(object value)
         {
             if (value is string) value = $"\"{value}\"";
             else if (value is Type type) value = type.GetTypeString();
-            else if (LANG_040.Supports) value = LANG_040.GetChoosersOutput(value);
-            else if (LANG_030.Supports) value = LANG_030.GetChoosersOutput(value);
+            else value = GetChoosersOutput(value);
+            if (value is string str && str.Length > repl.max_output) return str.Substring(0, repl.max_output - 3) + "...";
             return value;
         }
 
@@ -349,20 +383,28 @@ namespace slt
 
         private static void SupportingFeatures()
         {
-            LANG_030.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 3;
-            if (LANG_040.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 4) LANG_040.Init();
-            if (LANG_050.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor == 5) LANG_050.Init();
-            if (LANG_060.Supports = SLThreeFullVersion.Major == 0 && SLThreeFullVersion.Minor >= 6) LANG_060.Init();
+            RegisterNewSystemTypes();
+            ContextWrap.Decoration = GetOutput;
+        }
+
+        private static void RegisterNewSystemTypes()
+        {
+            foreach (var x in Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.FullName.StartsWith("slt.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x))
+            {
+                SLThree.sys.slt.sys_types.Add(x.Key, x.Value);
+            }
+            SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
         }
 
         #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
-        public static void OutUsingClasses(ExecutionContext context, int table = -1, bool typed = false)
+        public static void OutUsingClasses(ExecutionContext context, int table = -1)
         {
             var local_usings0 = context.LocalVariables.GetAsDictionary()
-                .Where(x => x.Value != null && (x.Value is MemberAccess.ClassAccess))
-                .Select(x => new KeyValuePair<string, string>(x.Key, (x.Value as MemberAccess.ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
+                .Where(x => x.Value != null && (x.Value is ClassAccess))
+                .Select(x => new KeyValuePair<string, string>(x.Key, (x.Value as ClassAccess)?.Name?.GetTypeString() ?? "undefined"));
             var local_usings = new Dictionary<string, List<string>>();
             foreach (var x in local_usings0)
             {
@@ -403,19 +445,24 @@ namespace slt
             }
         }
 
-        public static void OutLocalMethods(ExecutionContext context, int table = -1, bool typed = false)
+        public static void OutLocalMethods(ExecutionContext context, int table = -1)
         {
-            Dictionary<string, (string, string[], bool)> local_methods = context.LocalVariables.GetAsDictionary()
+            Dictionary<string, (string, string[], bool, string[])> local_methods = context.LocalVariables.GetAsDictionary()
                 .Where(x => x.Value != null && (x.Value is Method || x.Value is MethodInfo))
                 .ToDictionary(x => x.Key, x =>
                 {
+                    if (x.Value is GenericMethod gmethod)
+                    {
+                        return (gmethod.DefinitionReturnType?.ToString() ?? "any", gmethod.DefinitionParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, gmethod.Generics.ConvertAll(a => a.Name));
+                    }
                     if (x.Value is Method method)
                     {
-                        return (string.Empty, method.ParamNames, true);
+                        return (method.ReturnType?.ToString() ?? "any", method.ParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, new string[0]);
                     }
                     else if (x.Value is MethodInfo info)
                     {
-                        return (info.ReturnType == typeof(void) ? "void" : info.ReturnType.GetTypeString(), info.GetParameters().Select(y => y.ParameterType.GetTypeString()).ToArray(), false);
+                        var ret_gens = info.IsGenericMethodDefinition ? info.GetGenericArguments().ConvertAll(a => a.Name) : new string[0];
+                        return (info.ReturnType == typeof(void) ? "void" : info.ReturnType.GetTypeString(), info.GetParameters().Select(y => y.ParameterType.GetTypeString()).ToArray(), false, ret_gens);
                     }
                     return default;
                 });
@@ -423,41 +470,92 @@ namespace slt
             OutAsWarning($"--- METHODS ---");
             var max_ret_type = table;
             var max_method_name = table;
+            var max_generics = table;
             //var max_method_args = table;
             if (table < 0)
             {
                 max_ret_type = 0;
                 max_method_name = 0;
+                max_generics = 0;
                 //max_method_args = 0;
             }
             if (local_methods.Count > 0 && table != -1)
             {
                 max_ret_type = Math.Max(max_ret_type, local_methods.Max(x => x.Value.Item1?.Length ?? 0));
                 max_method_name = Math.Max(max_method_name, local_methods.Max(x => x.Key.Length));
+                max_generics = Math.Max(max_generics, local_methods.Max(x => x.Value.Item4.Length == 0 ? 0 : (x.Value.Item4.Sum(a => a.Length) + (x.Value.Item4.Length - 1) * 2)));
                 //max_method_args = Math.Max(max_method_args, local_methods.Max(x => x.Value.Item2.Sum(m => m.Length) + 2 * (x.Value.Item2.Length - 1)));
             }
-            foreach (var x in local_methods)
+
+            var local_methods_nongeneric = local_methods.Where(x => x.Value.Item4.Length == 0);
+            var local_methods_generic = local_methods.Where(x => x.Value.Item4.Length != 0);
+            foreach (var x in local_methods_nongeneric)
             {
                 Console.Write("    ");
-                if (x.Value.Item3)
-                {
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write("SLT".PadLeft(max_ret_type));
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write(x.Value.Item1.PadLeft(max_ret_type));
-                    Console.ResetColor();
-                }
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(x.Value.Item1.PadLeft(max_ret_type));
+                Console.ResetColor();
                 Console.Write(" ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(x.Key.PadRight(max_method_name));
                 Console.ResetColor();
                 Console.Write("(");
-                Console.ForegroundColor = x.Value.Item3 ? ConsoleColor.Magenta : ConsoleColor.Cyan;
-                Console.Write(x.Value.Item2.JoinIntoString(", "));
+                var tnext = false;
+                foreach (var t in x.Value.Item2)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
+                Console.ResetColor();
+                Console.Write(") ");
+                Console.WriteLine();
+            }
+            foreach (var x in local_methods_generic)
+            {
+                Console.Write("    ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(x.Value.Item1.PadLeft(max_ret_type));
+                Console.ResetColor();
+                Console.Write(" ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(x.Key.PadRight(max_method_name));
+                Console.ResetColor();
+                Console.Write("<");
+                var tnext = false;
+                foreach (var t in x.Value.Item4)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
+                Console.ResetColor();
+                Console.Write(">");
+                if (max_generics != 0)
+                    Console.Write("".PadRight(max_generics - x.Value.Item4.Sum(a => a.Length) - (x.Value.Item4.Length - 1) * 2));
+                Console.Write("(");
+                tnext = false;
+                foreach (var t in x.Value.Item2)
+                {
+                    if (tnext)
+                    {
+                        Console.ResetColor();
+                        Console.Write(", ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(t);
+                    tnext = true;
+                }
                 Console.ResetColor();
                 Console.Write(") ");
                 Console.WriteLine();
@@ -467,7 +565,7 @@ namespace slt
         public static void OutLocalVariables(ExecutionContext context, int table = -1, bool typed = false)
         {
             var local_variables = context.LocalVariables.GetAsDictionary()
-                .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is MemberAccess.ClassAccess))
+                .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
             if (local_variables.Count == 0) return;
             OutAsWarning($"--- VARIABLES ---");
@@ -494,27 +592,19 @@ namespace slt
             foreach (var x in local_variables)
             {
                 Console.Write("    ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.ResetColor();
                 if (typed)
                 {
-                    if (types[x.Key] == null)
-                    {
-                        Console.Write("".PadRight((table == -1 ? 0 : 2) + max_variable_type));
-                    }
-                    else
-                    {
-                        Console.Write(": ");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write((types[x.Key] ?? "").PadRight(max_variable_type));
-                        Console.ResetColor();
-                    }
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write((types[x.Key] ?? "").PadRight(max_variable_type));
+                    Console.Write(" ");
+                    Console.ResetColor();
                 }
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(x.Key.PadLeft(max_variable_name));
                 Console.Write(" = ");
                 Console.ResetColor();
-                var output = LANG_040.Supports ? (x.Value is ExecutionContext.ContextWrap wrap ? $"context {LANG_040.NameOfContext(wrap.pred)}" : GetOutput(x.Value)?.ToString() ?? "null")
-                        : (GetOutput(x.Value)?.ToString() ?? "null");
+                var output = x.Value is ContextWrap wrap ? $"context {wrap.Context.Name}" : GetOutput(x.Value)?.ToString() ?? "null";
                 Console.Write(output);
                 Console.ResetColor();
                 Console.WriteLine();
@@ -523,8 +613,8 @@ namespace slt
 
         public static void OutLocals(ExecutionContext context, int table = -1, bool typed = false)
         {
-            OutUsingClasses(context, table, typed);
-            OutLocalMethods(context, table, typed);
+            OutUsingClasses(context, table);
+            OutLocalMethods(context, table);
             OutLocalVariables(context, table, typed);
         }
 
@@ -553,24 +643,10 @@ namespace slt
             { "--help", () => OutREPLHelp() },
             { "--conhelp", () => OutHelp() },
         };
-        public static ExecutionContext GetNewREPLContext(bool update_global = true)
+        public static ExecutionContext GetNewREPLContext()
         {
             var context = new ExecutionContext();
-            if (update_global) UpdateGlobalContext();
             return context;
-        }
-        public static void UpdateGlobalContext()
-        {
-            if (LANG_040.Supports)
-            {
-
-            }
-            else
-            {
-                ExecutionContext.global.pred.LocalVariables.SetValue("println", Method.Create<object>(Console.WriteLine));
-                ExecutionContext.global.pred.LocalVariables.SetValue("print", Method.Create<object>(Console.Write));
-                ExecutionContext.global.pred.LocalVariables.SetValue("readln", Method.Create(Console.ReadLine));
-            }
         }
 
         public static bool ExtendedCommands(string command)
@@ -648,16 +724,16 @@ namespace slt
             wrds = Array.ConvertAll(wrds, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortREPLCommands) : x);
 
             var any_executed = false;
-            
+
             if (wrds.HasArgument("-l", ShortREPLCommands))
             {
                 var typed = wrds.HasArgument("--typed");
                 var context =
                     wrds.HasArgument("--global")
-                    ? ExecutionContext.global.pred
-                        //:  (wrds.TryGetArgument("--context", out var vname) 
-                        //    ? REPLContext.LocalVariables.GetValue(vname).Item1.TryCastRef<ExecutionContext.ContextWrap>()?.pred ?? REPLContext
-                        : REPLContext//)
+                    ? ExecutionContext.global.Context
+                        : (wrds.TryGetArgument("--context", out var vname)
+                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
+                            : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
                 {
@@ -665,7 +741,7 @@ namespace slt
                 }
                 else
                 {
-                    OutLocals(context, - 1, typed);
+                    OutLocals(context, -1, typed);
                 }
                 any_executed = true;
             }
@@ -690,23 +766,15 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    if (LANG_060.Supports)
+                    var ocontext = SLThree.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
+                    switch (ocontext)
                     {
-                        var ocontext = LANG_060.Eval(new ExecutionContext.ContextWrap(REPLContext), runfile_incontext);
-                        switch (ocontext)
-                        {
-                            case ExecutionContext cc:
-                                context = cc;
-                                break;
-                            case ExecutionContext.ContextWrap wrap:
-                                context = wrap.pred;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        OutAsWarning("Running in a different context is possible starting from SLThree 0.6.0");
-                        context = REPLContext;
+                        case ExecutionContext cc:
+                            context = cc;
+                            break;
+                        case ContextWrap wrap:
+                            context = wrap.Context;
+                            break;
                     }
                 }
                 else context = REPLContext;
@@ -798,7 +866,25 @@ namespace slt
             Console.Write("SLThree REPL ");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{REPLVersion.VersionWithoutRevision}");
+            Console.Write($"{SLTREPLVersion.VersionWithoutRevision}");
+            Console.ResetColor();
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+#if NETFRAMEWORK
+            Console.WriteLine(".NET Framework 4.7.1");
+#else
+#if NET8_0_OR_GREATER
+            Console.WriteLine(".NET 8.0");
+#else
+#if NET7_0_OR_GREATER
+            Console.WriteLine(".NET 7.0");
+#else
+#if NET6_0_OR_GREATER
+            Console.WriteLine(".NET 6.0");
+#endif
+#endif
+#endif
+#endif
             Console.ResetColor();
         }
 
@@ -807,7 +893,7 @@ namespace slt
             Console.Title = $"{REPLVersion.FullName}";
             REPLShortVersion();
 
-            Console.Write("Maded by ");
+            Console.Write("Made by ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.Write("Alexandr Kotov ");
             Console.ResetColor();
@@ -827,6 +913,7 @@ namespace slt
         }
 
         private static Parser REPLParser;
+        private static Subparser REPLSubparser;
         private static bool REPLLoop;
         internal static ExecutionContext REPLContext;
         private static bool REPLPerfomance = false;
@@ -837,6 +924,7 @@ namespace slt
             OutREPLInfo();
 
             REPLParser = new SLThree.Parser();
+            REPLSubparser = new Subparser();
             REPLContext = myExecutionContext ?? GetNewREPLContext();
             REPLLoop = true;
 
@@ -855,9 +943,24 @@ namespace slt
             while (REPLLoop)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(">>> ");
-                var code = Console.ReadLine();
+                if (REPLSubparser.State == Subparser.SubparserState.Ready)
+                    Console.Write(">>> ");
+                else if (REPLSubparser.State == Subparser.SubparserState.WaitingText)
+                    Console.Write("... " + new string(' ', REPLSubparser.Tabs * 4));
+                try
+                {
+                    var state = REPLSubparser.Parse(Console.ReadLine());
+                    if (state == Subparser.SubparserState.WaitingText) continue;
+                }
+                catch (Exception e)
+                {
+                    REPLSubparser.Clear();
+                    OutException(e);
+                    continue;
+                }
                 Console.ResetColor();
+                var code = REPLSubparser.CurrentInput.ToString();
+                REPLSubparser.CurrentInput.Clear();
                 if (string.IsNullOrWhiteSpace(code)) continue;
                 if (code.StartsWith(">"))
                 {
@@ -898,11 +1001,12 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-        #endregion
+#endregion
 
         public static void Main(string[] args)
         {
             System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-us");
+
             args = RunArguments = Array.ConvertAll(args, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortCommands) : x);
 
             if (args.Length > 0 && !args[0].StartsWith("-"))

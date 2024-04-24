@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Extensions.Cloning
 {
@@ -38,8 +35,8 @@ namespace SLThree.Extensions.Cloning
         }
 
         /// <returns>Скопированный массив</returns>
-        public static List<T> Copy<T>(this List<T> list) 
-            where T: struct
+        public static List<T> Copy<T>(this List<T> list)
+            where T : struct
         {
             return list.ConvertAll(x => x.Copy());
         }
@@ -66,7 +63,7 @@ namespace SLThree.Extensions.Cloning
         }
         /// <returns>Скопированный массив</returns>
         public static T[] ReferenceCopy<T>(this T[] array)
-            where T: class
+            where T : class
         {
             var ret = new T[array.Length];
             array.CopyTo(ret, 0);
@@ -74,7 +71,7 @@ namespace SLThree.Extensions.Cloning
         }
         /// <returns>Склонированный массив</returns>
         public static T[] CloneArray<T>(this T[] array)
-            where T: ICloneable
+            where T : ICloneable
         {
             return array.ConvertAll(x => x.CloneCast());
         }
@@ -110,21 +107,21 @@ namespace SLThree.Extensions.Cloning
 
         /// <returns>Склонированный словарь</returns>
         public static Dictionary<TKey, TValue> Clone<TKey, TValue>(this Dictionary<TKey, TValue> dict)
-            where TKey: ICloneable 
-            where TValue: ICloneable
+            where TKey : ICloneable
+            where TValue : ICloneable
         {
             return dict.ToDictionary(x => x.Key.CloneCast(), x => x.Value.CloneCast());
         }
         /// <returns>Склонированный словарь</returns>
         public static Dictionary<TKey, TValue> CloneByKey<TKey, TValue>(this Dictionary<TKey, TValue> dict)
             where TKey : ICloneable
-            where TValue: struct
+            where TValue : struct
         {
             return dict.ToDictionary(x => x.Key.CloneCast(), x => x.Value.Copy());
         }
         /// <returns>Склонированный словарь</returns>
         public static Dictionary<TKey, TValue> CloneByValue<TKey, TValue>(this Dictionary<TKey, TValue> dict)
-            where TKey: struct
+            where TKey : struct
             where TValue : ICloneable
         {
             return dict.ToDictionary(x => x.Key.Copy(), x => x.Value.CloneCast());

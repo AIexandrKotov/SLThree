@@ -1,0 +1,4 @@
+using i64;
+a = T => (2 is T) -? false;
+a(i64);
+ASSERT(self, (a(i64) == true) as is);

@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 
 namespace SLThree
@@ -12,7 +11,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             object left;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
             }
@@ -24,8 +23,7 @@ namespace SLThree
             {
                 case bool b: return !b;
             }
-            context.Errors.Add(new OperatorError(this, left?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType());
         }
 
         public override object Clone()

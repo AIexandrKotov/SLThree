@@ -4,6 +4,7 @@
          --global              - for global context
          --typed               - with types
          --table [width]       - as table with minimum column width
+         --context <CNT>       - for CNT context
     -r --reset             - Clear context
          --onlynull            - clear only null-value variables
     -e --exex              - Turn on/off extended exceptions

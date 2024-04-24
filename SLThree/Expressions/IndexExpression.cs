@@ -1,5 +1,4 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System.Collections;
 using System.Linq;
@@ -13,6 +12,7 @@ namespace SLThree
         public BaseExpression Expression;
         public BaseExpression[] Arguments;
         private bool null_conditional;
+        public bool NullConditional => null_conditional;
 
         public IndexExpression(BaseExpression expression, BaseExpression[] arguments, SourceContext context) : base(context)
         {
@@ -75,17 +75,17 @@ namespace SLThree
             {
                 case 1:
                     {
-                        return o.Cast<IList>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
+                        return o.Cast<IList>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
                     }
                 case 3:
                     {
-                        return o.Cast<ITuple>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
+                        return o.Cast<ITuple>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()];
                     }
                 case 4: return PropertyInfo.GetValue(o, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             return null;
         }
-        
+
         public object SetValue(ExecutionContext context, object value)
         {
             var o = Expression.GetValue(context);
@@ -101,16 +101,16 @@ namespace SLThree
             {
                 case 1:
                     {
-                        return o.Cast<IList>()[context.fimp ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()] = value;
+                        return o.Cast<IList>()[context.ForbidImplicit ? Arguments[0].GetValue(context).Cast<int>() : Arguments[0].GetValue(context).CastToType(typeof(int)).Cast<int>()] = value;
                     }
-                case 4: 
+                case 4:
                     PropertyInfo.SetValue(o, value, Arguments.ConvertAll(x => x.GetValue(context)));
                     break;
             }
             return value;
         }
 
-        public override string ExpressionToString() => $"{Expression}[{Arguments.JoinIntoString(", ")}]";
+        public override string ExpressionToString() => $"{Expression}{(null_conditional ? ".?" : "")}[{Arguments.JoinIntoString(", ")}]";
 
         public override object Clone()
         {

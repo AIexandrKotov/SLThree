@@ -47,7 +47,7 @@ namespace SLThree
             return $"{type_str}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
         }
 
-        public Type GetStaticValue()
+        public virtual Type GetStaticValue()
         {
             if (static_type != null)
                 return static_type;
@@ -78,7 +78,7 @@ namespace SLThree
         public Type Isolate(object o)
         {
             if (o is Type type) return type;
-            if (o is MemberAccess.ClassAccess access) return access.Name;
+            if (o is ClassAccess access) return access.Name;
             throw new RuntimeError($"{o?.GetType().GetTypeString() ?? "null"} unconvertible to Type", SourceContext);
         }
 
@@ -86,7 +86,7 @@ namespace SLThree
         {
             if (type_cached)
             {
-                return context.LocalVariables.GetValue(type_variable_id);
+                return Isolate(context.LocalVariables.GetValue(type_variable_id));
             }
             var type = context.LocalVariables.GetValue(type_str);
             if (type.Item1 != null)
@@ -106,6 +106,24 @@ namespace SLThree
         public override object Clone()
         {
             return new TypenameExpression(Typename.CloneCast(), Generics?.CloneArray(), SourceContext.CloneCast());
+        }
+    }
+
+    internal class TypenameGenericPart : TypenameExpression
+    {
+        public Type Type { get; set; }
+        public override string ExpressionToString() => Type.GetTypeString();
+        public override Type GetStaticValue()
+        {
+            return Type;
+        }
+        public override object GetValue(ExecutionContext context)
+        {
+            return Type;
+        }
+        public override object Clone()
+        {
+            return new TypenameGenericPart() { Type = Type, };
         }
     }
 }

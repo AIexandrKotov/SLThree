@@ -8,7 +8,7 @@ namespace SLThree
     public class CreatorUsing : BaseExpression
     {
         public TypenameExpression Type;
-        public MemberAccess.ClassAccess system;
+        public ClassAccess system;
 
         public CreatorUsing(TypenameExpression type, SourceContext context) : base(context)
         {
@@ -16,8 +16,8 @@ namespace SLThree
             if (type.Generics == null)
             {
                 var str = type.Typename.ToString();
-                if (UsingStatement.SystemTypes.TryGetValue(str, out var sys))
-                    system = new MemberAccess.ClassAccess(sys);
+                if (SLThree.sys.slt.sys_types.TryGetValue(str, out var sys))
+                    system = new ClassAccess(sys);
             }
         }
 
@@ -28,7 +28,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             if (system != null) return system;
-            return new MemberAccess.ClassAccess(Type.GetValue(context).Cast<Type>());
+            return new ClassAccess(Type.GetValue(context).Cast<Type>());
         }
 
         public override object Clone()

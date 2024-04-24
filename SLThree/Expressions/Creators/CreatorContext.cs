@@ -52,8 +52,8 @@ namespace SLThree
                         cs.GetValue(ret);
                 }
             }
-            if (HasCast) return new ExecutionContext.ContextWrap(ret).CastToType(Typecast.GetValue(context).Cast<Type>());
-            return new ExecutionContext.ContextWrap(ret);
+            if (HasCast) return new ContextWrap(ret).CastToType(Typecast.GetValue(context).Cast<Type>());
+            return new ContextWrap(ret);
         }
 
         public override object Clone() => new CreatorContext(Name.CloneCast(), Typecast.CloneCast(), Body?.CloneArray(), SourceContext.CloneCast());

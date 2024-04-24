@@ -2,10 +2,10 @@
 
 namespace SLThree
 {
-    public class NullLiteral : BaseExpression
+    public class NullLiteral : Literal<object>
     {
         public NullLiteral() : base() { }
-        public NullLiteral(SourceContext context) : base(context) { }
+        public NullLiteral(SourceContext context) : base(null, context) { }
 
         public override string ExpressionToString() => "null";
 

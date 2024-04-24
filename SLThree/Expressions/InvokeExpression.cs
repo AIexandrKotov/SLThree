@@ -1,12 +1,7 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace SLThree
 {
@@ -15,7 +10,7 @@ namespace SLThree
         public BaseExpression Left;
         public BaseExpression[] Arguments;
         private bool null_conditional;
-
+        public bool NullConditional => null_conditional;
 
         public InvokeExpression(BaseExpression name, BaseExpression[] arguments, SourceContext context) : base(context)
         {
@@ -29,12 +24,8 @@ namespace SLThree
             this.null_conditional = null_conditional;
         }
 
-        public override string ExpressionToString() => $"{Left}{(null_conditional?"?":"")}({Arguments.JoinIntoString(", ")})";
+        public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}({Arguments.JoinIntoString(", ")})";
 
-        private Func<object[], object[]> implicit_cached;
-
-        /*private bool get_counted_name;
-        private string get_name;*/
         public object GetValue(ExecutionContext context, object[] args)
         {
             var o = Left.GetValue(context);
@@ -42,7 +33,7 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method {Left}(_) not found", SourceContext);
+                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
             }
 
             if (o is Method method)
@@ -56,6 +47,10 @@ namespace SLThree
                 else return mi.Invoke(null, args);
             }
             else if (o is ExecutionContext.IExecutable bl) return bl.GetValue(context);
+            else if (o is ConstructorInfo ci)
+            {
+                return ci.Invoke(args);
+            }
             else
             {
                 var type = o.GetType();
@@ -64,7 +59,7 @@ namespace SLThree
                     ?.Invoke(o, args);
             }
 
-            throw new RuntimeError("Unexecutable method", SourceContext);
+            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)
@@ -80,16 +75,16 @@ namespace SLThree
 
             if (cached_1) return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
 
-            if (obj is MemberAccess.ClassAccess ca)
+            if (obj is ClassAccess ca)
             {
-                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static); 
-                    // после первого вызова GetMethod
-                    // переставляет перегрузки, у которых аргумент object
-                    // в начало массива методов
+                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                // после первого вызова GetMethod
+                // переставляет перегрузки, у которых аргумент object
+                // в начало массива методов
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
-                if (founded == null) throw new RuntimeError($"Method {key}({Arguments.Select(x => "_").JoinIntoString(", ")}) not found", SourceContext);
+                if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)

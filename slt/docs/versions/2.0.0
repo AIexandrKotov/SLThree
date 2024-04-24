@@ -1,0 +1,9 @@
+------ SLThree REPL 2.0.0 ------ [24.04.24]
+New:
+    - Spliited to .NET 4.7.1, 6.0, 7.0 and 8.0
+    - Locals of context with `--context`
+    - Multiline input supporting
+    - Output of annotated methods, generic methods
+    - Output symbols cap `repl.max_output` (default: 2500)
+Supporing:
+    - Broken compatibilty with SLThree 0.6.0 and older

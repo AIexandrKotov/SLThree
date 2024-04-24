@@ -1,23 +1,17 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions.Cloning;
-using System;
+﻿using SLThree.Extensions.Cloning;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class StatementListStatement : BaseStatement
+    public class StatementList : BaseStatement
     {
         public BaseStatement[] Statements;
         private int count;
 
-        public StatementListStatement() : base() { }
+        public StatementList() : base() { }
 
-        public StatementListStatement(IList<BaseStatement> statements, SourceContext context) : base(context)
+        public StatementList(IList<BaseStatement> statements, SourceContext context) : base(context)
         {
             Statements = statements.ToArray();
             count = statements.Count;
@@ -38,7 +32,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new StatementListStatement() { Statements = Statements.CloneArray(), count = count.Copy(), SourceContext = SourceContext.CloneCast() };
+            return new StatementList() { Statements = Statements.CloneArray(), count = count.Copy(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

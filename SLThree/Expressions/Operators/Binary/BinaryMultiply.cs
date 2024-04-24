@@ -1,7 +1,5 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using System;
 
 namespace SLThree
 {
@@ -14,7 +12,7 @@ namespace SLThree
         {
             object left;
             object right;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
                 right = Right.GetValue(context);
@@ -40,8 +38,7 @@ namespace SLThree
                 if (right is ulong u2) return u1 * u2;
                 if (right is double d2) return u1 * d2;
             }
-            context.Errors.Add(new OperatorError(this, left?.GetType(), right?.GetType()));
-            return null;
+            throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
 
         public override object Clone()

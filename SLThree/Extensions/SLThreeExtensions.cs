@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace SLThree.Extensions
 {
@@ -18,6 +15,21 @@ namespace SLThree.Extensions
             if (precision < 2) precision = 2;
 
             return d.ToString($"P{precision - 2}");
+        }
+
+        public static string ReadString(this Stream stream)
+        {
+            using (var sr = new StreamReader(stream))
+            {
+                return sr.ReadToEnd();
+            }
+        }
+        public static string[] ReadStrings(this Stream stream)
+        {
+            using (var sr = new StreamReader(stream))
+            {
+                return sr.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.None);
+            }
         }
     }
 }

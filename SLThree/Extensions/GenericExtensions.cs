@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Extensions
 {
@@ -50,11 +49,12 @@ namespace SLThree.Extensions
                 yield return tuple[i];
         }
 
-        public static TOut Cast<TIn, TOut>(this TIn o) where TOut: TIn => (TOut)o;
+        public static TOut Cast<TIn, TOut>(this TIn o) where TOut : TIn => (TOut)o;
         public static T Cast<T>(this object o) => (T)o;
-        public static T? TryCast<T>(this object o) where T : struct => o is T ? (T)o : default;
-        public static T TryCastRef<T>(this object o) where T : class => o is T ? (T)o : null;
+        public static T? TryCast<T>(this object o) where T : struct => o is T t ? t : default;
+        public static T TryCastRef<T>(this object o) where T : class => o is T t ? t : null;
 
+#if !NET5_0_OR_GREATER
         public static T MinBy<T, TKey>(this IEnumerable<T> enumerable, Func<T, TKey> selector)
         {
             var comp = Comparer<TKey>.Default;
@@ -65,10 +65,11 @@ namespace SLThree.Extensions
             var comp = Comparer<TKey>.Default;
             return enumerable.Aggregate((max, x) => comp.Compare(selector(x), selector(max)) > 0 ? x : max);
         }
+#endif
 
         public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input, Func<TIn, TOut> selector)
             => new ChanceChooser<TOut>(input.Values.Select(x => (selector(x.Item1), x.Item2)).ToArray());
-        public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input) where TOut: TIn
+        public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input) where TOut : TIn
             => new ChanceChooser<TOut>(input.Values.Select(x => ((TOut)x.Item1, x.Item2)).ToArray());
     }
 }

@@ -1,15 +1,13 @@
 ﻿using SLThree.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Visitors
 {
     public class TreeViewer : AbstractVisitor
     {
-        public override void VisitStatement(StatementListStatement statement)
+        public override void VisitStatement(StatementList statement)
         {
             Level += 1;
             base.VisitStatement(statement);

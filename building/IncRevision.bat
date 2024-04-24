@@ -1,1 +1,1 @@
-"../building/vh.exe" "../SLThree/Properties/AssemblyInfo.cs" "revision++"
+"building/vh.exe" "SLThree/Properties/AssemblyInfo.cs" "revision++"

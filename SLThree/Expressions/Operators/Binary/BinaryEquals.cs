@@ -1,8 +1,6 @@
-﻿using Pegasus.Common;
-using SLThree.Extensions;
+﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System;
-using static SLThree.SwitchStatement;
 
 namespace SLThree
 {
@@ -15,7 +13,7 @@ namespace SLThree
         {
             object left;
             object right;
-            if (context.fimp)
+            if (context.ForbidImplicit)
             {
                 left = Left.GetValue(context);
                 right = Right.GetValue(context);
@@ -41,9 +39,7 @@ namespace SLThree
                 if (right is ulong u2) return u1 == u2;
                 if (right is double d2) return u1 == d2;
             }
-            if (left is IComparable)
-                return (left as IComparable).CompareTo(right) == 0;
-            return ReferenceEquals(left, right);
+            return left?.Equals(right) ?? ReferenceEquals(left, right);
         }
 
         public override object Clone()

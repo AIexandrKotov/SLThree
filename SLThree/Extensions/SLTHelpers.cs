@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SLThree.Extensions
 {
@@ -51,7 +45,8 @@ namespace SLThree.Extensions
                 if (generic_def == type_generic_list) name = "list";
                 else if (generic_def == type_generic_dict) name = "dict";
                 else if (t.Name.StartsWith("ValueTuple")) name = "tuple";
-                else name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
+                else if (t.FullName != null) name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
+                else name = t.Name.Substring(0, t.Name.IndexOf('`')).Split('.').Last();
                 return $"{name}<{t.GetGenericArguments().ConvertAll(x => x.GetTypeString()).JoinIntoString(", ")}>";
             }
             if (t == type_object) return "any";
@@ -67,6 +62,7 @@ namespace SLThree.Extensions
             if (t == type_char) return "char";
             if (t == type_context) return "context";
             if (t == type_void) return "void";
+            if (t.FullName == null) return t.Name;
 
             else return t.FullName;
         }
@@ -90,30 +86,6 @@ namespace SLThree.Extensions
         private static Type type_generic_list = typeof(List<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
         private static Type type_void = typeof(void);
-
-        /// <summary>
-        /// Only for compatibility with old REPLs
-        /// </summary>
-        public static string GetTypeString(this string t)
-        {
-            if (t == "System.Object") return "any";
-            if (t == "System.Byte") return "u8";
-            if (t == "System.SByte") return "i8";
-            if (t == "System.Int16") return "i16";
-            if (t == "System.UInt16") return "u16";
-            if (t == "System.Int32") return "i32";
-            if (t == "System.UInt32") return "u32";
-            if (t == "System.Int64") return "i64";
-            if (t == "System.UInt64") return "u64";
-            if (t == "System.Double") return "f64";
-            if (t == "System.Single") return "f32";
-            if (t == "System.Boolean") return "bool";
-            if (t == "System.String") return "string";
-            if (t == "System.Char") return "char";
-            if (t == "SLThree.ExecutionContext+ContextWrap") return "context";
-            if (t == "System.Void") return "void";
-            else return t;
-        }
         public static Type ToType(this string s, bool throwError = false)
         {
             switch (s)
@@ -174,7 +146,7 @@ namespace SLThree.Extensions
         }
         private static IEnumerable<string> NestedVariations(this string s)
         {
-            var ind = -1;
+            int ind;
             while ((ind = s.LastIndexOf('.')) != -1)
             {
                 yield return s = s.Substring(0, ind) + "+" + s.Substring(ind + 1, s.Length - ind - 1);
@@ -195,7 +167,7 @@ namespace SLThree.Extensions
         private static Type type_char = typeof(char);
         private static Type type_double = typeof(double);
         private static Type type_float = typeof(float);
-        private static Type type_context = typeof(ExecutionContext.ContextWrap);
+        private static Type type_context = typeof(ContextWrap);
 
         private static Type type_array = typeof(object[]);
         private static Type type_list = typeof(List<object>);
@@ -214,6 +186,11 @@ namespace SLThree.Extensions
             return expression;
         }
 
+        public static T CastToType<T>(this object o)
+        {
+            return (T)o.CastToType(typeof(T));
+        }
+
         public static object CastToType(this object o, Type casting_type)
         {
             if (o == null) return null;
@@ -223,25 +200,26 @@ namespace SLThree.Extensions
             if (casting_type == type_context)
             {
                 if (o is Type st_type)
-                    return 
+                    return
                         st_type.IsAbstract && st_type.IsSealed
-                        ? new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
-                        : new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
+                        ? new ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStaticClass())
+                        : new ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
                 else
-                    return new ExecutionContext.ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
+                    return new ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
             }
-            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             var type = o.GetType();
+            if (type == casting_type) return o;
+            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             if (type == type_context)
             {
                 var wrapper = NonGenericWrapper.GetWrapper(casting_type);
                 if (casting_type.IsAbstract)
                 {
-                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ExecutionContext.ContextWrap)o).pred);
-                    else wrapper.UnwrapStatic(((ExecutionContext.ContextWrap)o).pred);
+                    if (casting_type.IsSealed) wrapper.UnwrapStaticClass(((ContextWrap)o).Context);
+                    else wrapper.UnwrapStatic(((ContextWrap)o).Context);
                     return null;
                 }
-                else return wrapper.Unwrap(((ExecutionContext.ContextWrap)o).pred);
+                else return wrapper.Unwrap(((ContextWrap)o).Context);
             }
             if (casting_type.IsEnum)
             {
