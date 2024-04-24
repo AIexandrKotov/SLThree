@@ -893,7 +893,7 @@ namespace slt
             Console.Title = $"{REPLVersion.FullName}";
             REPLShortVersion();
 
-            Console.Write("Maded by ");
+            Console.Write("Made by ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.Write("Alexandr Kotov ");
             Console.ResetColor();

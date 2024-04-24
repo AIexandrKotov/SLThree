@@ -1,4 +1,4 @@
------- 0.7.0 Typing Update ------ [~.04.24]
+------ 0.7.0 Typing Update ------ [24.04.24]
 Language:
     - Supporting .NET platform (.NET Standard 2.1+)
     - Generic methods `<T>(...) => ...`

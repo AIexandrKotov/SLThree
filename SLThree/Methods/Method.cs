@@ -18,6 +18,7 @@ namespace SLThree
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
+        public readonly bool Binded = false;
 
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
@@ -25,10 +26,10 @@ namespace SLThree
         internal ContextWrap definitionplace;
         internal string contextName = "";
 
-        public ContextWrap DefinitionPlace => definitionplace;
+        public ContextWrap @this => definitionplace;
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool binded)
         {
             Name = name;
             ParamNames = paramNames;
@@ -38,6 +39,7 @@ namespace SLThree
             definitionplace = definitionPlace;
             Implicit = @implicit;
             Recursive = recursive;
+            Binded = binded;
         }
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
@@ -216,7 +218,7 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive);
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, Binded);
         }
 
         public virtual object Clone()
