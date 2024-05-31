@@ -31,5 +31,7 @@ namespace SLThree.Extensions
                 return sr.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.None);
             }
         }
+        public static string Representation(this ExecutionContext context) => sys.slt.context_repr(context.wrap);
+        public static string Representation(this ContextWrap context) => sys.slt.context_repr(context);
     }
 }

@@ -44,25 +44,25 @@ namespace SLThree
 
         }
 
-        public ExecutionContext(bool assign_to_global, bool create_private = true)
+        public ExecutionContext(bool assign_to_global, bool create_private = true, LocalVariablesContainer localVariables = null)
         {
+            LocalVariables = localVariables ?? new LocalVariablesContainer();
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
             if (create_private)
                 @private = new ContextWrap(new ExecutionContext(this, false));
             if (assign_to_global) SuperContext = global.Context;
         }
-
-        public ExecutionContext(ExecutionContext context, bool create_private = true)
+        public ExecutionContext(ExecutionContext context, bool create_private = true, LocalVariablesContainer localVariables = null)
         {
+            LocalVariables = localVariables ?? new LocalVariablesContainer();
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
             if (create_private)
                 @private = new ContextWrap(new ExecutionContext(this, false));
             if (context != null) SuperContext = context;
         }
-
-        public ExecutionContext() : this(true, true) { }
+        public ExecutionContext() : this(true, true, null) { }
 
         public ContextWrap @this;
 
@@ -112,6 +112,6 @@ namespace SLThree
 
         }
 
-        public readonly LocalVariablesContainer LocalVariables = new LocalVariablesContainer();
+        public readonly LocalVariablesContainer LocalVariables;
     }
 }

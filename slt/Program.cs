@@ -795,9 +795,9 @@ namespace slt
 
                 if (onlynull)
                 {
-                    var old = REPLContext.LocalVariables.NamedIdenificators.Count;
+                    var old = REPLContext.LocalVariables.NamedIdentificators.Count;
                     REPLContext.LocalVariables.ClearNulls();
-                    var @new = REPLContext.LocalVariables.NamedIdenificators.Count;
+                    var @new = REPLContext.LocalVariables.NamedIdentificators.Count;
                     OutAsWarning($"{old - @new} nulls deleted from context");
                 }
                 else
