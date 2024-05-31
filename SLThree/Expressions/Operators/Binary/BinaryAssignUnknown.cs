@@ -29,13 +29,13 @@ namespace SLThree
                     context.LocalVariables.SetValue(wrap.Context.Name, wrap);
                     return wrap;
                 }
-                NonGenericWrapper wrapper;
+                /*NonGenericWrapper wrapper;
                 if ((wrapper = NonGenericWrapper.GetWrapper(right.GetType())).HasName())
                 {
                     var name = wrapper.GetName(right);
                     context.LocalVariables.SetValue(name, right);
                     return right;
-                }
+                }*/
             }
             throw new OperatorError(this, right?.GetType() ?? Left.GetType());
         }

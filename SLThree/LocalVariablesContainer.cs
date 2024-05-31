@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SLThree.Extensions;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -19,6 +20,12 @@ namespace SLThree
         public Dictionary<string, int> NamedIdentificators;
 
         public Dictionary<string, object> GetAsDictionary() => NamedIdentificators.ToDictionary(x => x.Key, x => Variables[x.Value]);
+        public static LocalVariablesContainer GetFromDictionary(IDictionary<string, object> objs)
+        {
+            var ret = new LocalVariablesContainer(objs.Count, objs.Keys.Select((x, i) => (x, i)).ToDictionary(x => x.x, x => x.i));
+            objs.Values.ToArray().CopyTo(ret.Variables, 0);
+            return ret;
+        }
 
         public void ClearNulls()
         {

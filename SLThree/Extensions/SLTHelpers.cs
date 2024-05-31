@@ -197,7 +197,7 @@ namespace SLThree.Extensions
 
             if (casting_type == typeof(string))
                 return o.ToString();
-            if (casting_type == type_context)
+            /*if (casting_type == type_context)
             {
                 if (o is Type st_type)
                     return
@@ -206,11 +206,12 @@ namespace SLThree.Extensions
                         : new ContextWrap(NonGenericWrapper.GetWrapper(st_type).WrapStatic());
                 else
                     return new ContextWrap(NonGenericWrapper.GetWrapper(o.GetType()).Wrap(o));
-            }
+            }*/
             var type = o.GetType();
             if (type == casting_type) return o;
             if (o is IConvertible) return Convert.ChangeType(o, casting_type);
-            if (type == type_context)
+            //todo make sys.wrapper instead
+            /*if (type == type_context)
             {
                 var wrapper = NonGenericWrapper.GetWrapper(casting_type);
                 if (casting_type.IsAbstract)
@@ -220,7 +221,7 @@ namespace SLThree.Extensions
                     return null;
                 }
                 else return wrapper.Unwrap(((ContextWrap)o).Context);
-            }
+            }*/
             if (casting_type.IsEnum)
             {
                 if (type == type_string) return Enum.Parse(casting_type, (string)o);
