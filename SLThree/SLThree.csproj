@@ -13,10 +13,12 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.7.0.3082</Version>
+    <Version>0.7.1.3082</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <ApplicationIcon>slthree.ico</ApplicationIcon>
+    <PackageReleaseNotes>Bugfixes:
+    - Add support for generic dict creators &lt;T, T&gt;{}</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -49,6 +51,7 @@
 
   <ItemGroup>
     <None Remove="docs\specification" />
+    <None Remove="docs\versions\0.7.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -75,6 +78,7 @@
     <EmbeddedResource Include="docs\versions\0.5.2" />
     <EmbeddedResource Include="docs\versions\0.6.0" />
     <EmbeddedResource Include="docs\versions\0.7.0" />
+    <EmbeddedResource Include="docs\versions\0.7.1" />
   </ItemGroup>
 
 </Project>
