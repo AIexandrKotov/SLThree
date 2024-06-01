@@ -52,10 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="slthree.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MSBump" Version="2.3.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
