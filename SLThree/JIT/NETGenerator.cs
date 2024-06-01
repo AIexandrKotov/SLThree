@@ -2,16 +2,10 @@
 using SLThree.sys;
 using SLThree.Visitors;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Security.AccessControl;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SLThree.JIT
 {
@@ -142,6 +136,84 @@ namespace SLThree.JIT
                 default:
                     IL.Emit(OpCodes.Ldc_I4, literal);
                     return;
+            }
+        }
+
+        public static void EmitLoadStaticFieldOrConst(FieldInfo fieldInfo, ILGenerator il)
+        {
+            if (fieldInfo.Attributes.HasFlag(FieldAttributes.HasDefault) && fieldInfo.Attributes.HasFlag(FieldAttributes.Literal))
+            {
+                var value = fieldInfo.GetRawConstantValue();
+                if (value is Enum) value = value.CastToType(Enum.GetUnderlyingType(fieldInfo.FieldType));
+                switch (value)
+                {
+                    case long i64:
+                        if (i64 >= int.MinValue && i64 <= int.MaxValue)
+                        {
+                            il.Emit(OpCodes.Ldc_I4, (int)i64);
+                            il.Emit(OpCodes.Conv_I8);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Ldc_I8, i64);
+                        }
+                        break;
+                    case ulong u64:
+                        if (u64 >= 0 && u64 <= int.MaxValue)
+                        {
+                            il.Emit(OpCodes.Ldc_I4, (int)u64);
+                            il.Emit(OpCodes.Conv_I8);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Ldc_I8, unchecked((long)u64));
+                        }
+                        break;
+                    case int i32:
+                        il.Emit(OpCodes.Ldc_I4, i32);
+                        break;
+                    case uint u32:
+                        il.Emit(OpCodes.Ldc_I4, unchecked((int)u32));
+                        break;
+                    case float f32:
+                        il.Emit(OpCodes.Ldc_R4, f32);
+                        break;
+                    case double f64:
+                        il.Emit(OpCodes.Ldc_R8, f64);
+                        break;
+                    case short i:
+                        il.Emit(OpCodes.Ldc_I4, (int)i);
+                        il.Emit(OpCodes.Conv_I2);
+                        break;
+                    case ushort i:
+                        il.Emit(OpCodes.Ldc_I4, (int)i);
+                        il.Emit(OpCodes.Conv_I2);
+                        break;
+                    case sbyte i:
+                        il.Emit(OpCodes.Ldc_I4, (int)i);
+                        il.Emit(OpCodes.Conv_I1);
+                        break;
+                    case byte i:
+                        il.Emit(OpCodes.Ldc_I4, (int)i);
+                        il.Emit(OpCodes.Conv_I1);
+                        break;
+                    case bool b:
+                        if (b)
+                            il.Emit(OpCodes.Ldc_I4_1);
+                        else
+                            il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Conv_I1);
+                        break;
+                    case string s:
+                        il.Emit(OpCodes.Ldstr, s);
+                        break;
+                    default:
+                        throw new NotSupportedException($"{fieldInfo.FieldType} of constant not supported");
+                }
+            }
+            else
+            {
+                il.Emit(OpCodes.Ldsfld, fieldInfo);
             }
         }
 

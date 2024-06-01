@@ -13,7 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.7.0.3066</Version>
+    <Version>0.7.0.3082</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <ApplicationIcon>slthree.ico</ApplicationIcon>
