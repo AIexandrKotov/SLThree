@@ -16,7 +16,6 @@
     <Version>0.7.1.3082</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <ApplicationIcon>slthree.ico</ApplicationIcon>
     <PackageReleaseNotes>Bugfixes:
     - Add support for generic dict creators &lt;T, T&gt;{}</PackageReleaseNotes>
   </PropertyGroup>
