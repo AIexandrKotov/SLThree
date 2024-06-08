@@ -5,9 +5,9 @@ namespace SLThree
 {
     public class ContextStatement : BaseStatement
     {
-        public CreatorContext Creator;
+        public CreatorContextOld Creator;
 
-        public ContextStatement(CreatorContext creator, SourceContext context) : base(context)
+        public ContextStatement(CreatorContextOld creator, SourceContext context) : base(context)
         {
             Creator = creator;
         }

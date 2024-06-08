@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -48,6 +49,11 @@ namespace SLThree
             args.CopyTo(Variables, 0);
             for (var i = 0; i < args.Length; i++)
                 NamedIdentificators[method.ParamNames[i]] = i;
+        }
+        public void FillOther(LocalVariablesContainer container)
+        {
+            foreach (var x in container.NamedIdentificators)
+                SetValue(x.Key, container.Variables[x.Value]);
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]

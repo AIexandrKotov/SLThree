@@ -114,7 +114,7 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append(Replace(">"));
             }
         }
-        public void VisitExpression(CreatorContext expression, bool newline, bool hasnew)
+        public void VisitExpression(CreatorContextOld expression, bool newline, bool hasnew)
         {
             if (hasnew)
                 CurrentString.Append(GetKeyword1("new context "));
@@ -146,7 +146,7 @@ namespace SLThree.HTMLCreator
                 CurrentString.Append("}");
             }
         }
-        public override void VisitExpression(CreatorContext expression)
+        public override void VisitExpression(CreatorContextOld expression)
         {
             VisitExpression(expression, ContextElementNewLine, true);
         }

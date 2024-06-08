@@ -7,7 +7,7 @@ namespace SLThree
     public class StatementList : BaseStatement
     {
         public BaseStatement[] Statements;
-        private int count;
+        private protected int count;
 
         public StatementList() : base() { }
 

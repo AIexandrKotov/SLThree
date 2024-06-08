@@ -1,7 +1,21 @@
 ------ 0.8.0 ------ [~.~.~]
-Optimization:
-    - Wrappers refactoring, minumum 3x faster wrapping
-      minimum 20x faster unwrapping
+Language:
+    - You can now copy contexts with ":" in the following cases:
+      - New initializers:       // [] - optional
+         `new T [Name][: Ancestors][{...}]`
+      - New context creators:
+         `context [Name][: Ancestors] {...}`
+         `new context [Name][: Ancestors]`
     - Constructor method that creates new contexts
        `context TBase { constructor = (f) => this.f = f; };`
        `T1 = TBase(5); T2 = TBase(10);`
+    - Changed context syntax:
+       `new context Name: T {...}` -> `new T Name {...}`
+       `new context: T {...}` -> `new T {...}`
+       `new context Name: T` -> `new T Name`
+       `new context: T` -> `new T`
+       `new context Name {...}` -> `context Name {...}`
+       `new context {...}` -> `context {...}`
+Optimization:
+    - Wrappers refactoring, minumum 3x faster wrapping
+      minimum 20x faster unwrapping

@@ -126,8 +126,46 @@ namespace SLThree
             constructor.GetValue(ret, args);
             return ret;
         }
+        public ExecutionContext CreateInstance(object[] args, SourceContext sourceContext)
+        {
+            var ret = new ExecutionContext(super.Context);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.@base = wrap;
+            if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length)
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.Constructor = true;
+                constructor.definitionplace = ret.wrap;
+                constructor.GetValue(ret, args);
+            }
+            return ret;
+        }
+        public void Implementation(ExecutionContext ret, Method constructor, object[] args)
+        {
+            constructor.Constructor = true;
+            constructor.definitionplace = ret.wrap;
+            constructor.GetValue(ret, args);
+        }
+        public void Implementation(ExecutionContext ret, object[] args, SourceContext sourceContext)
+        {
+            if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length) 
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.Constructor = true;
+                constructor.definitionplace = ret.wrap;
+                constructor.GetValue(ret, args);
+            }
+        }
 
         public readonly LocalVariablesContainer LocalVariables;
+
+        internal ExecutionContext copy(ExecutionContext context)
+        {
+            LocalVariables.FillOther(context.LocalVariables);
+            return this;
+        }
     }
 #pragma warning restore IDE1006 // Стили именования
 }

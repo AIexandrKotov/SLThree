@@ -145,9 +145,9 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.RangeType;
             }
-            public class ContextCreator : GenericInfo<CreatorContext>
+            public class ContextCreator : GenericInfo<CreatorContextOld>
             {
-                public ContextCreator(CreatorContext concrete, int position) : base(concrete, position)
+                public ContextCreator(CreatorContextOld concrete, int position) : base(concrete, position)
                 {
                 }
 

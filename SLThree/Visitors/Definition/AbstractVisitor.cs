@@ -68,7 +68,7 @@ namespace SLThree.Visitors
                 case TypenameExpression expr: VisitExpression(expr); return;
                 case CreatorNewArray expr: VisitExpression(expr); return;
                 case CreatorArray expr: VisitExpression(expr); return;
-                case CreatorContext expr: VisitExpression(expr); return;
+                case CreatorContextOld expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
             }
@@ -368,7 +368,7 @@ namespace SLThree.Visitors
             VisitExpression(expression.Size);
         }
 
-        public virtual void VisitExpression(CreatorContext expression)
+        public virtual void VisitExpression(CreatorContextOld expression)
         {
             if (expression.Typecast != null)
             {

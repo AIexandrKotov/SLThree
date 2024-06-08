@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SLThree.Expressions.Creators
+namespace SLThree
 {
     public class CreatorInstance : BaseExpression
     {
@@ -30,23 +30,132 @@ namespace SLThree.Expressions.Creators
         new T(args) Name: TBase;
         new T(args) Name: TBase {};
         */
-        public CreatorInstance(TypenameExpression type, BaseExpression[] args, NameExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context) : base(context)
+        public static CreatorInstance CaseType(TypenameExpression type, SourceContext context)
+            => new CreatorInstance(
+                type, 
+                null, 
+                new BaseExpression[0], 
+                null, 
+                context);
+        public static CreatorInstance CaseTypeBody(TypenameExpression type, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                new BaseExpression[0],
+                new CreatorContext(null, new BaseExpression[0], body, false, context),
+                context);
+        public static CreatorInstance CaseTypeArgs(TypenameExpression type, BaseExpression[] args, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                args,
+                null,
+                context);
+        public static CreatorInstance CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type, 
+                null, 
+                args,
+                new CreatorContext(null, new BaseExpression[0], body, false, context),
+                context);
+        public static CreatorInstance CaseTypeInheritance(TypenameExpression type, BaseExpression[] ancestors, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                new BaseExpression[0],
+                new CreatorContext(null, ancestors, null, false, context),
+                context);
+        public static CreatorInstance CaseTypeBodyInheritance(TypenameExpression type, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                new BaseExpression[0],
+                new CreatorContext(null, ancestors, body, false, context),
+                context);
+        public static CreatorInstance CaseTypeArgsInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                args,
+                null,
+                context);
+        public static CreatorInstance CaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                null,
+                args,
+                new CreatorContext(null, ancestors, body, false, context),
+                context);
+        public static CreatorInstance NamedCaseType(TypenameExpression type, BaseExpression name, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                new BaseExpression[0],
+                null,
+                context);
+        public static CreatorInstance NamedCaseTypeBody(TypenameExpression type, BaseExpression name, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                new BaseExpression[0],
+                new CreatorContext(null, new BaseExpression[0], body, false, context),
+                context);
+        public static CreatorInstance NamedCaseTypeArgs(TypenameExpression type, BaseExpression name, BaseExpression[] args, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                args,
+                null,
+                context);
+        public static CreatorInstance NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                args,
+                new CreatorContext(name, new BaseExpression[0], body, false, context),
+                context);
+        public static CreatorInstance NamedCaseTypeInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                new BaseExpression[0],
+                new CreatorContext(name, ancestors, null, false, context),
+                context);
+        public static CreatorInstance NamedCaseTypeBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                new BaseExpression[0],
+                new CreatorContext(name, ancestors, body, false, context),
+                context);
+        public static CreatorInstance NamedCaseTypeArgsInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                args,
+                null,
+                context);
+        public static CreatorInstance NamedCaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            => new CreatorInstance(
+                type,
+                name,
+                args,
+                new CreatorContext(name, ancestors, body, false, context),
+                context);
+
+
+        public CreatorInstance(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContext creatorContext, SourceContext context) : base(context)
         {
             Type = type;
-            Arguments = args;
             Name = name;
-            Ancestors = ancestors;
-            CreatorBody = body;
+            Arguments = args;
+            CreatorContext = creatorContext;
         }
-        public CreatorInstance(TypenameExpression type, SourceContext context)
-            : this(type, new BaseExpression[0], null, new BaseExpression[0], null, context) { }
-
 
         public TypenameExpression Type { get; set; }
+        public BaseExpression Name { get; set; }
         public BaseExpression[] Arguments { get; set; }
-        public NameExpression Name { get; set; }
-        public BaseExpression[] Ancestors { get; set; }
-        public CreatorContextBody CreatorBody { get; set; }
+        public CreatorContext CreatorContext { get; set; }
 
         public override string ExpressionToString()
         {
@@ -55,49 +164,52 @@ namespace SLThree.Expressions.Creators
             sb.Append(Type.ToString());
             if (Arguments.Length > 0)
                 sb.Append($"({Arguments.JoinIntoString(", ")})");
-            if (Name != null)
-                sb.Append($" {Name}");
-            if (Ancestors.Length > 0)
+            if (CreatorContext?.Name != null)
+                sb.Append($" {CreatorContext.Name}");
+            if (CreatorContext.Ancestors.Length > 0)
             {
                 sb.Append(": ");
-                sb.Append(Ancestors.JoinIntoString(", "));
+                sb.Append(CreatorContext.Ancestors.JoinIntoString(", "));
             }
-            if (CreatorBody != null)
+            if (CreatorContext.CreatorBody != null)
             {
-                sb.Append($"{{{CreatorBody}}}");
+                sb.Append($"{{\n{CreatorContext.CreatorBody}\n}}");
             }
             return sb.ToString();
         }
 
+        private ExecutionContext counted_invoked;
+        private bool is_name_expr;
+        private int variable_index;
         public override object GetValue(ExecutionContext context)
         {
-            throw new NotImplementedException();
+            object instance;
+            var type = Type.GetValue(context).Cast<Type>();
+            if (CreatorContext != null)
+            {
+                var created = CreatorContext.GetValue(context).Cast<ContextWrap>().Context;
+                if (Arguments.Length == 0)
+                    instance = type.InstanceUnwrap(created);
+                else
+                {
+                    instance = Activator.CreateInstance(type, Arguments.ConvertAll(x => x.GetValue(context)));
+                    type.InstanceUnwrapIn(created, instance);
+                }
+                if (CreatorContext.Name != null)
+                    BinaryAssign.AssignToValue(context, CreatorContext.Name, instance, ref counted_invoked, ref is_name_expr, ref variable_index);
+            }
+            else
+            {
+                instance = Activator.CreateInstance(type, Arguments.ConvertAll(x => x.GetValue(context)));
+                if (Name != null)
+                    BinaryAssign.AssignToValue(context, Name, instance, ref counted_invoked, ref is_name_expr, ref variable_index);
+            }
+            return instance;
         }
 
         public override object Clone()
         {
-            return new CreatorInstance(Type.CloneCast(), Arguments.CloneArray(), Name.CloneCast(), Ancestors.CloneArray(), CreatorBody.CloneCast(), SourceContext.CloneCast());
-        }
-    }
-
-    public class CreatorContextBody : StatementList, ICloneable
-    {
-        public CreatorContextBody() : base() { }
-        public CreatorContextBody(IList<BaseStatement> statements, SourceContext context) : base(statements, context) { }
-
-        public ExecutionContext GetValue(ExecutionContext target, ExecutionContext call, ExecutionContext[] ancestors)
-        {
-            return target;
-        }
-
-        public override object GetValue(ExecutionContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object Clone()
-        {
-            return new CreatorContextBody(Statements.CloneArray(), SourceContext.CloneCast());
+            return new CreatorInstance(Type.CloneCast(), Name.CloneCast(), Arguments.CloneArray(), CreatorContext.CloneCast(), SourceContext.CloneCast());
         }
     }
 }
