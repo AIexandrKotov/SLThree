@@ -1,0 +1,12 @@
+<Verser>
+  <Config ConfigName="Alpha" Suffix="alpha" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+  <Config ConfigName="Beta" Suffix="beta" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+  <Config ConfigName="ReleaseCandidate" Suffix="rc" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+  <Config ConfigName="Release" Suffix="" Prerelease="None" AppendPatch="true" AppendPrerelease="false" ResetPrerelease="true" />
+  <Project path="..\SLThree\SLThree.csproj">
+    <Config ConfigName="Alpha" Suffix="alpha" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+    <Config ConfigName="Beta" Suffix="beta" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+    <Config ConfigName="ReleaseCandidate" Suffix="rc" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
+    <Config ConfigName="Release" Suffix="" Prerelease="None" AppendPatch="true" AppendPrerelease="false" ResetPrerelease="true" />
+  </Project>
+</Verser>

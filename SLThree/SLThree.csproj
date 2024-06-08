@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net471;netstandard2.1;net6.0</TargetFrameworks>
     <Nullable>disable</Nullable>
@@ -13,58 +12,42 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.7.1.3082</Version>
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <FileVersion>$(Version)</FileVersion>
-    <PackageReleaseNotes>Bugfixes:
-    - Add support for generic dict creators &lt;T, T&gt;{}</PackageReleaseNotes>
+    <Version>0.8.0-alpha.11</Version>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/0.8.0"))</PackageReleaseNotes>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net471|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net471|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="docs\specification" />
     <None Remove="docs\versions\0.7.1" />
+    <None Remove="docs\versions\0.8.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="MSBump" Version="2.3.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Pegasus" Version="4.1.0" />
   </ItemGroup>
-
   <ItemGroup>
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="docs\specification" />
     <EmbeddedResource Include="docs\versions\0.1.0" />
@@ -78,6 +61,9 @@
     <EmbeddedResource Include="docs\versions\0.6.0" />
     <EmbeddedResource Include="docs\versions\0.7.0" />
     <EmbeddedResource Include="docs\versions\0.7.1" />
+    <EmbeddedResource Include="docs\versions\0.8.0" />
   </ItemGroup>
-
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;..\verser\verser.exe&quot; --append &quot;SLThree&quot;" />
+  </Target>
 </Project>

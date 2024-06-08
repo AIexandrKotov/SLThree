@@ -127,23 +127,15 @@ namespace slt
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(REPLVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLTREPLVersion.VersionWithoutRevision} ");
-            Console.ResetColor();
-            Console.Write("rev ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{SLTREPLVersion.Revision}");
+            Console.WriteLine($" {SLTREPLVersion.VersionWithoutRevision} ");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(SLTVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLThreeVersion.VersionWithoutRevision} ");
+            Console.Write($" {GetVersionOfLanguage()} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{SLTVersion.Edition} ");
-            Console.ResetColor();
-            Console.Write("rev ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{SLThreeVersion.Revision}");
+            Console.WriteLine($"{SLTVersion.Edition} ");
             Console.ResetColor();
         }
 
@@ -860,13 +852,25 @@ namespace slt
         }
         #endregion
 
+        private static string VersionGetted = null;
+        private static string GetVersionOfLanguage()
+        {
+            if (string.IsNullOrEmpty(VersionGetted))
+            {
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(SLThreeAssembly.Location).ProductVersion;
+                var index = fileVersionInfo.IndexOf('+');
+                VersionGetted = index != -1 ? fileVersionInfo.Substring(0, index) : fileVersionInfo;
+            }
+            return VersionGetted;
+        }
+
         public static void REPLShortVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("SLThree REPL ");
+            Console.Write("SLThree ");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLTREPLVersion.VersionWithoutRevision}");
+            Console.Write($"{GetVersionOfLanguage()}");
             Console.ResetColor();
             Console.Write(" | ");
             Console.ForegroundColor = ConsoleColor.Cyan;
