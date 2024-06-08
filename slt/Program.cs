@@ -953,7 +953,9 @@ namespace slt
                     Console.Write("... " + new string(' ', REPLSubparser.Tabs * 4));
                 try
                 {
-                    var state = REPLSubparser.Parse(Console.ReadLine());
+                    var rdl = Console.ReadLine();
+                    var state = REPLSubparser.Parse(rdl);
+                    if (rdl == null) Console.WriteLine();
                     if (state == Subparser.SubparserState.WaitingText) continue;
                 }
                 catch (Exception e)

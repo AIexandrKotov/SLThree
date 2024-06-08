@@ -107,6 +107,11 @@ namespace slt
 
         public SubparserState Parse(string s)
         {
+            if (s == null)
+            {
+                Clear();
+                return SubparserState.Ready;
+            }
             InternalParse(s);
             State = Brackets.Count == 0 ? SubparserState.Ready : SubparserState.WaitingText;
             return State;
