@@ -2,3 +2,6 @@
 Optimization:
     - Wrappers refactoring, minumum 3x faster wrapping
       minimum 20x faster unwrapping
+    - Constructor method that creates new contexts
+       `context TBase { constructor = (f) => this.f = f; };`
+       `T1 = TBase(5); T2 = TBase(10);`

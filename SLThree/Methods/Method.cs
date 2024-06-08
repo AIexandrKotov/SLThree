@@ -19,6 +19,7 @@ namespace SLThree
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
         public readonly bool Binded = false;
+        public bool Constructor = false;
 
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
@@ -51,7 +52,7 @@ namespace SLThree
             ExecutionContext ret;
             if (Recursive)
             {
-                ret = new ExecutionContext();
+                ret = new ExecutionContext(false, false);
                 ret.Name = contextName;
                 ret.PreviousContext = super_context;
                 ret.LocalVariables.FillArguments(this, arguments);
@@ -64,11 +65,12 @@ namespace SLThree
                 if (cached_method_contextes.TryGetValue(this, out var cntx))
                 {
                     ret = cntx;
+                    if (Constructor) cntx.@this = definitionplace;
                     ret.PrepareToInvoke();
                 }
                 else
                 {
-                    ret = new ExecutionContext(super_context)
+                    ret = new ExecutionContext(super_context, false)
                     {
                         @this = definitionplace
                     };

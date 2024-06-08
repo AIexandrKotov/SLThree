@@ -51,6 +51,7 @@ namespace SLThree
         {
             switch (expression.Name)
             {
+                case "base": return new BaseLiteral(expression.SourceContext);
                 case "global": return new GlobalLiteral(expression.SourceContext);
                 case "self": return new SelfLiteral(expression.SourceContext);
                 case "this": return new ThisLiteral(expression.SourceContext);

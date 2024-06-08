@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -40,6 +41,14 @@ namespace SLThree
             {
                 if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 return method.GetValue(context, args);
+            }
+            else if (o is ContextWrap wrap)
+            {
+                if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is Method constructor)
+                {
+                    if (constructor.ParamNames.Length != args.Length) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    return wrap.Context.CreateInstance(constructor, args).wrap;
+                }
             }
             else if (o is MethodInfo mi)
             {

@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Text;
 namespace SLThree
 {
 
+#pragma warning disable IDE1006 // Стили именования
     public class ExecutionContext
     {
         public interface IExecutable
@@ -32,6 +34,7 @@ namespace SLThree
         internal bool Returned;
         internal bool Broken;
         internal bool Continued;
+        internal int Creations = 0;
 
         public object ReturnedValue;
 
@@ -69,8 +72,9 @@ namespace SLThree
         internal ExecutionContext PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
         public readonly ContextWrap wrap;
-        internal ContextWrap super;
-        public readonly ContextWrap @private;
+        public ContextWrap super;
+        public ContextWrap @private;
+        public ContextWrap @base;
         internal ExecutionContext SuperContext { get => super?.Context; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
@@ -112,6 +116,18 @@ namespace SLThree
 
         }
 
+        public ExecutionContext CreateInstance(Method constructor, object[] args)
+        {
+            var ret = new ExecutionContext(super.Context);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.@base = wrap;
+            constructor.Constructor = true;
+            constructor.definitionplace = ret.wrap;
+            constructor.GetValue(ret, args);
+            return ret;
+        }
+
         public readonly LocalVariablesContainer LocalVariables;
     }
+#pragma warning restore IDE1006 // Стили именования
 }

@@ -12,7 +12,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.8.0-alpha.11</Version>
+    <Version>0.8.0-alpha.49</Version>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/0.8.0"))</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -63,6 +63,12 @@
     <EmbeddedResource Include="docs\versions\0.7.0" />
     <EmbeddedResource Include="docs\versions\0.7.1" />
     <EmbeddedResource Include="docs\versions\0.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="&quot;..\verser\verser.exe&quot; --append &quot;SLThree&quot;" />
