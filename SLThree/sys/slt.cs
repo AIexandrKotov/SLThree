@@ -15,6 +15,8 @@ namespace SLThree.sys
         public static object eval(string s) => Parser.This.EvalExpression(s);
         public static object eval(ContextWrap context, string s) => Parser.This.EvalExpression(s, context.Context);
 
+        public static object clone(ICloneable clone) => clone.Clone();
+
         public static string repr(object o) => TreeViewer.GetView(o);
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());
         public static string xml_repr(object o) => XmlViewer.GetView(o);
