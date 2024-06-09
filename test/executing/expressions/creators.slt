@@ -8,7 +8,7 @@ lst = [228 as tested_type, ];
 ASSERT(self, (lst[0] is tested_type) as is);
 
 //context
-cntxt = new context { a = 229 as tested_type; };
+cntxt = context { a = 229 as tested_type; };
 ASSERT(self, (cntxt.a is tested_type) as is);
 
 //using

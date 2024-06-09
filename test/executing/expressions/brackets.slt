@@ -1,4 +1,4 @@
-tests = new context {
+tests = context {
     //indexator (1), call (2), tuple (3)
     
     test_111 = [[[0x111]]];
