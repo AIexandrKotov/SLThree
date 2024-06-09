@@ -103,6 +103,7 @@ expression <BaseExpression>
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
     // method
+    / "static" _required_ left:expression { new StaticExpression(left, state) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / condition_expression
     / match_expression
