@@ -166,12 +166,12 @@ namespace SLThree
                 sb.Append($"({Arguments.JoinIntoString(", ")})");
             if (CreatorContext?.Name != null)
                 sb.Append($" {CreatorContext.Name}");
-            if (CreatorContext.Ancestors.Length > 0)
+            if (CreatorContext?.Ancestors.Length > 0)
             {
                 sb.Append(": ");
                 sb.Append(CreatorContext.Ancestors.JoinIntoString(", "));
             }
-            if (CreatorContext.CreatorBody != null)
+            if (CreatorContext?.CreatorBody != null)
             {
                 sb.Append($"{{\n{CreatorContext.CreatorBody}\n}}");
             }
