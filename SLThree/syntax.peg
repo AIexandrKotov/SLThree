@@ -16,11 +16,11 @@ statement <BaseStatement>
     / break_statement
     / continue_statement
     / using_statement
-    / condition_statement
     / foreach_statement
     / while_statement
     / try_statement
     / throw_statement
+    / e:condition_statement { new ExpressionStatement(e, state) }
     / expression_statement
     / block_statement
     / ";" { new EmptyStatement(state) }
@@ -62,11 +62,6 @@ foreach_statement <ForeachLoopStatement>
     / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Empty loop head", state)) }
     / "foreach" _required_ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
 
-condition_statement <ConditionStatement>
-    = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionStatement(cond, GetListStatement(t), GetListStatement(f), state) }
-    / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionStatement(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
-    / "if" _ "(" _ ")" _ statement? { Panic<ConditionStatement>(new SyntaxError("Empty condition", state)) }
-
 try_statement <TryStatement>
     = "try" _ try_body:block_statement _ 
       "catch" _ "(" _ catch_var:expression _ ")" _ catch_body:statement _
@@ -85,6 +80,10 @@ try_statement <TryStatement>
 throw_statement <ThrowStatement>
     = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, state) }
     / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError("Expected `;`", state)) }
+
+expression_as_statement <BaseStatement>
+    = block_statement
+    / value:expression { new ExpressionStatement(value, state) }
 
 expression_statement <ExpressionStatement> 
     = value:expression _ ";" { new ExpressionStatement(value, state) }
@@ -195,14 +194,20 @@ unary <BaseExpression>
     / "*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
     / "@" _ left:typename { new UnaryReflection(left, state) }
-    / match
+    / condition_expression
+    / match_expression
+    / primary
 
-match <BaseExpression>
+condition_expression <ConditionExpression>
+    = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
+    / "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
+    / "if" _ "(" _ ")" _ statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
+
+match_expression <BaseExpression>
     = "match" _ "(" _ expr:expression _ ")" _ "{" _ 
           matches:match_node<1,,";" _>
           _ ";"?
     _ "}" { new MatchExpression(expr, matches, state) }
-    / primary
 
 match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
     = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:expression<1,,"," _> { exprs })
