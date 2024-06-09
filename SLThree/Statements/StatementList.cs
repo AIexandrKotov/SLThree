@@ -13,8 +13,8 @@ namespace SLThree
 
         public StatementList(IList<BaseStatement> statements, SourceContext context) : base(context)
         {
-            Statements = statements.ToArray();
-            count = statements.Count;
+            Statements = statements.Where(x => !(x is EmptyStatement)).ToArray();
+            count = Statements.Length;
         }
 
         public override string ToString() => $"{Statements.Length} statements";

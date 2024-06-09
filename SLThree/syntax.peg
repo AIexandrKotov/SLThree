@@ -23,7 +23,7 @@ statement <BaseStatement>
     / throw_statement
     / expression_statement
     / block_statement
-    / ";" { new StatementList(new BaseStatement[0], state) }
+    / ";" { new EmptyStatement(state) }
 
 using_statement <UsingStatement>
     = "using" _required_ u:using  
