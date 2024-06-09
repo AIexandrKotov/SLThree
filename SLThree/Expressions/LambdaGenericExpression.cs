@@ -33,7 +33,6 @@ namespace SLThree
                     null,
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
-                    false,
                     Generics);
             }
         }

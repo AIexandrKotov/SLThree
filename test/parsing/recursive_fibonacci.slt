@@ -1,4 +1,4 @@
-global.fib = recursive n => {
+global.fib = recursive (n) => {
     if (n < 2) { 
         return n;
     }

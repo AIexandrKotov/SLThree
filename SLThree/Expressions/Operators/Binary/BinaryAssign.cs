@@ -28,8 +28,7 @@ namespace SLThree
                     {
                         var m2 = mth.CloneWithNewName(nl.Name);
                         m2.UpdateContextName();
-                        if (m2.Binded) m2.definitionplace = mth.definitionplace;
-                        else m2.definitionplace = new ContextWrap(context);
+                        m2.definitionplace = new ContextWrap(context);
                         right = m2;
                     }
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
@@ -50,8 +49,7 @@ namespace SLThree
                 {
                     var m2 = mth.CloneWithNewName(nl.Name);
                     m2.UpdateContextName();
-                    if (m2.Binded) m2.definitionplace = mth.definitionplace;
-                    else m2.definitionplace = new ContextWrap(context);
+                    m2.definitionplace = new ContextWrap(context);
                     right = m2;
                 }
                 context.LocalVariables.SetValue(nl.Name, right);
@@ -89,8 +87,7 @@ namespace SLThree
                 {
                     var m2 = mth.CloneWithNewName(nl.Name);
                     m2.UpdateContextName();
-                    if (m2.Binded) m2.definitionplace = mth.definitionplace;
-                    else m2.definitionplace = new ContextWrap(context);
+                    m2.definitionplace = new ContextWrap(context);
                     right = m2;
                 }
                 variable_index = context.LocalVariables.SetValue(nl.Name, right);

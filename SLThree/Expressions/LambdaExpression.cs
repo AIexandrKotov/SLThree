@@ -30,8 +30,7 @@ namespace SLThree
                     ReturnTypeHint,
                     null,
                     !Modificators.Contains("explicit"),
-                    Modificators.Contains("recursive"),
-                    false);
+                    Modificators.Contains("recursive"));
             }
         }
 

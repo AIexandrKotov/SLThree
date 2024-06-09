@@ -24,6 +24,7 @@ statement <BaseStatement>
     / e:match_expression { new ExpressionStatement(e, state) }
     / e:context_expression { new ExpressionStatement(e, state) }
     / e:block_instance_expression { new ExpressionStatement(e, state) }
+    / e:method_definition_statement { new ExpressionStatement(e, state) }
     / expression_statement
     / block_statement
     / ";" { new EmptyStatement(state) }
@@ -84,6 +85,10 @@ throw_statement <ThrowStatement>
     = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, state) }
     / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError("Expected `;`", state)) }
 
+expression_as_return <BaseStatement>
+    = block_statement
+    / value:expression { new ReturnStatement(value, state) }
+
 expression_as_statement <BaseStatement>
     = block_statement
     / value:expression { new ExpressionStatement(value, state) }
@@ -97,8 +102,11 @@ expression <BaseExpression>
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
-    / method
+    // method
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / condition_expression
+    / match_expression
+    / method_definition_expression
     / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, state) }
     / left:arg_name _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
     / left:binary_7 _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
@@ -197,8 +205,6 @@ unary <BaseExpression>
     / "*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
     / "@" _ left:typename { new UnaryReflection(left, state) }
-    / condition_expression
-    / match_expression
     / primary
 
 condition_statement <ConditionExpression>
@@ -224,6 +230,12 @@ match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
         expr:expression { new ExpressionStatement(expr, state) }
         / block_statement
     ) { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
+
+withoutinvokation_primary <BaseExpression> -memoize
+    = left:withoutinvokation_primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
+    / left:withoutinvokation_primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
+    / left:withoutinvokation_primary _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
+    / onlyname_access
 
 primary <BaseExpression> -memoize
     = left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
@@ -461,8 +473,58 @@ access_right <BaseExpression> -memoize
     / right:access_right { right }
     / right:name { right }
 
+onlyname_access <BaseExpression> -memoize
+    = left:name _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
+    / right:name { right }
+
 using <CreatorUsing>
     = t_name:typename { new CreatorUsing(t_name, state) }
+
+method_definition_expression <FunctionDefinition>
+    = method_definition_statement
+    / mods_name:method_mods_name?
+      generics:method_generic_part? 
+      "(" _ args:arg_name<0,,"," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
+      {
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+      }
+    / mods_name:method_mods_name?
+      generics:method_generic_part? 
+      "(" _ args:arg_name<0,,"," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
+      {
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
+      }
+    / generics:method_generic_part?
+      arg:arg_name
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
+      {
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new NameExpression[1] {arg}, GetListStatement(body), GetOptional(ret), state)
+      }
+    / generics:method_generic_part?
+      arg:arg_name
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
+      {
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new NameExpression[1] {arg}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+      }
+
+method_definition_statement <FunctionDefinition>
+    = mods_name:method_mods_name?
+      generics:method_generic_part? 
+      "(" _ args:arg_name<0,,"," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
+      body:block_statement {
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
+      }
+
+method_generic_part <IList<NameExpression>>
+    = "<" _ generic_args:name<1,,"," _> _ ">" _ { generic_args }
+
+method_mods_name <Tuple<string[], BaseExpression>>
+    = mods:method_modificator<1,,_required_> _required_ name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(mods.ToArray(), name) }
+    / mods:method_modificator<1,,_required_> _ { new Tuple<string[], BaseExpression>(mods.ToArray(), null) }
+    / name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(new string[0], name) }
 
 generic_lambda <LambdaGenericExpression>
     = left:(

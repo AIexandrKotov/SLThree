@@ -61,9 +61,11 @@ namespace SLThree
         private bool is_name_expr;
         private int variable_index;
 
-        private string GetName()
+        private string GetName() => GetLastName(Name);
+        public static string GetLastName(BaseExpression name)
         {
-            var n = Name.ToString();
+            name.PrioriryRaised = false;
+            var n = name.ToString();
             var index = n.LastIndexOf('.');
             if (index == -1) return n;
             else return n.Substring(index + 1);
