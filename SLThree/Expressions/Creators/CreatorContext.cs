@@ -27,13 +27,7 @@ namespace SLThree
 
         public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, SourceContext context) : base(context)
         {
-            if (!is_free_creator)
-            {
-                if (!is_free_creator && name is MemberAccess access)
-                    Name = access.Right as NameExpression;
-                else Name = name as NameExpression;
-            }
-            else Name = name;
+            Name = name;
             Ancestors = ancestors;
             CreatorBody = body;
             IsFreeCreator = is_free_creator;
@@ -81,7 +75,7 @@ namespace SLThree
             var wrap = ret.wrap;
             if (HasName)
             {
-                ret.Name = IsFreeCreator ? GetName() : Name.ToString();
+                ret.Name = GetName();
                 if (IsFreeCreator)
                     BinaryAssign.AssignToValue(context, Name, wrap, ref counted_invoked, ref is_name_expr, ref variable_index);
             }
