@@ -21,6 +21,9 @@ statement <BaseStatement>
     / try_statement
     / throw_statement
     / e:condition_statement { new ExpressionStatement(e, state) }
+    / e:match_expression { new ExpressionStatement(e, state) }
+    / e:context_expression { new ExpressionStatement(e, state) }
+    / e:block_instance_expression { new ExpressionStatement(e, state) }
     / expression_statement
     / block_statement
     / ";" { new EmptyStatement(state) }
@@ -198,6 +201,11 @@ unary <BaseExpression>
     / match_expression
     / primary
 
+condition_statement <ConditionExpression>
+    = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:block_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
+    / "if" _ "(" _ cond:expression _ ")" _ t:block_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
+    / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
+
 condition_expression <ConditionExpression>
     = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
     / "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
@@ -228,12 +236,26 @@ primary <BaseExpression> -memoize
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
     / "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
+    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
     // "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
+    / new_context_expression
+    / context_expression
+    / instance_expression
+    / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
+    / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
+    / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
+    / special
+    / literal
+    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
 
+new_context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context Name: TBase
-    / "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> { 
+    = "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> { 
         new CreatorContext(name, ancestors.ToArray(), state)
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
@@ -251,9 +273,11 @@ primary <BaseExpression> -memoize
     / "new" _required_ "context" { 
         new CreatorContext(state)
     }
+
+context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        context Name: TBase {}
-    / "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> 
+    = "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> 
     _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
         new CreatorContext(name, ancestors.ToArray(), body, state)
     }
@@ -275,9 +299,11 @@ primary <BaseExpression> -memoize
     _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
         new CreatorContext(body, state)
     }
+
+instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
     _ ":" _ ancestors:primary<1,,"," _> 
     _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
         CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, state)
@@ -371,16 +397,60 @@ primary <BaseExpression> -memoize
     / "new" _required_ t:typename  { 
         CreatorInstance.CaseType(t, state)
     }
-    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
-    / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
-    / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
-    / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
-    / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
-    / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
-    / special
-    / literal
-    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
-    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+block_instance_expression <BaseExpression>
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name: TBase {};
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,"," _> 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args): TBase {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,"," _> 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.CaseTypeArgsBodyInheritance(t, args.ToArray(), ancestors.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name: TBase {}; 
+    / "new" _required_ t:typename _ name:primary
+    _ ":" _ ancestors:primary<1,,"," _> 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T: TBase {}; 
+    / "new" _required_ t:typename 
+    _ ":" _ ancestors:primary<1,,"," _> 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.CaseTypeBodyInheritance(t, ancestors.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.CaseTypeArgsBody(t, args.ToArray(), body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.NamedCaseTypeBody(t, name, body, state)
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
+        CreatorInstance.CaseTypeBody(t, body, state)
+    }
 
 dictionary_entry <CreatorDictionary.Entry>
     = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 

@@ -6,6 +6,8 @@ Language:
       - New context creators:
          `context [Name][: Ancestors] {...}`
          `new context [Name][: Ancestors]`
+    - Statement-like notation (without `;`) for expressions with body:
+        condition, match, context, new
     - Constructor method that creates new contexts
        `context TBase { constructor = (f) => this.f = f; };`
        `T1 = TBase(5); T2 = TBase(10);`
