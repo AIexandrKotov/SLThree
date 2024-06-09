@@ -11,8 +11,7 @@ namespace SLThree
 {
     public class Method : ICloneable
     {
-        private static readonly Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
-
+        private ExecutionContext cached_context;
         public readonly string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
@@ -62,10 +61,10 @@ namespace SLThree
             }
             else
             {
-                if (cached_method_contextes.TryGetValue(this, out var cntx))
+                if (cached_context != null)
                 {
-                    ret = cntx;
-                    if (Constructor) cntx.@this = definitionplace;
+                    ret = cached_context;
+                    if (Constructor) cached_context.@this = definitionplace;
                     ret.PrepareToInvoke();
                 }
                 else
@@ -75,7 +74,7 @@ namespace SLThree
                         @this = definitionplace
                     };
                     ret.SuperContext = ret.@this.Context?.SuperContext;
-                    cached_method_contextes.Add(this, ret);
+                    cached_context = ret;
                 }
                 ret.Name = contextName;
                 ret.PreviousContext = super_context;
@@ -97,6 +96,13 @@ namespace SLThree
             }
             if (context.Returned) return context.ReturnedValue;
             return null;
+        }
+
+        public Method identity(ContextWrap context)
+        {
+            if (Recursive) definitionplace = context;
+            else cached_context = null;
+            return this;
         }
 
         #region Invoke [auto-generated]
