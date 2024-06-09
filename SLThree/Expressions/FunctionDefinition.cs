@@ -61,7 +61,26 @@ namespace SLThree
             }
         }
 
-        public override string ExpressionToString() => $"MethodDefinition";
+        public override string ExpressionToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(Modificators.JoinIntoString(" "));
+            if (FunctionName != null)
+            {
+                if (Modificators.Length > 0) sb.Append(" ");
+                sb.Append($"{FunctionName}");
+            }
+            if (GenericArguments.Length > 0) sb.Append($"<{GenericArguments.JoinIntoString(", ")}>");
+            sb.Append($"({Arguments.JoinIntoString(", ")})");
+            if (ReturnTypeHint != null)
+                sb.Append($": {ReturnTypeHint}");
+            if (FunctionBody.Statements.Length == 1 && FunctionBody.Statements[0] is ReturnStatement statement && !statement.VoidReturn)
+                sb.Append($" => {statement.Expression}");
+            else sb.Append($"{{{FunctionBody}}}");
+
+            return sb.ToString();
+        }
 
         public Method Method;
         private ExecutionContext counted_invoked;
