@@ -107,18 +107,5 @@ namespace SLThree
         {
             throw exception;
         }
-
-        private static BaseStatement CheckOnContextStatements(BaseStatement statement)
-        {
-            if (statement is ExpressionStatement expressionStatement)
-            {
-                if (expressionStatement.Expression is BinaryAssign)
-                    return statement;
-                throw new SyntaxError($"Expected assign expression, found {expressionStatement.Expression.GetType().Name}", expressionStatement.Expression.SourceContext);
-            }
-            if (statement is ContextStatement contextStatement)
-                return contextStatement;
-            throw new SyntaxError($"Expected assign expression, found {statement.GetType().Name}", statement.SourceContext);
-        }
     }
 }
