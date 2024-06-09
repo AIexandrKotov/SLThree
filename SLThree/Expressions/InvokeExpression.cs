@@ -27,10 +27,8 @@ namespace SLThree
 
         public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}({Arguments.JoinIntoString(", ")})";
 
-        public object GetValue(ExecutionContext context, object[] args)
+        public object InvokeForObj(ExecutionContext context, object[] args, object o)
         {
-            var o = Left.GetValue(context);
-
             if (o == null)
             {
                 if (null_conditional) return null;
@@ -71,6 +69,11 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        public object GetValue(ExecutionContext context, object[] args)
+        {
+            return (context, args, Left.GetValue(context));
+        }
+
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
@@ -96,14 +99,7 @@ namespace SLThree
                 if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
-            else if (obj != null)
-            {
-                return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
-            }
-
-            return null;
+            else return InvokeForObj(context, Arguments.ConvertAll(x => x.GetValue(context)), obj);
         }
 
         public override object Clone()

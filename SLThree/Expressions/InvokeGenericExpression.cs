@@ -30,10 +30,8 @@ namespace SLThree
 
         public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}<{GenericArguments.JoinIntoString(", ")}>({Arguments.JoinIntoString(", ")})";
 
-        public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
+        public object InvokeForObj(ExecutionContext context, Type[] generic_args, object[] args, object o)
         {
-            var o = Left.GetValue(context);
-
             if (o == null)
             {
                 if (null_conditional) return null;
@@ -65,6 +63,11 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
+        {
+            return InvokeForObj(context, generic_args, args, Left.GetValue(context));
+        }
+
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, GenericArguments.ConvertAll(x => (Type)x.GetValue(context)), Arguments.ConvertAll(x => x.GetValue(context)));
@@ -91,15 +94,7 @@ namespace SLThree
                 if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.MakeGenericMethod(generic_args).Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
-            else if (obj != null)
-            {
-                return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .MakeGenericMethod(generic_args)
-                    .Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
-            }
-
-            return null;
+            else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), obj);
         }
 
         public override object Clone()
