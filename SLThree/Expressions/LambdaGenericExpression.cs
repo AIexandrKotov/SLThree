@@ -42,7 +42,7 @@ namespace SLThree
         public Method Method;
         public override object GetValue(ExecutionContext context)
         {
-            Method.definitionplace = context.wrap;
+            Method.@this = context.wrap;
             return Method;
         }
 

@@ -145,10 +145,15 @@ namespace SLThree
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
-                            mth = mth.CloneWithNewName(nameExpression2.Name);
-                            mth.UpdateContextName();
-                            mth.definitionplace = new ContextWrap(context);
-                            value = mth;
+                            if (mth.Binded) value = mth;
+                            else
+                            {
+                                mth.Name = nameExpression2.Name;
+                                mth.UpdateContextName();
+                                mth.@this = new ContextWrap(context);
+                                mth.Binded = true;
+                                value = mth;
+                            }
                         }
                         context.LocalVariables.SetValue(other_context_name, value);
                     }

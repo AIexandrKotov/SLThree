@@ -121,8 +121,7 @@ namespace SLThree
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
             ret.@base = wrap;
-            constructor.Constructor = true;
-            constructor.definitionplace = ret.wrap;
+            constructor.@this = ret.wrap;
             constructor.GetValue(ret, args);
             return ret;
         }
@@ -135,16 +134,14 @@ namespace SLThree
             {
                 if (constructor.ParamNames.Length != args.Length)
                     throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
-                constructor.Constructor = true;
-                constructor.definitionplace = ret.wrap;
+                constructor.@this = ret.wrap;
                 constructor.GetValue(ret, args);
             }
             return ret;
         }
         public void Implementation(ExecutionContext ret, Method constructor, object[] args)
         {
-            constructor.Constructor = true;
-            constructor.definitionplace = ret.wrap;
+            constructor.@this = ret.wrap;
             constructor.GetValue(ret, args);
         }
         public void Implementation(ExecutionContext ret, object[] args, SourceContext sourceContext)
@@ -153,8 +150,7 @@ namespace SLThree
             {
                 if (constructor.ParamNames.Length != args.Length) 
                     throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
-                constructor.Constructor = true;
-                constructor.definitionplace = ret.wrap;
+                constructor.@this = ret.wrap;
                 constructor.GetValue(ret, args);
             }
         }

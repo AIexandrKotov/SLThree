@@ -1,7 +1,9 @@
-﻿using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -89,10 +91,14 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            Method.definitionplace = context.wrap;
+            var method = Method.CloneCast();
+            method.@this = context.wrap;
             if (FunctionName != null)
-                BinaryAssign.AssignToValue(context, FunctionName, Method, ref counted_invoked, ref is_name_expr, ref variable_index);
-            return Method;
+            {
+                method.Name = CreatorContext.GetLastName(FunctionName);
+                BinaryAssign.AssignToValue(context, FunctionName, method, ref counted_invoked, ref is_name_expr, ref variable_index);
+            }
+            return method;
         }
 
         public override object Clone()

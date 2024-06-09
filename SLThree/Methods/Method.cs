@@ -12,12 +12,12 @@ namespace SLThree
     public class Method : ICloneable
     {
         private ExecutionContext cached_context;
-        public readonly string Name;
+        public string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
-        public bool Constructor = false;
+        public bool Binded = false;
 
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
@@ -25,7 +25,14 @@ namespace SLThree
         internal ContextWrap definitionplace;
         internal string contextName = "";
 
-        public ContextWrap @this => definitionplace;
+        public ContextWrap @this
+        {
+            get => definitionplace; internal set
+            {
+                definitionplace = value;
+                cached_context = null;
+            }
+        }
 
         internal protected Method() { }
         public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive)
@@ -62,7 +69,6 @@ namespace SLThree
                 if (cached_context != null)
                 {
                     ret = cached_context;
-                    if (Constructor) cached_context.@this = definitionplace;
                     ret.PrepareToInvoke();
                 }
                 else
@@ -98,8 +104,8 @@ namespace SLThree
 
         public Method identity(ContextWrap context)
         {
-            if (Recursive) definitionplace = context;
-            else cached_context = null;
+            @this = context;
+            Binded = true;
             return this;
         }
 

@@ -16,6 +16,7 @@ Language:
        `T1 = TBase(5); T2 = TBase(10);`
     - Static expression (will be executed only once) `static x`
     - Condition expression instead of condition statement
+    - Strong method binding
     - Changed context syntax:
        `new context Name: T {...}` -> `new T Name {...}`
        `new context: T {...}` -> `new T {...}`

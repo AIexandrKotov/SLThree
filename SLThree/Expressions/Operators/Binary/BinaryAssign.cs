@@ -26,10 +26,15 @@ namespace SLThree
                 {
                     if (right is Method mth)
                     {
-                        var m2 = mth.CloneWithNewName(nl.Name);
-                        m2.UpdateContextName();
-                        m2.definitionplace = new ContextWrap(context);
-                        right = m2;
+                        if (mth.Binded) right = mth;
+                        else
+                        {
+                            mth.Name = nl.Name;
+                            mth.UpdateContextName();
+                            mth.@this = new ContextWrap(context);
+                            mth.Binded = true;
+                            right = mth;
+                        }
                     }
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
                     is_name_expr = true;
@@ -47,10 +52,15 @@ namespace SLThree
             {
                 if (right is Method mth)
                 {
-                    var m2 = mth.CloneWithNewName(nl.Name);
-                    m2.UpdateContextName();
-                    m2.definitionplace = new ContextWrap(context);
-                    right = m2;
+                    if (mth.Binded) right = mth;
+                    else
+                    {
+                        mth.Name = nl.Name;
+                        mth.UpdateContextName();
+                        mth.@this = new ContextWrap(context);
+                        mth.Binded = true;
+                        right = mth;
+                    }
                 }
                 context.LocalVariables.SetValue(nl.Name, right);
                 return right;
@@ -85,10 +95,15 @@ namespace SLThree
             {
                 if (right is Method mth)
                 {
-                    var m2 = mth.CloneWithNewName(nl.Name);
-                    m2.UpdateContextName();
-                    m2.definitionplace = new ContextWrap(context);
-                    right = m2;
+                    if (mth.Binded) right = mth;
+                    else
+                    {
+                        mth.Name = nl.Name;
+                        mth.UpdateContextName();
+                        mth.@this = new ContextWrap(context);
+                        mth.Binded = true;
+                        right = mth;
+                    }
                 }
                 variable_index = context.LocalVariables.SetValue(nl.Name, right);
                 is_name_expr = true;
