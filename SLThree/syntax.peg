@@ -675,7 +675,7 @@ num_literal <BaseExpression>
     / i64:([0-9_]+ ("i64")?)    { new LongLiteral   (long.Parse     (i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, state) }
     
 keyword
-    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" 
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "static"
     / "using" / "context" / "new" / "match"
     / "self" / "upper" / "this" / "global" / "super" / "private"
     / "try" / "catch" / "finally" / "throw"
