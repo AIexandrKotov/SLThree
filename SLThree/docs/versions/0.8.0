@@ -1,5 +1,8 @@
 ------ 0.8.0 ------ [~.~.~]
 Language:
+    - New method definition syntax
+      `[modifs][Name][<T>](args) {...}`
+      `[modifs][Name][<T>](args) => value`
     - You can now copy contexts with ":" in the following cases:
       - New initializers:       // [] - optional
          `new T [Name][: Ancestors][{...}]`
@@ -7,7 +10,7 @@ Language:
          `context [Name][: Ancestors] {...}`
          `new context [Name][: Ancestors]`
     - Statement-like notation (without `;`) for expressions with body:
-        condition, match, context, new
+        condition, match, context, new, methods
     - Constructor method that creates new contexts
        `context TBase { constructor = (f) => this.f = f; };`
        `T1 = TBase(5); T2 = TBase(10);`
