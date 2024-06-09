@@ -71,7 +71,7 @@ namespace SLThree
 
         public object GetValue(ExecutionContext context, object[] args)
         {
-            return (context, args, Left.GetValue(context));
+            return InvokeForObj(context, args, Left.GetValue(context));
         }
 
         public override object GetValue(ExecutionContext context)
