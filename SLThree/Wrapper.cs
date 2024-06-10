@@ -759,65 +759,69 @@ namespace SLThree
             {
                 var unwrapper_dm = new DynamicMethod("Unwrapper", Void, new Type[] { LocalsType, type });
                 var unwrapper_il = unwrapper_dm.GetILGenerator();
-                unwrapper_il.DeclareLocal(typeof(int));
-                unwrapper_il.DeclareLocal(typeof(object[]));
-                unwrapper_il.DeclareLocal(typeof(ContextWrap));
 
-                unwrapper_il.Emit(OpCodes.Ldc_I4_0);
-                unwrapper_il.Emit(OpCodes.Stloc_0);
-                unwrapper_il.Emit(OpCodes.Ldarg_0);
-                unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("NamedIdentificators"));
-                unwrapper_il.Emit(OpCodes.Ldarg_0);
-                unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("Variables"));
-                unwrapper_il.Emit(OpCodes.Stloc_1);
-
-
-                var label = default(Label);
-
-                for (var i = 0; i < elems.Count; i++)
+                if (elems.Count > 0)
                 {
-                    if (elems[i].IsWrapReadonly) continue;
-                    if (i < elems.Count - 1) unwrapper_il.Emit(OpCodes.Dup);
+                    unwrapper_il.DeclareLocal(typeof(int));
+                    unwrapper_il.DeclareLocal(typeof(object[]));
+                    unwrapper_il.DeclareLocal(typeof(ContextWrap));
 
-                    unwrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
-                    unwrapper_il.Emit(OpCodes.Ldloca_S, 0);
-                    unwrapper_il.Emit(OpCodes.Callvirt, typeof(Dictionary<string, int>).GetMethod("TryGetValue"));
-                    unwrapper_il.Emit(OpCodes.Brfalse_S, label = unwrapper_il.DefineLabel());
+                    unwrapper_il.Emit(OpCodes.Ldc_I4_0);
+                    unwrapper_il.Emit(OpCodes.Stloc_0);
+                    unwrapper_il.Emit(OpCodes.Ldarg_0);
+                    unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("NamedIdentificators"));
+                    unwrapper_il.Emit(OpCodes.Ldarg_0);
+                    unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("Variables"));
+                    unwrapper_il.Emit(OpCodes.Stloc_1);
 
 
-                    var elem_type = GetElementType(elems[i]);
-                    if (elems[i].IsContext)
+                    var label = default(Label);
+
+                    for (var i = 0; i < elems.Count; i++)
                     {
-                        unwrapper_il.Emit(OpCodes.Ldloc_1);
-                        unwrapper_il.Emit(OpCodes.Ldloc_0);
-                        unwrapper_il.Emit(OpCodes.Ldelem_Ref);
-                        unwrapper_il.Emit(OpCodes.Isinst, typeof(ContextWrap));
-                        unwrapper_il.Emit(OpCodes.Stloc_2);
-                        unwrapper_il.Emit(OpCodes.Ldloc_2);
-                        unwrapper_il.Emit(OpCodes.Brfalse_S, label);
+                        if (elems[i].IsWrapReadonly) continue;
+                        if (i < elems.Count - 1) unwrapper_il.Emit(OpCodes.Dup);
 
-                        unwrapper_il.Emit(OpCodes.Ldarg_1);
-                        unwrapper_il.Emit(OpCodes.Ldloc_2);
-                        //unwrapper_il.Emit(OpCodes.Ldfld, typeof(ContextWrap).GetField("Context"));
-                        unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("UnwrapUnder", BindingFlags.Public | BindingFlags.Static));
-                        SetElement(elems[i], unwrapper_il);
+                        unwrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
+                        unwrapper_il.Emit(OpCodes.Ldloca_S, 0);
+                        unwrapper_il.Emit(OpCodes.Callvirt, typeof(Dictionary<string, int>).GetMethod("TryGetValue"));
+                        unwrapper_il.Emit(OpCodes.Brfalse_S, label = unwrapper_il.DefineLabel());
+
+
+                        var elem_type = GetElementType(elems[i]);
+                        if (elems[i].IsContext)
+                        {
+                            unwrapper_il.Emit(OpCodes.Ldloc_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_0);
+                            unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+                            unwrapper_il.Emit(OpCodes.Isinst, typeof(ContextWrap));
+                            unwrapper_il.Emit(OpCodes.Stloc_2);
+                            unwrapper_il.Emit(OpCodes.Ldloc_2);
+                            unwrapper_il.Emit(OpCodes.Brfalse_S, label);
+
+                            unwrapper_il.Emit(OpCodes.Ldarg_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_2);
+                            //unwrapper_il.Emit(OpCodes.Ldfld, typeof(ContextWrap).GetField("Context"));
+                            unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("UnwrapUnder", BindingFlags.Public | BindingFlags.Static));
+                            SetElement(elems[i], unwrapper_il);
+                        }
+                        else
+                        {
+                            unwrapper_il.Emit(OpCodes.Ldarg_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_0);
+                            unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+
+                            if (elem_type.IsValueType) unwrapper_il.Emit(OpCodes.Unbox_Any, elem_type);
+                            else unwrapper_il.Emit(OpCodes.Castclass, elem_type);
+
+                            if (!elems[i].IsStrongUnwrap && HasRecast(elem_type))
+                                unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("UnwrapCast", BindingFlags.Public | BindingFlags.Static));
+
+                            SetElement(elems[i], unwrapper_il);
+                        }
+                        unwrapper_il.MarkLabel(label);
                     }
-                    else
-                    {
-                        unwrapper_il.Emit(OpCodes.Ldarg_1);
-                        unwrapper_il.Emit(OpCodes.Ldloc_1);
-                        unwrapper_il.Emit(OpCodes.Ldloc_0);
-                        unwrapper_il.Emit(OpCodes.Ldelem_Ref);
-
-                        if (elem_type.IsValueType) unwrapper_il.Emit(OpCodes.Unbox_Any, elem_type);
-                        else unwrapper_il.Emit(OpCodes.Castclass, elem_type);
-
-                        if (!elems[i].IsStrongUnwrap && HasRecast(elem_type))
-                            unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("UnwrapCast", BindingFlags.Public | BindingFlags.Static));
-
-                        SetElement(elems[i], unwrapper_il);
-                    }
-                    unwrapper_il.MarkLabel(label);
                 }
 
                 unwrapper_il.Emit(OpCodes.Ret);
