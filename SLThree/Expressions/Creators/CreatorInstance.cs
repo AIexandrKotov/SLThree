@@ -188,7 +188,7 @@ namespace SLThree
             if (CreatorContext != null)
             {
                 var created = CreatorContext.GetValue(context).Cast<ContextWrap>().Context;
-                if (Arguments.Length == 0)
+                if (Arguments.Length == 0 && type.HasInitor())
                     instance = type.InstanceUnwrap(created);
                 else
                 {

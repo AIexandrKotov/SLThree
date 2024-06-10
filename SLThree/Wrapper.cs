@@ -864,35 +864,37 @@ namespace SLThree
             }
 
             var initor = default(Delegate);
-            if (explicit_constructor == null) throw new NotSupportedException($"Type {type.Name} must have parameterless constructor");
-            if (explicit_constructor.GetParameters().Length > 0)
+            if (explicit_constructor != null)
             {
-                var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
-                var initor_il = initor_dm.GetILGenerator();
-                initor_il.Emit(OpCodes.Ldarg_0);
-                initor_il.Emit(OpCodes.Call, explicit_constructor_args);
-                initor_il.DeclareLocal(typeof(object[]));
-                initor_il.Emit(OpCodes.Stloc_0);
-                var i = 0;
-                foreach (var p in explicit_constructor.GetParameters())
+                if (explicit_constructor.GetParameters().Length > 0)
                 {
-                    initor_il.Emit(OpCodes.Ldloc_0);
-                    initor_il.Emit(OpCodes.Ldc_I4, i++);
-                    initor_il.Emit(OpCodes.Ldelem_Ref);
-                    if (p.ParameterType.IsValueType) initor_il.Emit(OpCodes.Unbox_Any, p.ParameterType);
-                    else initor_il.Emit(OpCodes.Castclass, p.ParameterType);
+                    var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
+                    var initor_il = initor_dm.GetILGenerator();
+                    initor_il.Emit(OpCodes.Ldarg_0);
+                    initor_il.Emit(OpCodes.Call, explicit_constructor_args);
+                    initor_il.DeclareLocal(typeof(object[]));
+                    initor_il.Emit(OpCodes.Stloc_0);
+                    var i = 0;
+                    foreach (var p in explicit_constructor.GetParameters())
+                    {
+                        initor_il.Emit(OpCodes.Ldloc_0);
+                        initor_il.Emit(OpCodes.Ldc_I4, i++);
+                        initor_il.Emit(OpCodes.Ldelem_Ref);
+                        if (p.ParameterType.IsValueType) initor_il.Emit(OpCodes.Unbox_Any, p.ParameterType);
+                        else initor_il.Emit(OpCodes.Castclass, p.ParameterType);
+                    }
+                    initor_il.Emit(OpCodes.Newobj, explicit_constructor);
+                    initor_il.Emit(OpCodes.Ret);
+                    initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
                 }
-                initor_il.Emit(OpCodes.Newobj, explicit_constructor);
-                initor_il.Emit(OpCodes.Ret);
-                initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
-            }
-            else
-            {
-                var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
-                var initor_il = initor_dm.GetILGenerator();
-                initor_il.Emit(OpCodes.Newobj, explicit_constructor);
-                initor_il.Emit(OpCodes.Ret);
-                initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
+                else
+                {
+                    var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
+                    var initor_il = initor_dm.GetILGenerator();
+                    initor_il.Emit(OpCodes.Newobj, explicit_constructor);
+                    initor_il.Emit(OpCodes.Ret);
+                    initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
+                }
             }
 
             return (quickwrapper, safewrapper, unwrapper, wrapname, unwrapname, initor, elems.ToDictionary(x => x.MemberInfo.Name, x => x.id));
@@ -925,6 +927,7 @@ namespace SLThree
         public static void InstanceWrapIn(this Type T, object obj, ExecutionContext context) => NonGeneric[T].WrapIn(obj, context);
         public static void UnwrapIn(this ExecutionContext context, Type T, object obj) => NonGeneric[T].UnwrapIn(context, obj);
         public static void InstanceUnwrapIn(this Type T, ExecutionContext context, object obj) => NonGeneric[T].UnwrapIn(context, obj);
+        public static bool HasInitor(this Type T) => NonGeneric[T].HasInitior;
         public sealed class NonGenericStaticWrapper
         {
             public readonly MethodInfo mWrap;
@@ -963,6 +966,7 @@ namespace SLThree
             public readonly MethodInfo mUnwrap;
             public readonly MethodInfo mWrapIn;
             public readonly MethodInfo mUnwrapIn;
+            public readonly bool HasInitior;
 
             internal NonGenericWrapper(Type T)
             {
@@ -971,6 +975,7 @@ namespace SLThree
                 mUnwrap = type.GetMethod("Unwrap");
                 mWrapIn = type.GetMethod("WrapIn");
                 mUnwrapIn = type.GetMethod("UnwrapIn");
+                HasInitior = (bool)type.GetField("HasInitor").GetValue(null);
                 nongeneric_wrappers[T] = this;
             }
 
@@ -995,6 +1000,7 @@ namespace SLThree
     public static class Wrapper<T>
     {
         public static readonly Func<ExecutionContext, T> Initor;
+        public static readonly bool HasInitor;
 
         //Быстрое оборачивание заполняет переменные по отступу
         public static readonly Action<T, ExecutionContext, LocalVariablesContainer> QuickWrapper;
@@ -1018,6 +1024,7 @@ namespace SLThree
             WrapName = (Action<T, ExecutionContext>)d.Item4;
             UnwrapName = (Action<ExecutionContext, T>)d.Item5;
             Initor = (Func<ExecutionContext, T>)d.Item6;
+            HasInitor = Initor != null;
             ContextNames = d.Item7;
             Names = ContextNames.Keys.ToArray();
             ContextSize = ContextNames.Count;
@@ -1043,10 +1050,14 @@ namespace SLThree
         }
         public static T Unwrap(ExecutionContext context)
         {
-            var ret = Initor(context);
-            UnwrapName(context, ret);
-            Unwrapper(context.LocalVariables, ret);
-            return ret;
+            if (HasInitor)
+            {
+                var ret = Initor(context);
+                UnwrapName(context, ret);
+                Unwrapper(context.LocalVariables, ret);
+                return ret;
+            }
+            throw new NotSupportedException($"{typeof(T)} should have constructor");
         }
         public static T UnwrapUnder(ContextWrap context) => Unwrap(context.Context);
         public static void WrapIn(T obj, ExecutionContext context)
