@@ -61,7 +61,7 @@ namespace SLThree
             else
             {
                 var type = o.GetType();
-                type.GetMethods()
+                return type.GetMethods()
                     .FirstOrDefault(x => x.Name == Left.ExpressionToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.Invoke(o, args);
             }
