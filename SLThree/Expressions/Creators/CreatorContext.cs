@@ -64,23 +64,24 @@ namespace SLThree
             if (index == -1) return n;
             else return n.Substring(index + 1);
         }
-        public override object GetValue(ExecutionContext context)
+
+        public object GetValue(ExecutionContext target, ExecutionContext context)
         {
-            ExecutionContext ret;
-            if (Ancestors.Length > 0) ret = Ancestors[0].GetValue(context).Cast<ContextWrap>().Context;
-            else ret = new ExecutionContext(context);
-            for (var i = 1; i < Ancestors.Length; i++)
-                ret.copy(Ancestors[i].GetValue(context).Cast<ContextWrap>().Context);
+            var ret = new ExecutionContext(target);
+            for (var i = 0; i < Ancestors.Length; i++)
+                ret.copy(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
             CreatorBody?.GetValue(ret, context);
             var wrap = ret.wrap;
             if (HasName)
             {
                 ret.Name = GetName();
                 if (IsFreeCreator)
-                    BinaryAssign.AssignToValue(context, Name, wrap, ref counted_invoked, ref is_name_expr, ref variable_index);
+                    BinaryAssign.AssignToValue(target, Name, wrap, ref counted_invoked, ref is_name_expr, ref variable_index);
             }
             return wrap;
         }
+
+        public override object GetValue(ExecutionContext context) => GetValue(context, context);
 
         public override object Clone() => new CreatorContext(Name.CloneCast(), Ancestors.CloneArray(), CreatorBody.CloneCast(), IsFreeCreator, SourceContext.CloneCast());
     }

@@ -160,6 +160,8 @@ namespace SLThree
         internal ExecutionContext copy(ExecutionContext context)
         {
             LocalVariables.FillOther(context.LocalVariables);
+            //if (context.@private != null && @private != null)
+            //    @private.Context.LocalVariables.FillOther(context.@private.Context.LocalVariables);
             return this;
         }
     }
