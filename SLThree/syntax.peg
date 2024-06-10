@@ -104,7 +104,6 @@ expression <BaseExpression>
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
-    // method
     / "static" _required_ left:expression { new StaticExpression(left, state) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / condition_expression
@@ -122,10 +121,6 @@ binary_9 <BaseExpression> -memoize
     / left:binary_7 _ "|=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitXor(left, right, state), state) }
     / ternary_0
-
-method <BaseExpression>
-    = generic_lambda
-    / lambda
     
 ternary_0 <BaseExpression> -memoize
     = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new TernaryOperator(cond, t, f, state) }
@@ -544,45 +539,6 @@ method_mods_name <Tuple<string[], BaseExpression>>
     = mods:method_modificator<1,,_required_> _required_ name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(mods.ToArray(), name) }
     / mods:method_modificator<1,,_required_> _ { new Tuple<string[], BaseExpression>(mods.ToArray(), null) }
     / name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(new string[0], name) }
-
-generic_lambda <LambdaGenericExpression>
-    = left:(
-        <ValueTuple<IList<string>, NameExpression[], TypenameExpression, NameExpression[]>>
-        mods:(<IList<string>> mods_i:method_modificator<1,,_required_> _required_ { mods_i })?
-        _ "<" _ generic_args:name<1,,"," _> _ ">" _
-        args:(
-            <IList<NameExpression>> "(" _ args_i:arg_name<0,,"," _> _ ")" { args_i }
-            / a:arg_name { new NameExpression[1] { a } }
-        )
-        ret:(<TypenameExpression> _ ":" _ t:typename {t})? {
-            new ValueTuple<IList<string>, NameExpression[], TypenameExpression, NameExpression[]>(GetOptional(mods) ?? new string[0], args.ToArray(), GetOptional(ret), generic_args.ToArray())
-        }
-    ) _ "=>" _ right:(
-        <StatementList>
-        expr:expression { GetListStatement(new ReturnStatement(expr, state)) }
-        / block_statement
-    ) {
-        new LambdaGenericExpression(new InvokeExpression(null, left.Item2, state), right, left.Item3, left.Item1, left.Item4, state)
-    }
-
-lambda <LambdaExpression>
-    = left:(
-        <ValueTuple<IList<string>, NameExpression[], TypenameExpression>>
-        mods:(<IList<string>> mods_i:method_modificator<1,,_required_> _required_ { mods_i })?
-        args:(
-            <IList<NameExpression>> "(" _ args_i:arg_name<0,,"," _> _ ")" { args_i }
-            / a:arg_name { new NameExpression[1] { a } }
-        )
-        ret:(<TypenameExpression> _ ":" _ t:typename {t})? {
-            new ValueTuple<IList<string>, NameExpression[], TypenameExpression>(GetOptional(mods) ?? new string[0], args.ToArray(), GetOptional(ret))
-        }
-    ) _ "=>" _ right:(
-        <StatementList>
-        expr:expression { GetListStatement(new ReturnStatement(expr, state)) }
-        / block_statement
-    ) {
-        new LambdaExpression(new InvokeExpression(null, left.Item2, state), right, left.Item3, left.Item1, state)
-    }
 
 method_modificator
     = "recursive"

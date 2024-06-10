@@ -40,7 +40,7 @@ namespace SLThree.JIT
                     return bt.GetGenericArguments()[0];
             }
             if (expression is InterpolatedString) return typeof(string);
-            if (expression is NewExpression newExpression) return (Type)newExpression.Typename.GetValue(temporary_method_context);
+            //if (expression is NewExpression newExpression) return (Type)newExpression.Typename.GetValue(temporary_method_context);
             if (expression is NameExpression name)
             {
                 var vname = variables.LastOrDefault(x => x.Name == name.Name);

@@ -363,7 +363,7 @@ namespace SLThree.JIT
             }
         }
 
-        public override void VisitStatement(ConditionStatement statement)
+        public override void VisitExpression(ConditionExpression statement)
         {
             var ifbody = statement.IfBody;
             var elsebody = statement.ElseBody;

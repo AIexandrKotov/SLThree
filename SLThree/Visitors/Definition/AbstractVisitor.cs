@@ -52,10 +52,11 @@ namespace SLThree.Visitors
                 case UnaryOperator expr: VisitExpression(expr); return;
                 case Special expr: VisitExpression(expr); return;
                 case Literal expr: VisitExpression(expr); return;
-                case NewExpression expr: VisitExpression(expr); return;
+                case CreatorInstance expr: VisitExpression(expr); return;
                 case NameExpression expr: VisitExpression(expr); return;
-                case LambdaExpression expr: VisitExpression(expr); return;
-                case LambdaGenericExpression expr: VisitExpression(expr); return;
+                case ConditionExpression expr: VisitExpression(expr); return;
+                case FunctionDefinition expr: VisitExpression(expr); return;
+                case StaticExpression expr: VisitExpression(expr); return;
                 case InvokeExpression expr: VisitExpression(expr); return;
                 case InvokeGenericExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
@@ -68,7 +69,7 @@ namespace SLThree.Visitors
                 case TypenameExpression expr: VisitExpression(expr); return;
                 case CreatorNewArray expr: VisitExpression(expr); return;
                 case CreatorArray expr: VisitExpression(expr); return;
-                case CreatorContextOld expr: VisitExpression(expr); return;
+                case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
             }
@@ -170,11 +171,7 @@ namespace SLThree.Visitors
                 VisitExpression(x);
             }
         }
-        public virtual void VisitExpression(LambdaExpression expression)
-        {
-            Visit(expression.Method);
-        }
-        public virtual void VisitExpression(LambdaGenericExpression expression)
+        public virtual void VisitExpression(FunctionDefinition expression)
         {
             Visit(expression.Method);
         }
@@ -189,13 +186,9 @@ namespace SLThree.Visitors
             }
         }
 
-        public virtual void VisitExpression(NewExpression expression)
+        public virtual void VisitExpression(CreatorInstance expression)
         {
-            Executables.Add(expression);
-            VisitExpression(expression.Typename);
-            Executables.Remove(expression);
-            for (var i = 0; i < expression.Arguments.Length; i++)
-                VisitExpression(expression.Arguments[i]);
+            throw new NotImplementedException();
         }
 
         public virtual void VisitExpression(Special expression)
@@ -291,13 +284,11 @@ namespace SLThree.Visitors
                 case ForeachLoopStatement st: VisitStatement(st); return;
                 case WhileLoopStatement st: VisitStatement(st); return;
                 case ExpressionStatement st: VisitStatement(st); return;
-                case ConditionStatement st: VisitStatement(st); return;
                 case ReturnStatement st: VisitStatement(st); return;
                 case UsingStatement st: VisitStatement(st); return;
                 case StatementList st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
-                case ContextStatement st: VisitStatement(st); return;
                 case TryStatement st: VisitStatement(st); return;
                 case ThrowStatement st: VisitStatement(st); return;
             }
@@ -324,21 +315,16 @@ namespace SLThree.Visitors
             VisitExpression(statement.Expression);
         }
 
-        public virtual void VisitStatement(ConditionStatement statement)
+        public virtual void VisitExpression(ConditionExpression expression)
         {
-            VisitExpression(statement.Condition);
-            foreach (var x in statement.Body)
+            VisitExpression(expression.Condition);
+            foreach (var x in expression.Body)
                 VisitStatement(x);
         }
 
         public virtual void VisitStatement(ReturnStatement statement)
         {
             if (!statement.VoidReturn) VisitExpression(statement.Expression);
-        }
-
-        public virtual void VisitStatement(ContextStatement statement)
-        {
-            VisitExpression(statement.Creator);
         }
 
         public virtual void VisitStatement(UsingStatement statement)
@@ -368,17 +354,9 @@ namespace SLThree.Visitors
             VisitExpression(expression.Size);
         }
 
-        public virtual void VisitExpression(CreatorContextOld expression)
+        public virtual void VisitExpression(CreatorContext expression)
         {
-            if (expression.Typecast != null)
-            {
-                Executables.Add(expression);
-                VisitExpression(expression.Typecast);
-                Executables.Remove(expression);
-            }
-            if (expression.Body != null)
-                foreach (var x in expression.Body)
-                    VisitStatement(x);
+            throw new NotImplementedException();
         }
 
         public virtual void VisitExpression(CreatorRange expression)
@@ -408,6 +386,11 @@ namespace SLThree.Visitors
         public virtual void VisitStatement(ThrowStatement statement)
         {
             VisitExpression(statement.ThrowExpression);
+        }
+
+        public void VisitExpression(StaticExpression expression)
+        {
+            VisitExpression(expression.Right);
         }
     }
 }

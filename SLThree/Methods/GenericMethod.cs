@@ -113,14 +113,14 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Type;
             }
-            public class New : GenericInfo<NewExpression>
+            /*public class New : GenericInfo<Ne>
             {
                 public New(NewExpression concrete, int position) : base(concrete, position)
                 {
                 }
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Typename;
-            }
+            }*/
             public class ArrayCreator : GenericInfo<CreatorArray>
             {
                 public ArrayCreator(CreatorArray concrete, int position) : base(concrete, position)
@@ -145,14 +145,14 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.RangeType;
             }
-            public class ContextCreator : GenericInfo<CreatorContextOld>
+/*            public class ContextCreator : GenericInfo<CreatorContextOld>
             {
                 public ContextCreator(CreatorContextOld concrete, int position) : base(concrete, position)
                 {
                 }
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Typecast;
-            }
+            }*/
             public class Chooser : GenericInfo<UnaryGetChooser>
             {
                 public Chooser(UnaryGetChooser concrete, int position) : base(concrete, position)
