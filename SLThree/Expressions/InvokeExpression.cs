@@ -3,6 +3,7 @@ using SLThree.Extensions.Cloning;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {
@@ -69,11 +70,13 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object GetValue(ExecutionContext context, object[] args)
         {
             return InvokeForObj(context, args, Left.GetValue(context));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
@@ -99,7 +102,16 @@ namespace SLThree
                 if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
-            else return InvokeForObj(context, Arguments.ConvertAll(x => x.GetValue(context)), obj);
+            else if (obj != null)
+            {
+                var method = obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                if (method != null)
+                    return method.Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                else return InvokeForObj(context, Arguments.ConvertAll(x => x.GetValue(context)), obj);
+            }
+
+            return null;
         }
 
         public override object Clone()

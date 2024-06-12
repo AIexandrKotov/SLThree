@@ -3,6 +3,7 @@ using SLThree.Extensions.Cloning;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {
@@ -63,11 +64,13 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
         {
             return InvokeForObj(context, generic_args, args, Left.GetValue(context));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, GenericArguments.ConvertAll(x => (Type)x.GetValue(context)), Arguments.ConvertAll(x => x.GetValue(context)));
@@ -94,7 +97,15 @@ namespace SLThree
                 if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
                 return founded.MakeGenericMethod(generic_args).Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
-            else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), obj);
+            else if (obj != null)
+            {
+                var method = obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                if (method != null) return method.MakeGenericMethod(generic_args).Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), obj);
+            }
+
+            return null;
         }
 
         public override object Clone()
