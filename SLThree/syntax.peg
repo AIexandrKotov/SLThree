@@ -543,6 +543,7 @@ method_mods_name <Tuple<string[], BaseExpression>>
 method_modificator
     = "recursive"
     / "explicit"
+    / "native"
 
 typename <TypenameExpression>
     = t_node:typename_node _ "<" _ t_list:typename<1,,"," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }

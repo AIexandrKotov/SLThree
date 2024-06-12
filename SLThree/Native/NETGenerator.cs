@@ -277,6 +277,11 @@ namespace SLThree.Native
         public override void Visit(Method method)
         {
             var count = method.Statements.Statements.Length;
+            if (count == 0)
+            {
+                IL.Emit(OpCodes.Ret);
+                return;
+            }
             var current = 0;
             foreach (var x in method.Statements.Statements)
             {
@@ -437,6 +442,23 @@ namespace SLThree.Native
             IL.Emit(OpCodes.Ret);
         }
 
+        public NETGenerator(Method method, ExecutionContext context, ILGenerator generator)
+        {
+            (Variables, VariablesMap) = NameCollector.Collect(method, context);
+            IL = generator;
+            var paramid = 1;
+            foreach (var x in Variables)
+            {
+                if (x.NameType == NameType.Local)
+                {
+                    var lb = IL.DeclareLocal(x.Type);
+#if NETFRAMEWORK
+                    lb.SetLocalSymInfo(x.Name);
+#endif
+                    index++;
+                }
+            }
+        }
         public NETGenerator(Method method, ExecutionContext context, MethodBuilder mb, ILGenerator generator)
         {
             (Variables, VariablesMap) = NameCollector.Collect(method, context);

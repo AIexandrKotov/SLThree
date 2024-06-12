@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,7 @@ namespace SLThree
         public NameExpression[] Arguments;
         public StatementList FunctionBody;
         public TypenameExpression ReturnTypeHint;
+        private bool not_native;
 
         public FunctionDefinition(string[] modificators, BaseExpression name, NameExpression[] generics, NameExpression[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
         {
@@ -61,6 +63,13 @@ namespace SLThree
                     Modificators.Contains("recursive"),
                     GenericArguments);
             }
+
+            not_native = !Modificators.Contains("native");
+        }
+
+        internal DynamicMethod RebuildNative(ExecutionContext context)
+        {
+            return Native.Builder.Build(Method, context);
         }
 
         public override string ExpressionToString()
@@ -91,14 +100,23 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            var method = Method.CloneCast();
-            method.@this = context.wrap;
-            if (FunctionName != null)
+            if (not_native)
             {
-                method.Name = CreatorContext.GetLastName(FunctionName);
-                BinaryAssign.AssignToValue(context, FunctionName, method, ref counted_invoked, ref is_name_expr, ref variable_index);
+                var method = Method.CloneCast();
+                method.@this = context.wrap;
+                if (FunctionName != null)
+                {
+                    BinaryAssign.AssignToValue(context, FunctionName, method, ref counted_invoked, ref is_name_expr, ref variable_index);
+                }
+                return method;
             }
-            return method;
+            else
+            {
+                var native = RebuildNative(context);
+                if (FunctionName != null)
+                    BinaryAssign.AssignToValue(context, FunctionName, native, ref counted_invoked, ref is_name_expr, ref variable_index);
+                return native;
+            }
         }
 
         public override object Clone()
