@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace SLThree.JIT
+namespace SLThree.Native
 {
     public class NETGenerator : AbstractVisitor
     {

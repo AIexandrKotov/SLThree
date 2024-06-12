@@ -2,7 +2,7 @@
 using System;
 using System.Reflection.Emit;
 
-namespace SLThree.JIT
+namespace SLThree.Native
 {
     public class AbstractNameInfo
     {

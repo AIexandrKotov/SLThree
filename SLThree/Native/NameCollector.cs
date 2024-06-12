@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SLThree.JIT
+namespace SLThree.Native
 {
     public class NameCollector : AbstractVisitor
     {

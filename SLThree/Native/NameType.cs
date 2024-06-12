@@ -1,4 +1,4 @@
-﻿namespace SLThree.JIT
+﻿namespace SLThree.Native
 {
     public enum NameType
     {
