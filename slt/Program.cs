@@ -55,7 +55,7 @@ namespace slt
         }
 #endif
             ;
-        internal static Assembly SLThreeAssembly;
+        internal static Assembly SLThreeAssembly, REPLAssembly;
         private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
@@ -68,6 +68,7 @@ namespace slt
         private static void InitSLThreeAssemblyInfo()
         {
             SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
+            REPLAssembly = Assembly.GetAssembly(typeof(Program));
             SLThreeVersion = new SLTVersion.Reflected();
             SLTREPLVersion = new REPLVersion.Reflected();
             var sltver = SLThreeAssembly.GetType("SLTVersion");
@@ -125,9 +126,9 @@ namespace slt
         public static void OutCurrentVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(REPLVersion.Name);
+            Console.Write("REPL");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($" {SLTREPLVersion.VersionWithoutRevision} ");
+            Console.WriteLine($" {GetVersionOfREPL()} ");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
@@ -853,16 +854,19 @@ namespace slt
         #endregion
 
         private static string VersionGetted = null;
-        private static string GetVersionOfLanguage()
+        private static string REPLVersionGetted = null;
+        private static string GetVersionOf(Assembly assembly, ref string getted)
         {
-            if (string.IsNullOrEmpty(VersionGetted))
+            if (string.IsNullOrEmpty(getted))
             {
-                var fileVersionInfo = FileVersionInfo.GetVersionInfo(SLThreeAssembly.Location).ProductVersion;
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
                 var index = fileVersionInfo.IndexOf('+');
-                VersionGetted = index != -1 ? fileVersionInfo.Substring(0, index) : fileVersionInfo;
+                getted = index != -1 ? fileVersionInfo.Substring(0, index) : fileVersionInfo;
             }
-            return VersionGetted;
+            return getted;
         }
+        private static string GetVersionOfLanguage() => GetVersionOf(SLThreeAssembly, ref VersionGetted);
+        private static string GetVersionOfREPL() => GetVersionOf(REPLAssembly, ref REPLVersionGetted);
 
         public static void REPLShortVersion()
         {
