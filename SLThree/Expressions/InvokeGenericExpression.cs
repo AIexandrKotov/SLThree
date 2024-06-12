@@ -102,7 +102,7 @@ namespace SLThree
                 var method = obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 if (method != null) return method.MakeGenericMethod(generic_args).Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
-                else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), obj);
+                else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), MemberAccess.GetNameExprValue(context, obj, Left as NameExpression));
             }
 
             return null;
