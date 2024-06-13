@@ -11,6 +11,7 @@
         void VisitExpression(CreatorRange expression);
         void VisitExpression(CreatorTuple expression);
         void VisitExpression(CreatorUsing expression);
+        void VisitExpression(CreatorContext expression);
         void VisitExpression(CreatorInstance expression);
 
         void VisitExpression(CastExpression expression);
@@ -32,6 +33,5 @@
         void VisitExpression(UnaryOperator expression);
         void VisitExpression(BinaryOperator expression);
         void VisitExpression(TernaryOperator expression);
-
     }
 }

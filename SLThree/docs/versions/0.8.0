@@ -14,6 +14,9 @@ Language:
     - Constructor method that creates new contexts
        `context TBase { constructor = (f) => this.f = f; };`
        `T1 = TBase(5); T2 = TBase(10);`
+    - The right side of the nested context initializer
+      assignations now always refers to the self context
+      `x = 1; context A { context B { x = x; }}`
     - Parent keyword in constructed contexts
        `T1.parent == TBase;`
     - Static expression (will be executed only once) `static x`

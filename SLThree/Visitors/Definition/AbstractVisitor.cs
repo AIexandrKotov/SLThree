@@ -188,7 +188,15 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorInstance expression)
         {
-            throw new NotImplementedException();
+            Executables.Add(expression);
+            VisitExpression(expression.Type);
+            Executables.Remove(expression);
+            if (expression.Name != null)
+                VisitExpression(expression.Name);
+            foreach (var x in expression.Arguments)
+                VisitExpression(x);
+            if (expression.CreatorContext != null)
+                VisitExpression(expression.CreatorContext);
         }
 
         public virtual void VisitExpression(Special expression)
@@ -356,7 +364,12 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorContext expression)
         {
-            throw new NotImplementedException();
+            if (expression.HasName)
+                VisitExpression(expression.Name);
+            foreach (var x in expression.Ancestors)
+                VisitExpression(x);
+            if (expression.CreatorBody != null)
+                VisitStatement(expression.CreatorBody);
         }
 
         public virtual void VisitExpression(CreatorRange expression)
