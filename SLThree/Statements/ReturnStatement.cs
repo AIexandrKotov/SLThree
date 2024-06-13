@@ -18,7 +18,7 @@ namespace SLThree
             VoidReturn = true;
         }
 
-        public override string ToString() => $"{Expression}";
+        public override string ToString() => VoidReturn ? "return;" : $"return {Expression};";
         public override object GetValue(ExecutionContext context)
         {
             if (VoidReturn)

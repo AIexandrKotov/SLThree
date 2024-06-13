@@ -15,7 +15,6 @@ statement <BaseStatement>
     = return_statement
     / break_statement
     / continue_statement
-    / using_statement
     / foreach_statement
     / while_statement
     / try_statement
@@ -30,13 +29,6 @@ statement <BaseStatement>
     / expression_statement
     / block_statement
     / ";" { new EmptyStatement(state) }
-
-using_statement <UsingStatement>
-    = "using" _required_ u:using  
-    using_alias:(<NameExpression> _required_ "as" _required_ n:name {n})?
-    _ ";" {
-        new UsingStatement(GetOptional(using_alias), u, state)
-    }
 
 return_statement <ReturnStatement>
     = "return" _ expr:expression _ ";" { new ReturnStatement(expr, state) }
@@ -205,6 +197,12 @@ unary <BaseExpression>
     / "@" _ left:typename { new UnaryReflection(left, state) }
     / primary
 
+using_expression <UsingExpression>
+    = "using" _required_ u:using  
+    using_alias:(<BaseExpression> _required_ "as" _required_ name:primary {name})? {
+        new UsingExpression(GetOptional(using_alias), u, state)
+    }
+
 condition_statement <ConditionExpression>
     = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:block_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
     / "if" _ "(" _ cond:expression _ ")" _ t:block_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
@@ -249,6 +247,7 @@ primary <BaseExpression> -memoize
     / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
     // "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
+    / using_expression
     / new_context_expression
     / context_expression
     / instance_expression

@@ -20,7 +20,8 @@ Language:
     - Parent keyword in constructed contexts
        `T1.parent == TBase;`
     - Static expression (will be executed only once) `static x`
-    - Condition expression instead of condition statement
+    - Condition statement is now expression
+    - Using statement is now expression
     - Strong method binding
     - Changed context syntax:
        `new context Name: T {...}` -> `new T Name {...}`

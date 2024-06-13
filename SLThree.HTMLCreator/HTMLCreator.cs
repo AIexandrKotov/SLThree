@@ -553,13 +553,13 @@ namespace SLThree.HTMLCreator
         {
             CurrentString.Append(GetKeyword2("continue") + ";");
         }
-        public override void VisitStatement(UsingStatement statement)
+        public override void VisitExpression(UsingExpression statement)
         {
             VisitExpression(statement.Using, false);
             if (statement.Alias != null)
             {
                 CurrentString.Append(GetKeyword1( " as "));
-                CurrentString.Append(statement.Alias.Name);
+                VisitExpression(statement.Alias);
             }
             CurrentString.Append(";");
         }

@@ -72,6 +72,7 @@ namespace SLThree.Visitors
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
+                case UsingExpression expr: VisitExpression(expr); return;
             }
             Executables.Remove(expression);
         }
@@ -293,7 +294,6 @@ namespace SLThree.Visitors
                 case WhileLoopStatement st: VisitStatement(st); return;
                 case ExpressionStatement st: VisitStatement(st); return;
                 case ReturnStatement st: VisitStatement(st); return;
-                case UsingStatement st: VisitStatement(st); return;
                 case StatementList st: VisitStatement(st); return;
                 case BreakStatement st: VisitStatement(st); return;
                 case ContinueStatement st: VisitStatement(st); return;
@@ -335,9 +335,11 @@ namespace SLThree.Visitors
             if (!statement.VoidReturn) VisitExpression(statement.Expression);
         }
 
-        public virtual void VisitStatement(UsingStatement statement)
+        public virtual void VisitExpression(UsingExpression statement)
         {
             VisitExpression(statement.Using);
+            if (statement.Alias != null)
+                VisitExpression(statement.Alias);
         }
 
         public virtual void VisitStatement(StatementList statement)
