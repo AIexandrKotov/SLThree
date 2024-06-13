@@ -33,6 +33,7 @@ namespace SLThree
         private bool is_unwrap;
         private bool is_super;
         private bool is_upper;
+        private bool is_parent;
 
         public static object GetNameExprValue(ExecutionContext context, object left, NameExpression Right)
         {
@@ -45,6 +46,10 @@ namespace SLThree
                         if (predName.Name == "super")
                         {
                             return pred.Context.super;
+                        }
+                        else if (predName.Name == "parent")
+                        {
+                            return pred.Context.parent;
                         }
                         else if (predName.Name == "upper")
                         {
@@ -78,6 +83,7 @@ namespace SLThree
             if (counted_contextwrapcache)
             {
                 if (is_super) return (left as ContextWrap).Context.super;
+                else if (is_parent) return (left as ContextWrap).Context.parent;
                 else if (is_upper) return (left as ContextWrap).Context.PreviousContext.wrap;
                 else return (left as ContextWrap).Context.LocalVariables.GetValue(variable_name).Item1;
             }
@@ -98,6 +104,12 @@ namespace SLThree
                             counted_contextwrapcache = true;
                             is_super = true;
                             return pred.Context.super;
+                        }
+                        else if (predName.Name == "parent")
+                        {
+                            counted_contextwrapcache = true;
+                            is_parent = true;
+                            return pred.Context.parent;
                         }
                         else if (predName.Name == "upper")
                         {

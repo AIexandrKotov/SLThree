@@ -74,7 +74,7 @@ namespace SLThree
         public readonly ContextWrap wrap;
         public ContextWrap super;
         public ContextWrap @private;
-        public ContextWrap @base;
+        public ContextWrap parent;
         internal ExecutionContext SuperContext { get => super?.Context; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
@@ -120,7 +120,7 @@ namespace SLThree
         {
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
-            ret.@base = wrap;
+            ret.parent = wrap;
             constructor.@this = ret.wrap;
             constructor.GetValue(ret, args);
             return ret;
@@ -129,7 +129,7 @@ namespace SLThree
         {
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
-            ret.@base = wrap;
+            ret.parent = wrap;
             if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
             {
                 if (constructor.ParamNames.Length != args.Length)
