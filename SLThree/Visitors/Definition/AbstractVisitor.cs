@@ -403,7 +403,7 @@ namespace SLThree.Visitors
             VisitExpression(statement.ThrowExpression);
         }
 
-        public void VisitExpression(StaticExpression expression)
+        public virtual void VisitExpression(StaticExpression expression)
         {
             VisitExpression(expression.Right);
         }
