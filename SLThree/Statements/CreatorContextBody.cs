@@ -6,15 +6,14 @@ namespace SLThree
 {
     public class CreatorContextBody : StatementList, ICloneable
     {
-        private ExecutionContext counted_invoked;
-        private bool is_name_expr;
-        private int variable_index;
+        private (ExecutionContext, bool, int)[] Caches;
 
         public CreatorContextBody() : base() { }
         public CreatorContextBody(IList<BaseStatement> statements, SourceContext context) : base(statements, context)
         {
             foreach (var x in Statements)
                 CheckOnContextStatements(x);
+            Caches = new (ExecutionContext, bool, int)[Statements.Length];
         }
 
         public ExecutionContext GetValue(ExecutionContext target, ExecutionContext context)
@@ -26,23 +25,23 @@ namespace SLThree
                     if (es.Expression is BinaryAssign assign)
                     {
                         if (assign.Left is MemberAccess @private)
-                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, assign.Right.GetValue(context), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, assign.Right.GetValue(context), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                         else
-                            BinaryAssign.AssignToValue(target, assign.Left, assign.Right.GetValue(context), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target, assign.Left, assign.Right.GetValue(context), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                     }
                     else if (es.Expression is CreatorContext creator)
                     {
                         if (creator.Name is MemberAccess @private)
-                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, creator.GetValue(target, context), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, creator.GetValue(target, context), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                         else
-                            BinaryAssign.AssignToValue(target, creator.Name, creator.GetValue(target, context), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target, creator.Name, creator.GetValue(target, context), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                     }
                     else if (es.Expression is FunctionDefinition function)
                     {
                         if (function.FunctionName is MemberAccess @private)
-                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, function.GetValue(target.@private.Context), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target.@private.Context, @private.Right, function.GetValue(target.@private.Context), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                         else 
-                            BinaryAssign.AssignToValue(target, function.FunctionName, function.GetValue(target), ref counted_invoked, ref is_name_expr, ref variable_index);
+                            BinaryAssign.AssignToValue(target, function.FunctionName, function.GetValue(target), ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
                     }
                 }
             }
@@ -69,7 +68,6 @@ namespace SLThree
                 {
                     if (creator.Name == null) throw new LogicalError($"Nested context definitions should be named", expressionStatement.Expression.SourceContext);
                     if (CheckName(creator.Name)) return statement;
-                    return statement;
                 }
                 if (expressionStatement.Expression is FunctionDefinition function)
                 {
