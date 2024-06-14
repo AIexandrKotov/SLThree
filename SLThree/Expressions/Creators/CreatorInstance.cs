@@ -98,7 +98,7 @@ namespace SLThree
                 type,
                 name,
                 new BaseExpression[0],
-                new CreatorContext(null, new BaseExpression[0], body, false, context),
+                new CreatorContext(name, new BaseExpression[0], body, false, context),
                 context);
         public static CreatorInstance NamedCaseTypeArgs(TypenameExpression type, BaseExpression name, BaseExpression[] args, SourceContext context)
             => new CreatorInstance(
