@@ -20,7 +20,7 @@ namespace SLThree
 
         public UsingExpression(CreatorUsing @using, SourceContext context) : this(null, @using, context) { }
 
-        public override string ExpressionToString() => $"using {Using.Type} as {Alias}";
+        public override string ExpressionToString() => $"using {Using.Type}{(Alias == null ? "" : $" as {Alias}")}";
 
         public override object GetValue(ExecutionContext context)
         {
