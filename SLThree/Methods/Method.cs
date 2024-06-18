@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace SLThree
 {
@@ -59,7 +60,12 @@ namespace SLThree
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
-        public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
+        public override string ToString()
+        {
+            var args = new StringBuilder();
+            args.Append(ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", "));
+            return $"{(Recursive ? "recursive " : "")}{(Implicit ? "" : "explicit ")}{(WithoutParams ? "" : "params ")}{ReturnType?.ToString() ?? "any"} {Name}({args})";
+        } 
 
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
@@ -102,11 +108,14 @@ namespace SLThree
 
         public object[] CheckOnDefaults(object[] args)
         {
-            if (args.Length >= ParamNames.Length) return args;
+            if (args.Length >= (ParamNames.Length - RequiredArguments)) return args;
             var ret = new object[ParamNames.Length];
             Array.Copy(args, ret, args.Length);
-            for (var (i, j) = (RequiredArguments, 0); j < DefaultValues.Length; i++, j++)
-                ret[i] = DefaultValues[j].GetValue(cached_context);
+            var i = args.Length - RequiredArguments;
+            var j = Math.Min(args.Length, DefaultValues.Length);
+            var count = Math.Max(ret.Length - args.Length, 0);
+            for (var id = 0; id < count; id++)
+                ret[i++] = DefaultValues[j++].GetValue(cached_context);
             return ret;
         }
 
