@@ -25,12 +25,12 @@ namespace SLThree
         public string[] Modificators;
         public BaseExpression FunctionName;
         public NameExpression[] GenericArguments;
-        public NameExpression[] Arguments;
+        public FunctionArgument[] Arguments;
         public StatementList FunctionBody;
         public TypenameExpression ReturnTypeHint;
         private bool not_native;
 
-        public FunctionDefinition(string[] modificators, BaseExpression name, NameExpression[] generics, NameExpression[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
+        public FunctionDefinition(string[] modificators, BaseExpression name, NameExpression[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
         {
             Modificators = modificators;
             FunctionName = name;
@@ -40,27 +40,41 @@ namespace SLThree
             ReturnTypeHint = typehint;
             var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
+            var defaultid = args.Length;
+            for (var i = 0; i < args.Length; i++)
+                if (args[i].DefaultValue != null)
+                {
+                    defaultid = i;
+                    break;
+                }
+            for (var i = defaultid + 1; i < args.Length + (modificators.Contains("params") ? -1 : 0); i++)
+                if (args[i].DefaultValue == null)
+                    throw new LogicalError("Non-default parameter between default parameters", context);
 
             if (Method == null)
             {
                 if (GenericArguments.Length == 0) Method = new Method(
                     FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
-                    Arguments.Select(x => x.Name).ToArray(),
+                    Arguments.Select(x => x.Name.Name).ToArray(),
                     FunctionBody,
-                    Arguments.Select(x => x.TypeHint).ToArray(),
-                    ReturnTypeHint,
-                    null,
-                    !Modificators.Contains("explicit"),
-                    Modificators.Contains("recursive"));
-                else Method = new GenericMethod(
-                    FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
-                    Arguments.Select(x => x.Name).ToArray(),
-                    FunctionBody,
-                    Arguments.Select(x => x.TypeHint).ToArray(),
+                    Arguments.Select(x => x.Name.TypeHint).ToArray(),
                     ReturnTypeHint,
                     null,
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
+                    !Modificators.Contains("params"),
+                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray());
+                else Method = new GenericMethod(
+                    FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
+                    Arguments.Select(x => x.Name.Name).ToArray(),
+                    FunctionBody,
+                    Arguments.Select(x => x.Name.TypeHint).ToArray(),
+                    ReturnTypeHint,
+                    null,
+                    !Modificators.Contains("explicit"),
+                    Modificators.Contains("recursive"),
+                    !Modificators.Contains("params"),
+                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
                     GenericArguments);
             }
 
@@ -103,7 +117,7 @@ namespace SLThree
             if (not_native)
             {
                 var method = Method.CloneCast();
-                method.@this = context.wrap;
+                method.@this = context?.wrap;
                 if (FunctionName != null)
                 {
                     BinaryAssign.AssignToValue(context, FunctionName, method, ref counted_invoked, ref is_name_expr, ref variable_index);

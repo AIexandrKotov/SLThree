@@ -481,7 +481,7 @@ method_definition_expression <FunctionDefinition>
     = method_definition_statement1
     / mods_name:method_mods_name?
       generics:method_generic_part? 
-      "(" _ args:arg_name<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
@@ -489,10 +489,10 @@ method_definition_expression <FunctionDefinition>
     / method_definition_statement2
     / method_definition_statement3
     / generics:method_generic_part?
-      arg:arg_name
+      arg:func_arg
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new NameExpression[1] {arg}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new FunctionArgument[1] {arg}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
 method_definition_statement <FunctionDefinition>
     = method_definition_statement1
@@ -502,30 +502,30 @@ method_definition_statement <FunctionDefinition>
 method_definition_statement1 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
-      "(" _ args:arg_name<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
       }
 method_definition_statement2 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
-      "(" _ args:arg_name<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
       {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
       }
 method_definition_statement3 <FunctionDefinition>
     = generics:method_generic_part?
-      arg:arg_name
+      arg:func_arg
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
       {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new NameExpression[1] {arg}, GetListStatement(body), GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new FunctionArgument[1] {arg}, GetListStatement(body), GetOptional(ret), state)
       }
     
 
 method_definition_nswm <FunctionDefinition>
     = generics:method_generic_part? 
-      "(" _ args:arg_name<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
       body:block_statement {
           new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
@@ -542,6 +542,7 @@ method_mods_name <Tuple<string[], BaseExpression>>
 method_modificator
     = "recursive"
     / "explicit"
+    / "params"
     / "native"
 
 typename <TypenameExpression>
@@ -551,6 +552,10 @@ typename <TypenameExpression>
 typename_node <BaseExpression> -memoize
     = left:typename_node _ "." _ right:name { new MemberAccess(left, right, state) }
     / special
+
+func_arg <FunctionArgument>
+    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, state) }
+    / name:arg_name { new FunctionArgument(name, state) }
 
 arg_name <NameExpression>
     = req_arg_name

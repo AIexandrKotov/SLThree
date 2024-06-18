@@ -41,7 +41,7 @@ namespace SLThree
 
             if (o is Method method)
             {
-                if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                if (args.Length < method.RequiredArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 if (o is GenericMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args).GetValue(context, args);
 

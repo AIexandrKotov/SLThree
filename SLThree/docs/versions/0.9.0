@@ -1,1 +1,8 @@
------- 0.9.0 ------ [~.~.~]
+------ 0.9.0 Parameters Update ------ [~.~.~]
+Language:
+    - Defining methods with default parameters
+      `(x = 5, y = 10) => x + y;`
+    - `params` modificator:
+      `params f(args) => args;`
+      `args(1, 2, 3); //[1, 2, 3]`
+    - Calling methods with a variable number of arguments

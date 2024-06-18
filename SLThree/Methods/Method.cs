@@ -19,6 +19,11 @@ namespace SLThree
         public readonly bool Recursive = false;
         public bool Binded = false;
 
+        public readonly bool WithoutParams = true;
+        public readonly int ParamsPlace;
+        public readonly BaseExpression[] DefaultValues;
+        public readonly int RequiredArguments;
+
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
 
@@ -35,7 +40,7 @@ namespace SLThree
         }
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values)
         {
             Name = name;
             ParamNames = paramNames;
@@ -45,6 +50,11 @@ namespace SLThree
             definitionplace = definitionPlace;
             Implicit = @implicit;
             Recursive = recursive;
+            WithoutParams = without_params;
+            ParamsPlace = ParamNames.Length - 1;
+            DefaultValues = default_values;
+            RequiredArguments = ParamNames.Length - DefaultValues.Length;
+            if (!without_params && RequiredArguments > 0) RequiredArguments -= 1;
         }
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
@@ -77,7 +87,7 @@ namespace SLThree
                     {
                         @this = definitionplace
                     };
-                    ret.SuperContext = ret.@this.Context?.SuperContext;
+                    ret.SuperContext = ret.@this?.Context.SuperContext;
                     cached_context = ret;
                 }
                 ret.Name = contextName;
@@ -90,9 +100,41 @@ namespace SLThree
 
         public virtual object GetValue(object[] args) => GetValue(null, args);
 
+        public object[] CheckOnDefaults(object[] args)
+        {
+            if (args.Length >= ParamNames.Length) return args;
+            var ret = new object[ParamNames.Length];
+            Array.Copy(args, ret, args.Length);
+            for (var (i, j) = (RequiredArguments, 0); j < DefaultValues.Length; i++, j++)
+                ret[i] = DefaultValues[j].GetValue(cached_context);
+            return ret;
+        }
+
+        public object[] CheckOnParams(object[] args)
+        {
+            if (WithoutParams) return args;
+            else
+            {
+                var ret = new object[ParamsPlace + 1];
+                Array.Copy(args, ret, ParamsPlace);
+                var rest = default(object[]);
+                if (args.Length > ParamsPlace && args[ParamsPlace] is object[] direct_params)
+                {
+                    rest = direct_params;
+                }
+                else
+                {
+                    rest = new object[Math.Max(args.Length - ParamsPlace, 0)];
+                    Array.Copy(args, ParamsPlace, rest, 0, rest.Length);
+                }
+                ret[ParamsPlace] = rest;
+                return ret;
+            }
+        }
+
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
-            var context = GetExecutionContext(args, old_context);
+            var context = GetExecutionContext(CheckOnParams(CheckOnDefaults(args)), old_context);
             for (var i = 0; i < Statements.Statements.Length; i++)
             {
                 if (context.Returned) return context.ReturnedValue;
@@ -230,7 +272,7 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive);
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray());
         }
 
         public virtual object Clone()

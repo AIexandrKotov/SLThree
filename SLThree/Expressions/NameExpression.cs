@@ -2,7 +2,8 @@
 
 namespace SLThree
 {
-    public partial class NameExpression : BaseExpression
+
+    public class NameExpression : BaseExpression
     {
         public TypenameExpression TypeHint;
         public string Name;

@@ -339,7 +339,7 @@ namespace SLThree
             }
         }
 
-        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive)
+        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values)
         {
             Generics = generics;
             GenericsInfo = GenericFinder.FindAll(this);
@@ -365,7 +365,7 @@ namespace SLThree
 
         public override Method CloneWithNewName(string name)
         {
-            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, Generics.CloneArray());
+            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.CloneArray());
         }
     }
 }
