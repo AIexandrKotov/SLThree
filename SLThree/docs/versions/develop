@@ -1,4 +1,0 @@
------- Changes ------ [~.~.~]
-Optimization:
-    - Wrappers refactoring, minumum 3x faster wrapping
-      minimum 20x faster unwrapping
