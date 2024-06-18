@@ -103,6 +103,33 @@ namespace SLThree
             return right;
         }
 
+        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body)
+        {
+            return Overload(arguments, body, new StatementList(new BaseStatement[0], body.SourceContext));
+        }
+        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body, BaseStatement other)
+        {
+            return Overload(arguments, body, new StatementList(new BaseStatement[1] { other }, body.SourceContext));
+        }
+        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body, StatementList other)
+        {
+            var condition = default(BaseExpression);
+            if (arguments != null)
+            {
+                foreach (var arg in arguments)
+                {
+                    var hint = arg.TypeHint;
+                    arg.TypeHint = null;
+                    if (condition == null)
+                        condition = new BinaryIs(arg, hint, arg.SourceContext);
+                    else condition = new BinaryAnd(condition, new BinaryIs(arg, hint, arg.SourceContext), arg.SourceContext);
+                }
+            }
+            else condition = new BoolLiteral(true, body.SourceContext);
+
+            return new ConditionExpression(condition, body, other, body.SourceContext);
+        }
+
         private static T Panic<T>(SLTException exception)
         {
             throw exception;

@@ -13,6 +13,7 @@ statement_list <StatementList>
 
 statement <BaseStatement>
     = return_statement
+    / overload_statement
     / break_statement
     / continue_statement
     / foreach_statement
@@ -78,6 +79,14 @@ try_statement <TryStatement>
 throw_statement <ThrowStatement>
     = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, state) }
     / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError("Expected `;`", state)) }
+
+overload_statement <BaseStatement>
+    // "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ body:block_statement _ other:overload_statement { new ExpressionStatement(Overload(args, body, other), state) }
+    // "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ "=>" _ body:expression _ ";" _ other:overload_statement { new ExpressionStatement(Overload(args, GetListStatement(new ReturnStatement(body, state)), other), state) }
+    = "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ body:block_statement { new ExpressionStatement(Overload(args, body), state) }
+    / "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ "=>" _ body:expression _ ";" { new ExpressionStatement(Overload(args, GetListStatement(new ReturnStatement(body, state))), state) }
+    / "overload" _ "(" _ ")" _ body:block_statement { new ExpressionStatement(Overload(null, body), state) }
+    / "overload" _ "(" _ ")" _ "=>" _ body:expression _ ";" { new ExpressionStatement(Overload(null, GetListStatement(new ReturnStatement(body, state))), state) }
 
 expression_as_return <BaseStatement>
     = block_statement

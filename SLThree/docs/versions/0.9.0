@@ -1,5 +1,6 @@
 ------ 0.9.0 Parameters Update ------ [~.~.~]
 Language:
+    - Syntax sugar for overloading methods
     - Defining methods with default parameters
       `(x = 5, y = 10) => x + y;`
     - `params` modificator:

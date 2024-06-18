@@ -15,7 +15,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            return Left.GetValue(context).GetType().IsType(Right.GetValue(context).Cast<Type>());
+            return Left.GetValue(context)?.GetType().IsType(Right.GetValue(context).Cast<Type>()) ?? false;
         }
 
         public override object Clone()
