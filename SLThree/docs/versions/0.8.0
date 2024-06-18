@@ -1,4 +1,4 @@
------- 0.8.0 ------ [~.~.~]
+------ 0.8.0 Binding&Naming Update ------ [~.~.~]
 Language:
     - New method definition syntax
       `[modifs][Name][<T>](args) {...}`
