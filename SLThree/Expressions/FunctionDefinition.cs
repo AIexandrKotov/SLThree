@@ -40,6 +40,8 @@ namespace SLThree
             ReturnTypeHint = typehint;
             var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
+            var @params = modificators.Contains("params");
+            if (@params && Arguments.Length < 1) throw new LogicalError("Params method should have at least one parameter", context);
             var defaultid = args.Length;
             for (var i = 0; i < args.Length; i++)
                 if (args[i].DefaultValue != null)
@@ -47,7 +49,7 @@ namespace SLThree
                     defaultid = i;
                     break;
                 }
-            for (var i = defaultid + 1; i < args.Length + (modificators.Contains("params") ? -1 : 0); i++)
+            for (var i = defaultid + 1; i < args.Length + (@params ? -1 : 0); i++)
                 if (args[i].DefaultValue == null)
                     throw new LogicalError("Non-default parameter between default parameters", context);
 
@@ -62,7 +64,7 @@ namespace SLThree
                     null,
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
-                    !Modificators.Contains("params"),
+                    !@params,
                     Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray());
                 else Method = new GenericMethod(
                     FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
@@ -73,7 +75,7 @@ namespace SLThree
                     null,
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
-                    !Modificators.Contains("params"),
+                    !@params,
                     Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
                     GenericArguments);
             }

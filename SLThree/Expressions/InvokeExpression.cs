@@ -38,14 +38,14 @@ namespace SLThree
 
             if (o is Method method)
             {
-                if (args.Length < method.RequiredArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 return method.GetValue(context, args);
             }
             else if (o is ContextWrap wrap)
             {
                 if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is Method constructor)
                 {
-                    if (args.Length < constructor.RequiredArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
                     return wrap.Context.CreateInstance(constructor, args).wrap;
                 }
             }

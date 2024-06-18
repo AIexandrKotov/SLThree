@@ -20,10 +20,12 @@ namespace SLThree
         public readonly bool Recursive = false;
         public bool Binded = false;
 
-        public readonly bool WithoutParams = true;
+        public readonly bool WithoutParams;
+        public readonly bool WithoutDefaults;
         public readonly int ParamsPlace;
         public readonly BaseExpression[] DefaultValues;
         public readonly int RequiredArguments;
+        public readonly int MaximumArguments;
 
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
@@ -54,6 +56,8 @@ namespace SLThree
             WithoutParams = without_params;
             ParamsPlace = ParamNames.Length - 1;
             DefaultValues = default_values;
+            WithoutDefaults = DefaultValues.Length == 0;
+            MaximumArguments = WithoutParams ? ParamNames.Length : int.MaxValue;
             RequiredArguments = ParamNames.Length - DefaultValues.Length;
             if (!without_params && RequiredArguments > 0) RequiredArguments -= 1;
         }
@@ -108,6 +112,7 @@ namespace SLThree
 
         public object[] CheckOnDefaults(object[] args)
         {
+            if (WithoutDefaults) return args;
             if (args.Length >= (ParamNames.Length - RequiredArguments)) return args;
             var ret = new object[ParamNames.Length];
             Array.Copy(args, ret, args.Length);
