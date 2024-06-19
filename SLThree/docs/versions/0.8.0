@@ -3,7 +3,7 @@ Language:
     - New method definition syntax
       `[modifs][Name][<T>](args) {...}`
       `[modifs][Name][<T>](args) => value`
-    - You can now copy contexts with ":" in the following cases:
+    - You can now implements contexts with ":" in the following cases:
       - New initializers:       // [] - optional
          `new T [Name][: Ancestors][{...}]`
       - New context creators:
@@ -16,9 +16,10 @@ Language:
        `T1 = TBase(5); T2 = TBase(10);`
     - The right side of the nested context initializer
       assignations now always refers to the self context
-      `x = 1; context A { context B { x = x; }}`
+       `x = 1; context A { context B { x = x; }}`
     - Parent keyword in constructed contexts
        `T1.parent == TBase;`
+    - Abstract methods (withoud body)
     - Static expression (will be executed only once) `static x`
     - Condition statement is now expression
     - Using statement is now expression

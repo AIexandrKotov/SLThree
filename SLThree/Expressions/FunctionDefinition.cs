@@ -48,7 +48,7 @@ namespace SLThree
                 }
                 else throw new LogicalError("Abstract method without abstract modifier", context);
             }
-            else if (Modificators.Contains("abstract")) throw new LogicalError("An abstract method shouldn't have a body", context);
+            else if (Modificators.Contains("abstract") && !(FunctionBody.Statements.FirstOrDefault() is ThrowStatement)) throw new LogicalError("An abstract method shouldn't have a body", context);
 
             if (Method == null)
             {

@@ -471,8 +471,8 @@ access_right <BaseExpression> -memoize
     / right:name { right }
 
 onlyname_access <BaseExpression> -memoize
-    = left:name _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
-    / right:name { right }
+    = left:special _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
+    / right:special { right }
 
 using <CreatorUsing>
     = t_name:typename { new CreatorUsing(t_name, state) }
@@ -506,7 +506,7 @@ abstract_method_expression <FunctionDefinition>
     = "abstract" _required_
       name:withoutinvokation_primary _
       generics:method_generic_part?
-      "(" _ args:func_arg<0,,"," _> _ ")" 
+      "(" _ args:arg_name<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})?
       {
           new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), null, GetOptional(ret), state)

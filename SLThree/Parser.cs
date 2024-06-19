@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Visitors;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -101,6 +102,19 @@ namespace SLThree
             iv.VisitExpression(right);
             if (!iv.done) throw new SyntaxError("Right of |> operator must be invokation", right.SourceContext);
             return right;
+        }
+
+        private static BaseExpression ReorderStatic(StaticExpression expression)
+        {
+            var ret = expression;
+            if (ret.Right is BinaryAssign)
+            {
+                var left = ret.Right;
+                while (left is BinaryAssign assign)
+                    left = assign.Right;
+
+            }
+            throw new NotImplementedException();
         }
 
         private static T Panic<T>(SLTException exception)

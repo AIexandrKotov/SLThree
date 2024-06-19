@@ -116,9 +116,9 @@ namespace SLThree
 
         }
 
-        public ExecutionContext CreateInstance(Method constructor, object[] args)
+        public ExecutionContext CreateInstance(ExecutionContext definitioncontext, Method constructor, object[] args)
         {
-            var ret = new ExecutionContext(super.Context);
+            var ret = new ExecutionContext(definitioncontext);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
             ret.parent = wrap;
             constructor.@this = ret.wrap;
@@ -162,6 +162,28 @@ namespace SLThree
             LocalVariables.FillOther(context.LocalVariables);
             //if (context.@private != null && @private != null)
             //    @private.Context.LocalVariables.FillOther(context.@private.Context.LocalVariables);
+            return this;
+        }
+
+        public static object virtualize(object o, ExecutionContext context)
+        {
+            if (o is Method method)
+            {
+                method = method.CloneWithNewName(method.Name);
+                method.identity(context.wrap);
+                return method;
+            }
+            return o;
+        }
+
+        internal ExecutionContext implement(ExecutionContext context)
+        {
+            var vars = context.LocalVariables.Variables;
+            foreach (var x in context.LocalVariables.NamedIdentificators)
+            {
+                var o = vars[x.Value];
+                LocalVariables.SetValue(x.Key, virtualize(o, this));
+            }
             return this;
         }
     }

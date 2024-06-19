@@ -46,7 +46,7 @@ namespace SLThree
                 if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is Method constructor)
                 {
                     if (constructor.ParamNames.Length != args.Length) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
-                    return wrap.Context.CreateInstance(constructor, args).wrap;
+                    return wrap.Context.CreateInstance(context, constructor, args).wrap;
                 }
             }
             else if (o is MethodInfo mi)

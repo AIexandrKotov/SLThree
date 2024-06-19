@@ -69,7 +69,7 @@ namespace SLThree
         {
             var ret = new ExecutionContext(target);
             for (var i = 0; i < Ancestors.Length; i++)
-                ret.copy(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
+                ret.implement(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
             CreatorBody?.GetValue(ret, context);
             var wrap = ret.wrap;
             if (HasName)

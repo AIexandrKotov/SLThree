@@ -24,7 +24,7 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">new as is true false null using context self this global upper super private recursive explicit static constructor</Keywords>
+            <Keywords name="Keywords1">new as is true false null using context self this global upper super private recursive explicit static constructor abstract</Keywords>
             <Keywords name="Keywords2">u8 i8 u16 i16 u32 i32 u64 i64 f64 f32 string bool any char list dict tuple</Keywords>
             <Keywords name="Keywords3">while return break continue if else foreach in try catch finally match throw</Keywords>
             <Keywords name="Keywords4">\n \t \r \\\</Keywords>
