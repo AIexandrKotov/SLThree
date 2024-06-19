@@ -40,6 +40,15 @@ namespace SLThree
             ReturnTypeHint = typehint;
             var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
+            if (FunctionBody == null)
+            {
+                if (Modificators.Contains("abstract"))
+                {
+                    FunctionBody = new StatementList(new BaseStatement[] { new ThrowStatement(new StaticExpression(new RuntimeError("You cannot call an abstract method", null)), context) }, context);
+                }
+                else throw new LogicalError("Abstract method without abstract modifier", context);
+            }
+            else if (Modificators.Contains("abstract")) throw new LogicalError("An abstract method shouldn't have a body", context);
 
             if (Method == null)
             {
