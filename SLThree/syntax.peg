@@ -23,8 +23,8 @@ statement <BaseStatement>
     / e:match_expression { new ExpressionStatement(e, state) }
     / e:context_expression { new ExpressionStatement(e, state) }
     / e:block_instance_expression { new ExpressionStatement(e, state) }
-    / "static" _required_ e:method_definition_statement { new ExpressionStatement(new StaticExpression(e, state), state) }
-    / "static" _ e:method_definition_nswm { new ExpressionStatement(new StaticExpression(e, state), state) }
+    / "static" _required_ e:method_definition_statement { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
+    / "static" _ e:method_definition_nswm { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
     / e:method_definition_statement { new ExpressionStatement(e, state) }
     / expression_statement
     / block_statement
@@ -96,8 +96,8 @@ expression <BaseExpression>
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
-    / "static" _required_ left:expression { new StaticExpression(left, state) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
     / condition_expression
     / match_expression
     / method_definition_expression
