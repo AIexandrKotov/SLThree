@@ -1,5 +1,6 @@
 ﻿using SLThree;
 using SLThree.Extensions;
+using SLThree.sys;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,7 @@ namespace TestSuite
     {
         public static List<string> ErrorLog = new List<string>();
 
+        private static bool global_assert = true;
         private static bool current_assert = true;
         private static int current_assert_id = 1;
         public static void Log(object o)
@@ -51,6 +53,53 @@ namespace TestSuite
                 ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {e}");
             }
         }
+        public static void AssertThrow(ContextWrap context, BaseExpression sc, Type type, string val)
+        {
+            try
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("");
+                Console.Write($"{current_assert_id++,6}  ");
+                var expression = slt.parse_expr(val);
+                expression.GetValue(context.Context);
+                current_assert = false;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($" FAILED ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($" [NO]");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.Write($" at {expression.SourceContext.ToStringWithoutFile()}  ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"{expression}");
+                ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {type} not thrown");
+            }
+            catch (Exception e)
+            {
+                if (SLTHelpers.IsType(type, e.GetType()))
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"SUCCESS ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($" [{type.Name}]");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($" {val}    ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    current_assert = false;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($" FAILED ");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($" [{e.GetType().Name}]");
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write($" at {sc.SourceContext.ToStringWithoutFile()}  ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"{val}");
+                    ErrorLog.Add($"FAILED {val} as {sc.SourceContext} ===> another exception thrown\n{e}");
+                }
+            }
+        }
 
         public static bool ParseTest(string filename)
         {
@@ -61,11 +110,13 @@ namespace TestSuite
             }
             catch (SLTException e)
             {
+                global_assert = false;
                 ErrorLog.Add(e.ToString());
                 return false;
             }
             catch (Exception e)
             {
+                global_assert = false;
                 ErrorLog.Add($"with {filename}: ");
                 ErrorLog.Add(e.ToString());
                 return false;
@@ -80,6 +131,7 @@ namespace TestSuite
             {
                 var context = new ExecutionContext();
                 context.LocalVariables.SetValue("ASSERT", ((Action<ContextWrap, BaseExpression>)Assert).Method);
+                context.LocalVariables.SetValue("ASSERT_THROW", ((Action<ContextWrap, BaseExpression, Type, string>)AssertThrow).Method);
                 context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
                 context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 
@@ -88,11 +140,13 @@ namespace TestSuite
             }
             catch (SLTException e)
             {
+                global_assert = false;
                 ErrorLog.Add(e.ToString());
                 return false;
             }
             catch (Exception e)
             {
+                global_assert = false;
                 ErrorLog.Add($"with {filename}: ");
                 ErrorLog.Add(e.ToString());
                 return false;
@@ -165,8 +219,7 @@ namespace TestSuite
             ParsingTests();
             ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());
-            if (ErrorLog.Count > 0) return 1;
-            else return 0;
+            return global_assert ? 0 : 1;
         }
     }
 }
