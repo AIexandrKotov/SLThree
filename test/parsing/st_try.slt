@@ -1,0 +1,6 @@
+try {;} catch (e) {;} finally {;}
+try {;} catch (e) console.writeln(e); finally {;}
+try {;} catch (e) console.writeln(e);
+try {;} catch {;} finally {;}
+try {;} catch {;}
+try {;}

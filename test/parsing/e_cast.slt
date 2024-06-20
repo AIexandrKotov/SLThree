@@ -1,0 +1,3 @@
+2 as i64;
+(1, 2, 3) as tuple<i64, i64, i64>;
+new context A as context;

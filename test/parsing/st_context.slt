@@ -1,0 +1,4 @@
+context {}
+context A {}
+context: B {}
+context A: B {}
