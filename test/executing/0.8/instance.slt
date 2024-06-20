@@ -1,0 +1,35 @@
+I() => new any;
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32);
+ASSERT(self, (I().Capacity == 0o10i32) as is);
+I() => new any: (new context);
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32): (new context);
+ASSERT(self, (I().Capacity == 0o10i32) as is);
+
+I() => new any { Capacity = 5i32; };
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32) { Capacity = 5i32; };
+ASSERT(self, (I().Capacity == 5i32) as is);
+I() => new any: (new context) { Capacity = 5i32; };
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32): (new context) { Capacity = 5i32; };
+ASSERT(self, (I().Capacity == 5i32) as is);
+
+I() => new any Name;
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32) Name;
+ASSERT(self, (I().Capacity == 0o10i32) as is);
+I() => new any Name: (new context);
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32) Name: (new context);
+ASSERT(self, (I().Capacity == 0o10i32) as is);
+
+I() => new any Name { Capacity = 5i32; };
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32) Name { Capacity = 5i32; };
+ASSERT(self, (I().Capacity == 5i32) as is);
+I() => new any Name: (new context) { Capacity = 5i32; };
+ASSERT(self, (I() is any) as is);
+I() => new list(0o10i32) Name: (new context) { Capacity = 5i32; };
+ASSERT(self, (I().Capacity == 5i32) as is);

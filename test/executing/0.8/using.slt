@@ -1,0 +1,2 @@
+using linq as L;
+ASSERT(self, (L is SLThree.ClassAccess) as is);

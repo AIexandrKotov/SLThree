@@ -1,0 +1,502 @@
+using SLThree.Method;
+GET_GENERICS(method) => method is SLThree.GenericMethod ? method.Generics.Length : 0;
+IS_RET(method, retname) => retname != null ? method.ReturnType?.ToString() == retname : method.ReturnType == null;
+IS_ARG(method, arg) => arg != null ? method.ParamTypes[0]?.ToString() == arg : method.ParamTypes[0] == null;
+HAS_ATTR(method) => method.Recursive || !method.Implicit;
+NOT_ATTR(method) => !this.HAS_ATTR(method);
+
+M() => recursive explicit Name<T>(args): Ret {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args): Ret {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args): Ret {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args): Ret {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit Name<T>(args) {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args) {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args) {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args) {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args): Ret {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args): Ret {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args): Ret {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args): Ret {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args) {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args) {};
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args) {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args) {};
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, (M().Statements.Statements.Length == 0) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit Name<T>(args): Ret { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args): Ret { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args): Ret { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args): Ret { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit Name<T>(args) { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args) { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args) { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args) { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args): Ret { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args): Ret { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args): Ret { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args): Ret { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args) { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args) { 2; };
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args) { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args) { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit Name<T>(args): Ret => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args): Ret => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args): Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args): Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit Name<T>(args) => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit Name(args) => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => recursive explicit <T>(args) => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => recursive explicit (args) => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, HAS_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args): Ret => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args): Ret => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args): Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args): Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => Name<T>(args) => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => Name(args) => 2;
+ASSERT(self, (M().Name == "Name") as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => <T>(args) => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 1) as is);
+
+M() => (args) => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => ArgT arg: Ret => { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), "ArgT") as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => ArgT arg => { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), "ArgT") as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => arg: Ret => { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), null) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => arg => { 2; };
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), null) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ExpressionStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => ArgT arg: Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), "ArgT") as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => ArgT arg => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), "ArgT") as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => arg: Ret => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), null) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), "Ret") as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
+
+M() => arg => 2;
+ASSERT(self, (M().Name == Method.DefaultMethodName) as is);
+ASSERT(self, (M().ParamNames.Length == 1) as is);
+ASSERT(self, IS_ARG(M(), null) as is);
+st = M().Statements.Statements;
+ASSERT(self, (st.Length == 1 && st[0] is SLThree.ReturnStatement) as is);
+ASSERT(self, NOT_ATTR(M()) as is);
+ASSERT(self, IS_RET(M(), null) as is);
+ASSERT(self, (GET_GENERICS(M()) == 0) as is);
