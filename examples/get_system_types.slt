@@ -1,3 +1,6 @@
-using slt;
-using linq;
-sly.sys_types.Keys |> linq.jts("\n");
+(using linq).jts(
+    linq.to_enumerable(
+        (using slt).sys_types
+    ),
+    "\n"
+);
