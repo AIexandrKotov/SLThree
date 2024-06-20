@@ -32,6 +32,7 @@ Language:
        `new context Name {...}` -> `context Name {...}`
        `new context {...}` -> `context {...}`
 Optimization:
+    - Executing method performance has been increased by ~10%
     - Wrappers refactoring, minumum 3x faster wrapping
       minimum 20x faster unwrapping
 Bugfixes:

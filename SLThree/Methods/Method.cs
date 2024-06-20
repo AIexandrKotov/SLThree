@@ -93,10 +93,13 @@ namespace SLThree
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
             var context = GetExecutionContext(args, old_context);
-            for (var i = 0; i < Statements.Statements.Length; i++)
+            var i = 0;
+            var bs = Statements.Statements;
+            var count = bs.Length;
+            while (i < count)
             {
                 if (context.Returned) return context.ReturnedValue;
-                else Statements.Statements[i].GetValue(context);
+                else bs[i++].GetValue(context);
             }
             if (context.Returned) return context.ReturnedValue;
             return null;
