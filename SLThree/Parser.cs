@@ -173,9 +173,11 @@ namespace SLThree
             if (Any<FunctionDefinition>(o, func => func.FunctionName != null, out var wrongmethod))
                 throw new LogicalError($"Unexpected named method{suffix}", wrongmethod.SourceContext);
             if (Any<CreatorContext>(o, context => context.Name != null, out var wrongcontext))
-                throw new LogicalError($"Unexpected named context{suffix}", wrongassign.SourceContext);
+                throw new LogicalError($"Unexpected named context{suffix}", wrongcontext.SourceContext);
             if (Any<CreatorInstance>(o, instance => instance.Name != null, out var wronginstance))
-                throw new LogicalError($"Unexpected named instance{suffix}", wronginstance.SourceContext);
+                throw new LogicalError($"Unexpected named instantation{suffix}", wronginstance.SourceContext);
+            if (Any<UsingExpression>(o, @using => @using.Alias != null, out var wrongusing))
+                throw new LogicalError($"Unexpected named using{suffix}", wrongusing.SourceContext);
         }
         private BaseExpression ReorderStatic(StaticExpression expression)
         {
@@ -196,6 +198,8 @@ namespace SLThree
                 return new BinaryAssign(context.Name.CloneCast(), expression, context.SourceContext);
             if (expression.Right is CreatorInstance instance && instance.Name != null)
                 return new BinaryAssign(instance.Name.CloneCast(), expression, instance.SourceContext);
+            if (expression.Right is UsingExpression @using && @using.Alias != null)
+                return new BinaryAssign(@using.Alias.CloneCast(), expression, @using.SourceContext);
             return ReorderStaticMethod(expression);
         }
         private BaseExpression ReorderStaticMethod(StaticExpression expression)
