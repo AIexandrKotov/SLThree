@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,20 +41,22 @@ namespace SLThree
             ReturnTypeHint = typehint;
             var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
+
+            var is_abstract = Modificators.Contains("abstract");
             if (FunctionBody == null)
             {
-                if (Modificators.Contains("abstract"))
+                if (is_abstract)
                 {
-                    FunctionBody = new StatementList(new BaseStatement[] { new ThrowStatement(new StaticExpression(new RuntimeError("You cannot call an abstract method", null)), context) }, context);
+                    FunctionBody = new StatementList(new BaseStatement[] { new ThrowStatement(new StaticExpression(new AbstractInvokation(SourceContext)), context) }, context);
                 }
                 else throw new LogicalError("Abstract method without abstract modifier", context);
             }
-            else if (Modificators.Contains("abstract") && !(FunctionBody.Statements.FirstOrDefault() is ThrowStatement)) throw new LogicalError("An abstract method shouldn't have a body", context);
+            else if (is_abstract && !slt.is_abstract(FunctionBody)) throw new LogicalError("An abstract method shouldn't have a body", context);
 
             if (Method == null)
             {
                 if (GenericArguments.Length == 0) Method = new Method(
-                    FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
+                    FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
                     Arguments.Select(x => x.Name).ToArray(),
                     FunctionBody,
                     Arguments.Select(x => x.TypeHint).ToArray(),
@@ -62,7 +65,7 @@ namespace SLThree
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"));
                 else Method = new GenericMethod(
-                    FunctionName == null ? "$method" : CreatorContext.GetLastName(FunctionName),
+                    FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
                     Arguments.Select(x => x.Name).ToArray(),
                     FunctionBody,
                     Arguments.Select(x => x.TypeHint).ToArray(),
@@ -73,6 +76,7 @@ namespace SLThree
                     GenericArguments);
             }
 
+            Method.Abstract = is_abstract;
             not_native = !Modificators.Contains("native");
         }
 
@@ -130,7 +134,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new FunctionDefinition(Modificators.CloneArray(), FunctionName.CloneCast(), GenericArguments.CloneArray(), Arguments.CloneArray(), FunctionBody.CloneCast(), ReturnTypeHint.CloneCast(), SourceContext.CloneCast());
+            return new FunctionDefinition(Modificators.CloneArray(), FunctionName.CloneCast(), GenericArguments.CloneArray(), Arguments.CloneArray(), Modificators.Contains("abstract") ? null : FunctionBody.CloneCast(), ReturnTypeHint.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

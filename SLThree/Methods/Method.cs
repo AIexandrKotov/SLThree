@@ -1,22 +1,27 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace SLThree
 {
     public class Method : ICloneable
     {
+        public const string DefaultMethodName = "$method";
+
         private ExecutionContext cached_context;
         public string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
+        public bool Abstract = false;
         public bool Binded = false;
 
         public TypenameExpression[] ParamTypes;
@@ -49,7 +54,25 @@ namespace SLThree
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
-        public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var unnamed = Name == DefaultMethodName;
+            if (Abstract)
+                sb.Append("abstract ");
+            else
+            {
+                if (Recursive)
+                    sb.Append("recursive ");
+                if (!Implicit)
+                    sb.Append("explicit ");
+            }
+            if (!unnamed)
+                sb.Append(Name);
+            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            return sb.ToString();
+        }
 
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
@@ -233,7 +256,10 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive);
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive)
+            {
+                Abstract = Abstract
+            };
         }
 
         public virtual object Clone()
