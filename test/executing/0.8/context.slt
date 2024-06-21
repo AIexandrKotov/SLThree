@@ -1,0 +1,29 @@
+ISDNAME(context c) => c.unwrap().Name.StartsWith("@");
+EQNAME(context c, string name) => c.unwrap().Name == name;
+
+C() => new context;
+ASSERT(self, ISDNAME(C()) as is);
+C() => new context A;
+ASSERT(self, EQNAME(C(), "A") as is);
+
+C() => context A {
+    f(x) => 5 * x;
+    g(x) => 4 * x;
+};
+context B: C() {
+    sum(x) => this.f(x) - this.g(x);
+};
+ASSERT(self, (B.sum(4) == 4) as is);
+
+context TBase {
+    constructor(x) {
+        this.A = 5 * x;
+        this.B = 4 * x;
+        abstract this.is_rem(x);
+    }
+};
+
+context X: TBase(25) {
+    is_rem(x) => this.A - this.B == x;
+};
+ASSERT(self, (X.is_rem(25)) as is);

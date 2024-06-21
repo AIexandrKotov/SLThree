@@ -55,7 +55,7 @@ namespace slt
         }
 #endif
             ;
-        internal static Assembly SLThreeAssembly;
+        internal static Assembly SLThreeAssembly, REPLAssembly;
         private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
@@ -68,6 +68,7 @@ namespace slt
         private static void InitSLThreeAssemblyInfo()
         {
             SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
+            REPLAssembly = Assembly.GetAssembly(typeof(Program));
             SLThreeVersion = new SLTVersion.Reflected();
             SLTREPLVersion = new REPLVersion.Reflected();
             var sltver = SLThreeAssembly.GetType("SLTVersion");
@@ -125,25 +126,17 @@ namespace slt
         public static void OutCurrentVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(REPLVersion.Name);
+            Console.Write("REPL");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLTREPLVersion.VersionWithoutRevision} ");
-            Console.ResetColor();
-            Console.Write("rev ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{SLTREPLVersion.Revision}");
+            Console.WriteLine($" {GetVersionOfREPL()} ");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(SLTVersion.Name);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($" {SLThreeVersion.VersionWithoutRevision} ");
+            Console.Write($" {GetVersionOfLanguage()} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"{SLTVersion.Edition} ");
-            Console.ResetColor();
-            Console.Write("rev ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"{SLThreeVersion.Revision}");
+            Console.WriteLine($"{SLTVersion.Edition} ");
             Console.ResetColor();
         }
 
@@ -795,9 +788,9 @@ namespace slt
 
                 if (onlynull)
                 {
-                    var old = REPLContext.LocalVariables.NamedIdenificators.Count;
+                    var old = REPLContext.LocalVariables.NamedIdentificators.Count;
                     REPLContext.LocalVariables.ClearNulls();
-                    var @new = REPLContext.LocalVariables.NamedIdenificators.Count;
+                    var @new = REPLContext.LocalVariables.NamedIdentificators.Count;
                     OutAsWarning($"{old - @new} nulls deleted from context");
                 }
                 else
@@ -860,13 +853,28 @@ namespace slt
         }
         #endregion
 
+        private static string VersionGetted = null;
+        private static string REPLVersionGetted = null;
+        private static string GetVersionOf(Assembly assembly, ref string getted)
+        {
+            if (string.IsNullOrEmpty(getted))
+            {
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
+                var index = fileVersionInfo.IndexOf('+');
+                getted = index != -1 ? fileVersionInfo.Substring(0, index) : fileVersionInfo;
+            }
+            return getted;
+        }
+        private static string GetVersionOfLanguage() => GetVersionOf(SLThreeAssembly, ref VersionGetted);
+        private static string GetVersionOfREPL() => GetVersionOf(REPLAssembly, ref REPLVersionGetted);
+
         public static void REPLShortVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("SLThree REPL ");
+            Console.Write("SLThree ");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{SLTREPLVersion.VersionWithoutRevision}");
+            Console.Write($"{GetVersionOfLanguage()}");
             Console.ResetColor();
             Console.Write(" | ");
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -949,7 +957,9 @@ namespace slt
                     Console.Write("... " + new string(' ', REPLSubparser.Tabs * 4));
                 try
                 {
-                    var state = REPLSubparser.Parse(Console.ReadLine());
+                    var rdl = Console.ReadLine();
+                    var state = REPLSubparser.Parse(rdl);
+                    if (rdl == null) Console.WriteLine();
                     if (state == Subparser.SubparserState.WaitingText) continue;
                 }
                 catch (Exception e)

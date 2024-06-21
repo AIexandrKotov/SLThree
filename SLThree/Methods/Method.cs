@@ -1,24 +1,28 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace SLThree
 {
     public class Method : ICloneable
     {
-        private static readonly Dictionary<Method, ExecutionContext> cached_method_contextes = new Dictionary<Method, ExecutionContext>();
+        public const string DefaultMethodName = "$method";
 
-        public readonly string Name;
+        private ExecutionContext cached_context;
+        public string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
-        public readonly bool Binded = false;
+        public bool Abstract = false;
+        public bool Binded = false;
 
         public TypenameExpression[] ParamTypes;
         public TypenameExpression ReturnType;
@@ -26,10 +30,17 @@ namespace SLThree
         internal ContextWrap definitionplace;
         internal string contextName = "";
 
-        public ContextWrap @this => definitionplace;
+        public ContextWrap @this
+        {
+            get => definitionplace; internal set
+            {
+                definitionplace = value;
+                cached_context = null;
+            }
+        }
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool binded)
+        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive)
         {
             Name = name;
             ParamNames = paramNames;
@@ -39,19 +50,36 @@ namespace SLThree
             definitionplace = definitionPlace;
             Implicit = @implicit;
             Recursive = recursive;
-            Binded = binded;
         }
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
 
-        public override string ToString() => $"{ReturnType?.ToString() ?? "any"} {Name}({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var unnamed = Name == DefaultMethodName;
+            if (Abstract)
+                sb.Append("abstract ");
+            else
+            {
+                if (Recursive)
+                    sb.Append("recursive ");
+                if (!Implicit)
+                    sb.Append("explicit ");
+            }
+            if (!unnamed)
+                sb.Append(Name);
+            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            return sb.ToString();
+        }
 
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
             ExecutionContext ret;
             if (Recursive)
             {
-                ret = new ExecutionContext();
+                ret = new ExecutionContext(false, false);
                 ret.Name = contextName;
                 ret.PreviousContext = super_context;
                 ret.LocalVariables.FillArguments(this, arguments);
@@ -61,19 +89,19 @@ namespace SLThree
             }
             else
             {
-                if (cached_method_contextes.TryGetValue(this, out var cntx))
+                if (cached_context != null)
                 {
-                    ret = cntx;
+                    ret = cached_context;
                     ret.PrepareToInvoke();
                 }
                 else
                 {
-                    ret = new ExecutionContext(super_context)
+                    ret = new ExecutionContext(super_context, false)
                     {
                         @this = definitionplace
                     };
                     ret.SuperContext = ret.@this.Context?.SuperContext;
-                    cached_method_contextes.Add(this, ret);
+                    cached_context = ret;
                 }
                 ret.Name = contextName;
                 ret.PreviousContext = super_context;
@@ -88,13 +116,23 @@ namespace SLThree
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
             var context = GetExecutionContext(args, old_context);
-            for (var i = 0; i < Statements.Statements.Length; i++)
+            var i = 0;
+            var bs = Statements.Statements;
+            var count = bs.Length;
+            while (i < count)
             {
                 if (context.Returned) return context.ReturnedValue;
-                else Statements.Statements[i].GetValue(context);
+                else bs[i++].GetValue(context);
             }
             if (context.Returned) return context.ReturnedValue;
             return null;
+        }
+
+        public Method identity(ContextWrap context)
+        {
+            @this = context;
+            Binded = true;
+            return this;
         }
 
         #region Invoke [auto-generated]
@@ -218,7 +256,10 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, Binded);
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive)
+            {
+                Abstract = Abstract
+            };
         }
 
         public virtual object Clone()

@@ -1,21 +1,25 @@
 ﻿using SLThree.Extensions;
+using SLThree.Native;
 using SLThree.sys;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace SLThree
 {
-    public abstract class WrappersTypeSetting
+    public static class Wrapper
     {
         #region Type Setting
-        protected static Type generic_list = typeof(List<int>).GetGenericTypeDefinition();
-        protected static Type generic_dict = typeof(Dictionary<string, int>).GetGenericTypeDefinition();
-        protected static Type type_ituple = typeof(ITuple);
-        protected static bool HasRecast(Type type)
+        internal static Type generic_list = typeof(List<int>).GetGenericTypeDefinition();
+        internal static Type generic_dict = typeof(Dictionary<string, int>).GetGenericTypeDefinition();
+        internal static Type type_ituple = typeof(ITuple);
+        public static bool HasRecast(Type type)
         {
             if (type.IsArray) return true;
             if (type.IsGenericType)
@@ -27,14 +31,14 @@ namespace SLThree
             if (interfaces.Contains(type_ituple)) return true;
             return false;
         }
-        protected static object[] TupleToArray(ITuple tuple)
+        public static object[] TupleToArray(ITuple tuple)
         {
             var ret = new object[tuple.Length];
             for (var i = 0; i < ret.Length; i++)
                 ret[i] = tuple[i];
             return ret;
         }
-        internal static object UnwrapCast(Type type_to_cast, object o)
+        public static object UnwrapCast(Type type_to_cast, object o)
         {
             if (type_to_cast.IsArray && o is object[] obj_array)
             {
@@ -121,7 +125,7 @@ namespace SLThree
             }
             return o.CastToType(type_to_cast);
         }
-        internal static object WrapCast(object o)
+        public static object WrapCast(object o)
         {
             if (o == null) return null;
             var type = o.GetType();
@@ -188,228 +192,933 @@ namespace SLThree
         }
         #endregion
 
-        internal protected WrappersTypeSetting() { }
-    }
-
-    public class NonGenericWrapper : WrappersTypeSetting
-    {
-        protected Type type;
-        protected string typename;
-        protected int counter;
-        internal string GetWrappedContextName() => $"<{typename}>@{Convert.ToString(counter++, 16).ToUpper().PadLeft(2, '0')}";
-        private static Dictionary<Type, NonGenericWrapper> Wrappers { get; } = new Dictionary<Type, NonGenericWrapper>();
-        public static NonGenericWrapper GetWrapper(Type type)
+        /// <summary>
+        /// Пропускает этот элемент
+        /// </summary>
+        [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
+        public sealed class IgnoreAttribute : Attribute
         {
-            if (Wrappers.TryGetValue(type, out var value)) return value;
-            else return new NonGenericWrapper(type);
-        }
-        public static NonGenericWrapper GetWrapper<T>() => GetWrapper(typeof(T));
 
-        protected internal NonGenericWrapper() { }
-        protected readonly Dictionary<string, PropertyInfo> Properties = new Dictionary<string, PropertyInfo>();
-        protected Dictionary<string, FieldInfo> Fields = new Dictionary<string, FieldInfo>();
-        protected readonly Dictionary<string, PropertyInfo> StaticProperties = new Dictionary<string, PropertyInfo>();
-        protected readonly Dictionary<string, FieldInfo> StaticFields = new Dictionary<string, FieldInfo>();
-        protected readonly PropertyInfo InjectContextName = null;
-        protected readonly bool SupportedNameWrap;
-        protected internal NonGenericWrapper(Type type)
-        {
-            this.type = type;
-            Wrappers.Add(type, this);
-            typename = type.Name;
-            var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
-            foreach (var property in props)
-            {
-                if (Attribute.IsDefined(property, typeof(WrapperContextNameAttribute))) InjectContextName = property;
-                if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                else Properties[property.Name] = property;
-            }
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
-            foreach (var field in fields)
-            {
-                if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
-                else Fields[field.Name] = field;
-            }
-            var static_props = type.GetProperties(BindingFlags.Static | BindingFlags.Public);
-            foreach (var property in static_props)
-            {
-                if (Attribute.IsDefined(property, typeof(WrapperSkipAttribute))) continue;
-                //else if (Attribute.IsDefined(property, typeof(WrappeContextNameAttribute))) InjectContextName = property;
-                else StaticProperties[property.Name] = property;
-            }
-            var static_fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
-            foreach (var field in static_fields)
-            {
-                if (Attribute.IsDefined(field, typeof(WrapperSkipAttribute))) continue;
-                else StaticFields[field.Name] = field;
-            }
-            if (InjectContextName != null) SupportedNameWrap = InjectContextName.SetMethod != null;
         }
 
-        public bool HasName() => InjectContextName != null;
-        public string GetName(object obj)
+        /// <summary>
+        /// Выделяет элемент для хранения имени
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+        public sealed class NameAttribute : Attribute
         {
-            if (InjectContextName != null) return (string)InjectContextName.GetValue(obj);
-            throw new ArgumentException($"Type {typename} doesn't have property with InjectContextName");
+
         }
-        public ExecutionContext Wrap(object obj)
+
+        /// <summary>
+        /// Выключает неявные приведения при разворачивании для данного элемента
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+        public sealed class StrongUnwrapAttribute : Attribute
         {
-            var ret = new ExecutionContext();
-            ret.Name = SupportedNameWrap ? InjectContextName.GetValue(obj).ToString() : GetWrappedContextName();
-            foreach (var x in Properties)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
-            foreach (var x in Fields)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(obj)));
-            return ret;
+
         }
-        public ExecutionContext WrapStatic()
+
+        /// <summary>
+        /// Выключает неявные приведения при сворачивании для данного элемента
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+        public sealed class StrongWrapAttribute : Attribute
         {
-            var ret = new ExecutionContext();
-            ret.Name = GetWrappedContextName();
-            foreach (var x in StaticProperties)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
-            foreach (var x in StaticFields)
-                ret.LocalVariables.SetValue(x.Key, WrapCast(x.Value.GetValue(null)));
-            return ret;
+
         }
-        public void SafeUnwrapStatic(ExecutionContext context)
+
+        /// <summary>
+        /// Заставляет элемент проводить разворачивание и сворачивание словно контекст
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+        public sealed class ContextAttribute : Attribute
         {
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+
+        }
+
+        /// <summary>
+        /// Позволяет свернуть этот readonly-элемент в контекст
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+        public sealed class WrapReadonlyAttribute : Attribute
+        {
+
+        }
+
+        /// <summary>
+        /// Задаёт конструктор, который будет использован при разворачивании
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Constructor, Inherited = false, AllowMultiple = false)]
+        public sealed class ConstructorAttribute : Attribute
+        {
+
+        }
+
+        /// <summary>
+        /// Выделяет метод, возвращающий аргументы для конструктора
+        /// сигнатуры static Func&lt;ExecutionContext, object[]&gt;
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+        public sealed class ConstructorArgsAttribute : Attribute
+        {
+
+        }
+
+        private class WrappingMemberInfo
+        {
+            public MemberInfo MemberInfo;
+            public bool IsStrongWrap;
+            public bool IsStrongUnwrap;
+            public bool IsWrapReadonly;
+            public bool IsContext;
+            public bool IsField;
+            public int id = 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns>(элементы, элемент-имя, конструктор, метод для аргументов конструктора)</returns>
+        private static (List<WrappingMemberInfo>, WrappingMemberInfo, ConstructorInfo, MethodInfo) Collect(Type type)
+        {
+            var ret = new List<WrappingMemberInfo>();
+            var name = default(WrappingMemberInfo);
+            var constructor = default(ConstructorInfo);
+            var constructorargs = default(MethodInfo);
+            var id = 0;
+
+            void Check(MemberInfo member)
             {
-                try
+                switch (member.MemberType)
                 {
-                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                        Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                    case MemberTypes.Field:
+                        {
+                            var field = (FieldInfo)member;
+                            if (field.IsInitOnly && member.GetCustomAttribute<WrapReadonlyAttribute>() == null) return;
+                            var m = new WrappingMemberInfo
+                            {
+                                MemberInfo = member,
+                                IsWrapReadonly = field.IsInitOnly,
+                                IsContext = member.GetCustomAttribute<ContextAttribute>() != null,
+                                IsStrongUnwrap = member.GetCustomAttribute<StrongUnwrapAttribute>() != null,
+                                IsStrongWrap = member.GetCustomAttribute<StrongWrapAttribute>() != null,
+                                IsField = true,
+                                id = id++,
+                            };
+                            if (member.GetCustomAttribute<NameAttribute>() == null) ret.Add(m);
+                            else
+                            {
+                                if (field.IsInitOnly) throw new NotSupportedException($"Wrapper.Name cannot be readonly [{field}]");
+                                if (name != null) throw new NotSupportedException($"Wrapper.Name has already been defined [{field}]");
+                                name = m;
+                                id--;
+                            }
+                        }
+                        break;
+                    case MemberTypes.Property:
+                        {
+                            var property = (PropertyInfo)member;
+                            if (!property.CanRead) return;
+                            if (!property.CanWrite && member.GetCustomAttribute<WrapReadonlyAttribute>() == null) return;
+                            var m = new WrappingMemberInfo
+                            {
+                                MemberInfo = member,
+                                IsWrapReadonly = !property.CanWrite,
+                                IsContext = member.GetCustomAttribute<ContextAttribute>() != null,
+                                IsStrongUnwrap = member.GetCustomAttribute<StrongUnwrapAttribute>() != null,
+                                IsStrongWrap = member.GetCustomAttribute<StrongWrapAttribute>() != null,
+                                id = id++,
+                            };
+                            if (member.GetCustomAttribute<NameAttribute>() == null) ret.Add(m);
+                            else
+                            {
+                                if (!property.CanWrite) throw new NotSupportedException($"Wrapper.Name cannot be readonly [{property}]");
+                                if (name != null) throw new NotSupportedException($"Wrapper.Name has already been defined [{property}]");
+                                name = m;
+                                id--;
+                            }
+                        }
+                        break;
+                    case MemberTypes.Constructor:
+                        {
+                            var ctor = (ConstructorInfo)member;
+                            if (ctor.GetParameters().Length == 0)
+                            {
+                                constructor = ctor;
+                                return;
+                            }
+                            if (member.GetCustomAttribute(typeof(ConstructorAttribute)) == null) return;
+                            if (constructor != null && constructor.GetParameters().Length != 0) throw new NotSupportedException($"Explicit constructor has already been defined [{constructor}]");
+                            constructor = ctor;
+                        }
+                        break;
                 }
-                catch (Exception e)
+            }
+
+            void CheckCtorArgs(MemberInfo member)
+            {
+                switch (member.MemberType)
                 {
-                    context.Errors.Add(e);
+                    case MemberTypes.Method:
+                        {
+                            if (member.GetCustomAttribute<ConstructorArgsAttribute>() == null) return;
+                            var method = (MethodInfo)member;
+                            var pars = method.GetParameters();
+                            if (method.ReturnType != typeof(object[]) || !(pars.Length == 1 && pars[0].ParameterType == ContextType)) throw new NotSupportedException($"Wrong signature... [{method}]");
+                            constructorargs = method;
+                        }
+                        break;
                 }
             }
-        }
-        public void UnwrapStatic(ExecutionContext context)
-        {
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                    Properties[name.Key].SetValue(null, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(null, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                if (member.GetCustomAttribute<IgnoreAttribute>() != null) continue;
+                Check(member);
             }
-        }
-        public ExecutionContext WrapStaticClass()
-        {
-            var ret = new ExecutionContext();
-            ret.Name = GetWrappedContextName();
-            var props = StaticProperties;
-            var fields = StaticFields;
-            foreach (var x in props)
-                ret.LocalVariables.SetValue(x.Key, x.Value.GetValue(null));
-            foreach (var x in fields)
-                ret.LocalVariables.SetValue(x.Key, x.Value.GetValue(null));
-            return ret;
-        }
-        public void UnwrapStaticClass(ExecutionContext context)
-        {
-            var props = StaticProperties;
-            var fields = StaticFields;
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                if (props.ContainsKey(name.Key) && props[name.Key].SetMethod != null)
-                    props[name.Key].SetValue(null, UnwrapCast(props[name.Key].PropertyType, name.Value));
-                else if (fields.ContainsKey(name.Key)) fields[name.Key].SetValue(null, UnwrapCast(fields[name.Key].FieldType, name.Value));
+                if (member.GetCustomAttribute<IgnoreAttribute>() != null) continue;
+                CheckCtorArgs(member);
             }
-        }
-        public void SafeUnwrapStaticClass(ExecutionContext context)
-        {
-            var props = StaticProperties;
-            var fields = StaticFields;
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+
+            if (constructor != null && constructor.GetParameters().Length != 0 && constructorargs == null)
             {
-                try
+                throw new NotSupportedException($"{type.Name} must have Wrapper.ConstructorArgs method because it has an explicit constructor");
+            }
+
+            return (ret, name, constructor, constructorargs);
+        }
+        private static (List<WrappingMemberInfo>, WrappingMemberInfo) CollectStatic(Type type)
+        {
+            var ret = new List<WrappingMemberInfo>();
+            var name = default(WrappingMemberInfo);
+            var id = 0;
+
+            void Check(MemberInfo member)
+            {
+                switch (member.MemberType)
                 {
-                    if (props.ContainsKey(name.Key) && props[name.Key].SetMethod != null)
-                        props[name.Key].SetValue(null, UnwrapCast(props[name.Key].PropertyType, name.Value));
-                    else if (fields.ContainsKey(name.Key)) fields[name.Key].SetValue(null, UnwrapCast(fields[name.Key].FieldType, name.Value));
-                }
-                catch (Exception e)
-                {
-                    context.Errors.Add(e);
+                    case MemberTypes.Field:
+                        {
+                            var field = (FieldInfo)member;
+                            if (field.IsInitOnly && member.GetCustomAttribute<WrapReadonlyAttribute>() == null) return;
+                            var m = new WrappingMemberInfo
+                            {
+                                MemberInfo = member,
+                                IsWrapReadonly = type.IsEnum ? true : field.IsInitOnly,
+                                IsContext = member.GetCustomAttribute<ContextAttribute>() != null,
+                                IsStrongUnwrap = member.GetCustomAttribute<StrongUnwrapAttribute>() != null,
+                                IsStrongWrap = member.GetCustomAttribute<StrongWrapAttribute>() != null,
+                                IsField = true,
+                                id = id++,
+                            };
+                            if (member.GetCustomAttribute<NameAttribute>() == null) ret.Add(m);
+                            else
+                            {
+                                if (field.IsInitOnly) throw new NotSupportedException($"StaticWrapper.Name cannot be readonly [{field}]");
+                                if (name != null) throw new NotSupportedException($"StaticWrapper.Name has already been defined [{field}]");
+                                name = m;
+                                id--;
+                            }
+                        }
+                        break;
+                    case MemberTypes.Property:
+                        {
+                            var property = (PropertyInfo)member;
+                            if (!property.CanRead) return;
+                            if (!property.CanWrite && member.GetCustomAttribute<WrapReadonlyAttribute>() == null) return;
+                            var m = new WrappingMemberInfo
+                            {
+                                MemberInfo = member,
+                                IsWrapReadonly = !property.CanWrite,
+                                IsContext = member.GetCustomAttribute<ContextAttribute>() != null,
+                                IsStrongUnwrap = member.GetCustomAttribute<StrongUnwrapAttribute>() != null,
+                                IsStrongWrap = member.GetCustomAttribute<StrongWrapAttribute>() != null,
+                                id = id++,
+                            };
+                            if (member.GetCustomAttribute<NameAttribute>() == null) ret.Add(m);
+                            else
+                            {
+                                if (!property.CanWrite) throw new NotSupportedException($"StaticWrapper.Name cannot be readonly [{property}]");
+                                if (name != null) throw new NotSupportedException($"StaticWrapper.Name has already been defined [{property}]");
+                                name = m;
+                                id--;
+                            }
+                        }
+                        break;
                 }
             }
+
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (member.GetCustomAttribute<IgnoreAttribute>() != null) continue;
+                Check(member);
+            }
+
+            return (ret, name);
         }
-        public object Unwrap(ExecutionContext context)
+
+        private static Type ContextType = typeof(ExecutionContext);
+        private static Type LocalsType = typeof(LocalVariablesContainer);
+        private static Type Void = typeof(void);
+
+        internal static MethodInfo GetPropertyGetter(PropertyInfo propertyInfo) => propertyInfo.GetAccessors(false).FirstOrDefault(x => x.ReturnType != Void);
+        internal static MethodInfo GetPropertySetter(PropertyInfo propertyInfo) => propertyInfo.GetAccessors(false).FirstOrDefault(x => x.ReturnType == Void);
+        private static Type GetElementType(WrappingMemberInfo elem) => elem.IsField ? ((FieldInfo)elem.MemberInfo).FieldType : ((PropertyInfo)elem.MemberInfo).PropertyType;
+
+        internal static (Delegate, Delegate, Delegate, Delegate, Delegate, Dictionary<string, int>) InitStaticWrapper(Type type)
         {
-            var ret = Activator.CreateInstance(type);
-            InjectContextName?.SetValue(ret, context.Name);
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+            var (elems, nameelem) = CollectStatic(type);
+
+            void LoadElement(WrappingMemberInfo elem, ILGenerator il)
             {
-                if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                    Properties[name.Key].SetValue(ret, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(ret, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                if (elem.IsField)
+                {
+                    NETGenerator.EmitLoadStaticFieldOrConst((FieldInfo)elem.MemberInfo, il);
+                }
+                else il.Emit(OpCodes.Callvirt, GetPropertyGetter((PropertyInfo)elem.MemberInfo));
             }
-            return ret;
+
+            void SetElement(WrappingMemberInfo elem, ILGenerator il)
+            {
+                if (elem.IsField) il.Emit(OpCodes.Stsfld, (FieldInfo)elem.MemberInfo);
+                else il.Emit(OpCodes.Callvirt, GetPropertySetter((PropertyInfo)elem.MemberInfo));
+            }
+
+            var quickwrapper = default(Delegate);
+            {
+                var wrapper_dm = new DynamicMethod("QuickWrapper", Void, new Type[2] { ContextType, LocalsType });
+                var wrapper_il = wrapper_dm.GetILGenerator();
+
+                if (elems.Count > 0)
+                {
+                    wrapper_il.Emit(OpCodes.Ldarg_1);
+                    wrapper_il.Emit(OpCodes.Ldfld, LocalsType.GetField("Variables"));
+                }
+                for (var i = 0; i < elems.Count; i++)
+                {
+                    if (i < elems.Count - 1) wrapper_il.Emit(OpCodes.Dup);
+                    wrapper_il.Emit(OpCodes.Ldc_I4, elems[i].id);
+                    LoadElement(elems[i], wrapper_il);
+
+                    var elem_type = GetElementType(elems[i]);
+                    if (elems[i].IsContext)
+                    {
+                        wrapper_il.Emit(OpCodes.Ldarg_1);
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("WrapUnder", BindingFlags.Public | BindingFlags.Static));
+                    }
+                    else
+                    {
+                        if (elem_type.IsValueType)
+                            wrapper_il.Emit(OpCodes.Box, elem_type);
+                    }
+                    if (!elems[i].IsStrongWrap && HasRecast(elem_type))
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("WrapCast", BindingFlags.Public | BindingFlags.Static));
+
+                    wrapper_il.Emit(OpCodes.Stelem_Ref);
+                }
+
+                wrapper_il.Emit(OpCodes.Ret);
+                quickwrapper = wrapper_dm.CreateDelegate(typeof(Action<,>).MakeGenericType(new Type[2] { ContextType, LocalsType }));
+            }
+
+            var safewrapper = default(Delegate);
+            {
+                var wrapper_dm = new DynamicMethod("SafeWrapper", Void, new Type[] { ContextType, LocalsType });
+                var wrapper_il = wrapper_dm.GetILGenerator();
+
+                for (var i = 0; i < elems.Count; i++)
+                {
+                    wrapper_il.Emit(OpCodes.Ldarg_1);
+                    wrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
+                    LoadElement(elems[i], wrapper_il);
+
+                    var elem_type = GetElementType(elems[i]);
+                    if (elems[i].IsContext)
+                    {
+                        wrapper_il.Emit(OpCodes.Ldarg_0);
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("WrapUnder", BindingFlags.Public | BindingFlags.Static));
+                    }
+                    else
+                    {
+                        if (elem_type.IsValueType)
+                            wrapper_il.Emit(OpCodes.Box, elem_type);
+
+                        if (!elems[i].IsStrongWrap && HasRecast(elem_type))
+                            wrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("WrapCast", BindingFlags.Public | BindingFlags.Static));
+                    }
+
+                    wrapper_il.Emit(OpCodes.Callvirt, typeof(LocalVariablesContainer).GetMethod("SetValue", new Type[] { typeof(string), typeof(object) }));
+                    wrapper_il.Emit(OpCodes.Pop);
+                }
+
+                wrapper_il.Emit(OpCodes.Ret);
+                safewrapper = wrapper_dm.CreateDelegate(typeof(Action<,>).MakeGenericType(new Type[] { ContextType, LocalsType }));
+            }
+
+            var unwrapper = default(Delegate);
+            {
+                var unwrapper_dm = new DynamicMethod("Unwrapper", Void, new Type[] { LocalsType });
+                var unwrapper_il = unwrapper_dm.GetILGenerator();
+                unwrapper_il.DeclareLocal(typeof(int));
+                unwrapper_il.DeclareLocal(typeof(object[]));
+                unwrapper_il.DeclareLocal(typeof(ContextWrap));
+
+                unwrapper_il.Emit(OpCodes.Ldc_I4_0);
+                unwrapper_il.Emit(OpCodes.Stloc_0);
+                unwrapper_il.Emit(OpCodes.Ldarg_0);
+                unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("NamedIdentificators"));
+                unwrapper_il.Emit(OpCodes.Ldarg_0);
+                unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("Variables"));
+                unwrapper_il.Emit(OpCodes.Stloc_1);
+
+
+                var label = default(Label);
+
+                for (var i = 0; i < elems.Count; i++)
+                {
+                    if (elems[i].IsWrapReadonly) continue;
+                    if (i < elems.Count - 1) unwrapper_il.Emit(OpCodes.Dup);
+
+                    unwrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
+                    unwrapper_il.Emit(OpCodes.Ldloca_S, 0);
+                    unwrapper_il.Emit(OpCodes.Callvirt, typeof(Dictionary<string, int>).GetMethod("TryGetValue"));
+                    unwrapper_il.Emit(OpCodes.Brfalse_S, label = unwrapper_il.DefineLabel());
+
+
+                    var elem_type = GetElementType(elems[i]);
+                    if (elems[i].IsContext)
+                    {
+                        unwrapper_il.Emit(OpCodes.Ldloc_1);
+                        unwrapper_il.Emit(OpCodes.Ldloc_0);
+                        unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+                        unwrapper_il.Emit(OpCodes.Isinst, typeof(ContextWrap));
+                        unwrapper_il.Emit(OpCodes.Stloc_2);
+                        unwrapper_il.Emit(OpCodes.Ldloc_2);
+                        unwrapper_il.Emit(OpCodes.Brfalse_S, label);
+
+                        unwrapper_il.Emit(OpCodes.Ldloc_2);
+                        //unwrapper_il.Emit(OpCodes.Ldfld, typeof(ContextWrap).GetField("Context"));
+                        unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("UnwrapUnder", BindingFlags.Public | BindingFlags.Static));
+                        SetElement(elems[i], unwrapper_il);
+                    }
+                    else
+                    {
+                        unwrapper_il.Emit(OpCodes.Ldloc_1);
+                        unwrapper_il.Emit(OpCodes.Ldloc_0);
+                        unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+
+                        if (elem_type.IsValueType) unwrapper_il.Emit(OpCodes.Unbox_Any, elem_type);
+                        else unwrapper_il.Emit(OpCodes.Castclass, elem_type);
+
+                        if (!elems[i].IsStrongUnwrap && HasRecast(elem_type))
+                            unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("UnwrapCast", BindingFlags.Public | BindingFlags.Static));
+
+                        SetElement(elems[i], unwrapper_il);
+                    }
+                    unwrapper_il.MarkLabel(label);
+                }
+
+                unwrapper_il.Emit(OpCodes.Ret);
+                unwrapper = unwrapper_dm.CreateDelegate(typeof(Action<>).MakeGenericType(new Type[] { LocalsType }));
+            }
+
+            var wrapname = default(Delegate);
+            {
+                var wrapname_dm = new DynamicMethod("WrapName", Void, new Type[] { ContextType });
+                var wrapname_il = wrapname_dm.GetILGenerator();
+                if (nameelem != null)
+                {
+                    if (GetElementType(nameelem) != typeof(string)) throw new NotSupportedException($"Name must be string [{nameelem}]");
+
+                    wrapname_il.Emit(OpCodes.Ldarg_1);
+                    LoadElement(nameelem, wrapname_il);
+
+                    wrapname_il.Emit(OpCodes.Stfld, ContextType.GetField("Name", BindingFlags.Public | BindingFlags.Instance));
+                }
+                wrapname_il.Emit(OpCodes.Ret);
+                wrapname = wrapname_dm.CreateDelegate(typeof(Action<>).MakeGenericType(new Type[] { ContextType }));
+            }
+
+            var unwrapname = default(Delegate);
+            {
+                var wrapname_dm = new DynamicMethod("UnwrapName", Void, new Type[] { ContextType });
+                var wrapname_il = wrapname_dm.GetILGenerator();
+                if (nameelem != null)
+                {
+                    if (GetElementType(nameelem) != typeof(string)) throw new NotSupportedException($"Name must be string [{nameelem}]");
+
+                    wrapname_il.Emit(OpCodes.Ldarg_0);
+                    wrapname_il.Emit(OpCodes.Ldfld, ContextType.GetField("Name", BindingFlags.Public | BindingFlags.Instance));
+                    SetElement(nameelem, wrapname_il);
+                }
+                wrapname_il.Emit(OpCodes.Ret);
+                unwrapname = wrapname_dm.CreateDelegate(typeof(Action<>).MakeGenericType(new Type[] { ContextType }));
+            }
+
+            return (quickwrapper, safewrapper, unwrapper, wrapname, unwrapname, elems.ToDictionary(x => x.MemberInfo.Name, x => x.id));
         }
-        public object SafeUnwrap(ExecutionContext context)
+        internal static (Delegate, Delegate, Delegate, Delegate, Delegate, Delegate, Dictionary<string, int>) InitWrapper(Type type)
         {
-            var ret = Activator.CreateInstance(type);
-            try
+            if (type.IsAbstract && type.IsSealed) throw new NotSupportedException("Non-static Wrapper<T> not supported static classes");
+
+            var (elems, nameelem, explicit_constructor, explicit_constructor_args) = Collect(type);
+
+            void LoadElement(WrappingMemberInfo elem, ILGenerator il)
             {
-                InjectContextName?.SetValue(ret, context.Name);
+                if (elem.IsField) il.Emit(OpCodes.Ldfld, (FieldInfo)elem.MemberInfo);
+                else il.Emit(OpCodes.Callvirt, GetPropertyGetter((PropertyInfo)elem.MemberInfo));
             }
-            catch (Exception e)
+
+            void SetElement(WrappingMemberInfo elem, ILGenerator il)
             {
-                context.Errors.Add(e);
+                if (elem.IsField) il.Emit(OpCodes.Stfld, (FieldInfo)elem.MemberInfo);
+                else il.Emit(OpCodes.Callvirt, GetPropertySetter((PropertyInfo)elem.MemberInfo));
             }
-            foreach (var name in context.LocalVariables.GetAsDictionary())
+
+            var quickwrapper = default(Delegate);
             {
-                try
+                var wrapper_dm = new DynamicMethod("QuickWrapper", Void, new Type[] { type, ContextType, LocalsType });
+                var wrapper_il = wrapper_dm.GetILGenerator();
+
+                if (elems.Count > 0)
                 {
-                    if (Properties.ContainsKey(name.Key) && Properties[name.Key].SetMethod != null)
-                        Properties[name.Key].SetValue(ret, UnwrapCast(Properties[name.Key].PropertyType, name.Value));
-                    else if (Fields.ContainsKey(name.Key)) Fields[name.Key].SetValue(ret, UnwrapCast(Fields[name.Key].FieldType, name.Value));
+                    wrapper_il.Emit(OpCodes.Ldarg_2);
+                    wrapper_il.Emit(OpCodes.Ldfld, LocalsType.GetField("Variables", BindingFlags.Public | BindingFlags.Instance));
                 }
-                catch (Exception e)
+
+                for (var i = 0; i < elems.Count; i++)
                 {
-                    context.Errors.Add(e);
+                    if (i < elems.Count - 1) wrapper_il.Emit(OpCodes.Dup);
+                    wrapper_il.Emit(OpCodes.Ldc_I4, elems[i].id);
+
+                    wrapper_il.Emit(OpCodes.Ldarg_0);
+                    LoadElement(elems[i], wrapper_il);
+
+                    var elem_type = GetElementType(elems[i]);
+                    if (elems[i].IsContext)
+                    {
+                        wrapper_il.Emit(OpCodes.Ldarg_1);
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("WrapUnder", BindingFlags.Public | BindingFlags.Static));
+                    }
+                    else
+                    {
+                        if (elem_type.IsValueType)
+                            wrapper_il.Emit(OpCodes.Box, elem_type);
+                    }
+                    if (!elems[i].IsStrongWrap && HasRecast(elem_type))
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("WrapCast", BindingFlags.Public | BindingFlags.Static));
+                        
+                    wrapper_il.Emit(OpCodes.Stelem_Ref);
+                }
+
+                wrapper_il.Emit(OpCodes.Ret);
+                quickwrapper = wrapper_dm.CreateDelegate(typeof(Action<,,>).MakeGenericType(new Type[] { type, ContextType, LocalsType }));
+            }
+
+            var safewrapper = default(Delegate);
+            {
+                var wrapper_dm = new DynamicMethod("SafeWrapper", Void, new Type[] { type, ContextType, LocalsType });
+                var wrapper_il = wrapper_dm.GetILGenerator();
+
+                for (var i = 0; i < elems.Count; i++)
+                {
+                    wrapper_il.Emit(OpCodes.Ldarg_2);
+                    wrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
+                    wrapper_il.Emit(OpCodes.Ldarg_0);
+                    LoadElement(elems[i], wrapper_il);
+
+                    var elem_type = GetElementType(elems[i]);
+                    if (elems[i].IsContext)
+                    {
+                        wrapper_il.Emit(OpCodes.Ldarg_1);
+                        wrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("WrapUnder", BindingFlags.Public | BindingFlags.Static));
+                    }
+                    else
+                    {
+                        if (elem_type.IsValueType)
+                            wrapper_il.Emit(OpCodes.Box, elem_type);
+
+                        if (!elems[i].IsStrongWrap && HasRecast(elem_type))
+                            wrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("WrapCast", BindingFlags.Public | BindingFlags.Static));
+                    }
+
+                    wrapper_il.Emit(OpCodes.Callvirt, typeof(LocalVariablesContainer).GetMethod("SetValue", new Type[] {typeof(string), typeof(object)}));
+                    wrapper_il.Emit(OpCodes.Pop);
+                }
+
+                wrapper_il.Emit(OpCodes.Ret);
+                safewrapper = wrapper_dm.CreateDelegate(typeof(Action<,,>).MakeGenericType(new Type[] { type, ContextType, LocalsType }));
+            }
+
+            var unwrapper = default(Delegate);
+            {
+                var unwrapper_dm = new DynamicMethod("Unwrapper", Void, new Type[] { LocalsType, type });
+                var unwrapper_il = unwrapper_dm.GetILGenerator();
+
+                if (elems.Count > 0)
+                {
+                    unwrapper_il.DeclareLocal(typeof(int));
+                    unwrapper_il.DeclareLocal(typeof(object[]));
+                    unwrapper_il.DeclareLocal(typeof(ContextWrap));
+
+                    unwrapper_il.Emit(OpCodes.Ldc_I4_0);
+                    unwrapper_il.Emit(OpCodes.Stloc_0);
+                    unwrapper_il.Emit(OpCodes.Ldarg_0);
+                    unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("NamedIdentificators"));
+                    unwrapper_il.Emit(OpCodes.Ldarg_0);
+                    unwrapper_il.Emit(OpCodes.Ldfld, typeof(LocalVariablesContainer).GetField("Variables"));
+                    unwrapper_il.Emit(OpCodes.Stloc_1);
+
+
+                    var label = default(Label);
+
+                    for (var i = 0; i < elems.Count; i++)
+                    {
+                        if (elems[i].IsWrapReadonly) continue;
+                        if (i < elems.Count - 1) unwrapper_il.Emit(OpCodes.Dup);
+
+                        unwrapper_il.Emit(OpCodes.Ldstr, elems[i].MemberInfo.Name);
+                        unwrapper_il.Emit(OpCodes.Ldloca_S, 0);
+                        unwrapper_il.Emit(OpCodes.Callvirt, typeof(Dictionary<string, int>).GetMethod("TryGetValue"));
+                        unwrapper_il.Emit(OpCodes.Brfalse_S, label = unwrapper_il.DefineLabel());
+
+
+                        var elem_type = GetElementType(elems[i]);
+                        if (elems[i].IsContext)
+                        {
+                            unwrapper_il.Emit(OpCodes.Ldloc_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_0);
+                            unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+                            unwrapper_il.Emit(OpCodes.Isinst, typeof(ContextWrap));
+                            unwrapper_il.Emit(OpCodes.Stloc_2);
+                            unwrapper_il.Emit(OpCodes.Ldloc_2);
+                            unwrapper_il.Emit(OpCodes.Brfalse_S, label);
+
+                            unwrapper_il.Emit(OpCodes.Ldarg_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_2);
+                            //unwrapper_il.Emit(OpCodes.Ldfld, typeof(ContextWrap).GetField("Context"));
+                            unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper<>).MakeGenericType(new Type[] { elem_type }).GetMethod("UnwrapUnder", BindingFlags.Public | BindingFlags.Static));
+                            SetElement(elems[i], unwrapper_il);
+                        }
+                        else
+                        {
+                            unwrapper_il.Emit(OpCodes.Ldarg_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_1);
+                            unwrapper_il.Emit(OpCodes.Ldloc_0);
+                            unwrapper_il.Emit(OpCodes.Ldelem_Ref);
+
+                            if (elem_type.IsValueType) unwrapper_il.Emit(OpCodes.Unbox_Any, elem_type);
+                            else unwrapper_il.Emit(OpCodes.Castclass, elem_type);
+
+                            if (!elems[i].IsStrongUnwrap && HasRecast(elem_type))
+                                unwrapper_il.Emit(OpCodes.Call, typeof(Wrapper).GetMethod("UnwrapCast", BindingFlags.Public | BindingFlags.Static));
+
+                            SetElement(elems[i], unwrapper_il);
+                        }
+                        unwrapper_il.MarkLabel(label);
+                    }
+                }
+
+                unwrapper_il.Emit(OpCodes.Ret);
+                unwrapper = unwrapper_dm.CreateDelegate(typeof(Action<,>).MakeGenericType(new Type[] { LocalsType, type }));
+            }
+
+            var wrapname = default(Delegate);
+            {
+                var wrapname_dm = new DynamicMethod("WrapName", Void, new Type[] { type, ContextType });
+                var wrapname_il = wrapname_dm.GetILGenerator();
+                if (nameelem != null)
+                {
+                    if (GetElementType(nameelem) != typeof(string)) throw new NotSupportedException($"Name must be string [{nameelem}]");
+
+                    wrapname_il.Emit(OpCodes.Ldarg_1);
+                    wrapname_il.Emit(OpCodes.Ldarg_0);
+                    LoadElement(nameelem, wrapname_il);
+
+                    wrapname_il.Emit(OpCodes.Stfld, ContextType.GetField("Name", BindingFlags.Public | BindingFlags.Instance));
+                }
+                wrapname_il.Emit(OpCodes.Ret);
+                wrapname = wrapname_dm.CreateDelegate(typeof(Action<,>).MakeGenericType(new Type[] { type, ContextType }));
+            }
+
+            var unwrapname = default(Delegate);
+            {
+                var wrapname_dm = new DynamicMethod("UnwrapName", Void, new Type[] { ContextType, type });
+                var wrapname_il = wrapname_dm.GetILGenerator();
+                if (nameelem != null)
+                {
+                    if (GetElementType(nameelem) != typeof(string)) throw new NotSupportedException($"Name must be string [{nameelem}]");
+
+                    wrapname_il.Emit(OpCodes.Ldarg_1);
+                    wrapname_il.Emit(OpCodes.Ldarg_0);
+                    wrapname_il.Emit(OpCodes.Ldfld, ContextType.GetField("Name", BindingFlags.Public | BindingFlags.Instance));
+                    SetElement(nameelem, wrapname_il);
+                }
+                wrapname_il.Emit(OpCodes.Ret);
+                unwrapname = wrapname_dm.CreateDelegate(typeof(Action<,>).MakeGenericType(new Type[] { ContextType, type }));
+            }
+
+            var initor = default(Delegate);
+            if (explicit_constructor != null)
+            {
+                if (explicit_constructor.GetParameters().Length > 0)
+                {
+                    var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
+                    var initor_il = initor_dm.GetILGenerator();
+                    initor_il.Emit(OpCodes.Ldarg_0);
+                    initor_il.Emit(OpCodes.Call, explicit_constructor_args);
+                    initor_il.DeclareLocal(typeof(object[]));
+                    initor_il.Emit(OpCodes.Stloc_0);
+                    var i = 0;
+                    foreach (var p in explicit_constructor.GetParameters())
+                    {
+                        initor_il.Emit(OpCodes.Ldloc_0);
+                        initor_il.Emit(OpCodes.Ldc_I4, i++);
+                        initor_il.Emit(OpCodes.Ldelem_Ref);
+                        if (p.ParameterType.IsValueType) initor_il.Emit(OpCodes.Unbox_Any, p.ParameterType);
+                        else initor_il.Emit(OpCodes.Castclass, p.ParameterType);
+                    }
+                    initor_il.Emit(OpCodes.Newobj, explicit_constructor);
+                    initor_il.Emit(OpCodes.Ret);
+                    initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
+                }
+                else
+                {
+                    var initor_dm = new DynamicMethod("Initor", type, new Type[1] { ContextType }, true);
+                    var initor_il = initor_dm.GetILGenerator();
+                    initor_il.Emit(OpCodes.Newobj, explicit_constructor);
+                    initor_il.Emit(OpCodes.Ret);
+                    initor = initor_dm.CreateDelegate(typeof(Func<,>).MakeGenericType(new Type[] { ContextType, type }));
                 }
             }
-            return ret;
+
+            return (quickwrapper, safewrapper, unwrapper, wrapname, unwrapname, initor, elems.ToDictionary(x => x.MemberInfo.Name, x => x.id));
         }
+
+        #region Extensions
+        public static ExecutionContext Wrap<T>(this T obj) => Wrapper<T>.Wrap(obj);
+        public static T Unwrap<T>(this ExecutionContext context) => Wrapper<T>.Unwrap(context);
+        public static void WrapIn<T>(this T obj, ExecutionContext context) => Wrapper<T>.WrapIn(obj, context);
+        public static void UnwrapIn<T>(this ExecutionContext context, T obj) => Wrapper<T>.UnwrapIn(context, obj);
+        public static ExecutionContext StaticWrap<T>() => StaticWrapper<T>.Wrap();
+        public static void StaticUnwrap<T>(this ExecutionContext context) => StaticWrapper<T>.Unwrap(context);
+        public static void StaticWrapIn<T>(this ExecutionContext context) => StaticWrapper<T>.WrapIn(context);
+        public static void StaticUnwrapIn<T>(this ExecutionContext context) => StaticWrapper<T>.UnwrapIn(context);
+
+        public static readonly NonGenericWrapper NonGeneric = new NonGenericWrapper(typeof(object));
+        public static readonly NonGenericStaticWrapper NonGenericStatic = new NonGenericStaticWrapper(typeof(object));
+        public static ExecutionContext StaticWrap(this Type T) => NonGenericStatic[T].Wrap();
+        public static void StaticUnwrap(this ExecutionContext context, Type T) => NonGenericStatic[T].Unwrap(context);
+        public static void StaticUnwrap(this Type T, ExecutionContext context) => NonGenericStatic[T].Unwrap(context);
+        public static void StaticWrapIn(this Type T, ExecutionContext context) => NonGenericStatic[T].WrapIn(context);
+        public static void StaticWrapIn(this ExecutionContext context, Type T) => NonGenericStatic[T].WrapIn(context);
+        public static void StaticUnwrapIn(this ExecutionContext context, Type T) => NonGenericStatic[T].UnwrapIn(context);
+        public static void StaticUnwrapIn(this Type T, ExecutionContext context) => NonGenericStatic[T].UnwrapIn(context);
+        public static ExecutionContext Wrap(this object obj, Type T) => NonGeneric[T].Wrap(obj);
+        public static ExecutionContext InstanceWrap(this Type T, object obj) => NonGeneric[T].Wrap(obj);
+        public static object Unwrap(this ExecutionContext context, Type T) => NonGeneric[T].Unwrap(context);
+        public static object InstanceUnwrap(this Type T, ExecutionContext context) => NonGeneric[T].Unwrap(context);
+        public static void WrapIn(this object obj, Type T, ExecutionContext context) => NonGeneric[T].WrapIn(obj, context);
+        public static void InstanceWrapIn(this Type T, object obj, ExecutionContext context) => NonGeneric[T].WrapIn(obj, context);
+        public static void UnwrapIn(this ExecutionContext context, Type T, object obj) => NonGeneric[T].UnwrapIn(context, obj);
+        public static void InstanceUnwrapIn(this Type T, ExecutionContext context, object obj) => NonGeneric[T].UnwrapIn(context, obj);
+        public static bool HasInitor(this Type T) => NonGeneric[T].HasInitior;
+        public sealed class NonGenericStaticWrapper
+        {
+            public readonly MethodInfo mWrap;
+            public readonly MethodInfo mUnwrap;
+            public readonly MethodInfo mWrapIn;
+            public readonly MethodInfo mUnwrapIn;
+
+            internal NonGenericStaticWrapper(Type T)
+            {
+                var type = typeof(StaticWrapper<>).MakeGenericType(T);
+                mWrap = type.GetMethod("Wrap");
+                mUnwrap = type.GetMethod("Unwrap");
+                mWrapIn = type.GetMethod("WrapIn");
+                mUnwrapIn = type.GetMethod("UnwrapIn");
+                nongeneric_wrappers[T] = this;
+            }
+
+            private static readonly Dictionary<Type, NonGenericStaticWrapper> nongeneric_wrappers = new Dictionary<Type, NonGenericStaticWrapper>();
+            public NonGenericStaticWrapper this[Type type]
+            {
+                get
+                {
+                    if (nongeneric_wrappers.TryGetValue(type, out var ret)) return ret;
+                    return new NonGenericStaticWrapper(type);
+                }
+            }
+
+            public ExecutionContext Wrap() => (ExecutionContext)mWrap.Invoke(null, Array.Empty<object>());
+            public void Unwrap(ExecutionContext context) => mUnwrap.Invoke(null, new object[] { context });
+            public void WrapIn(ExecutionContext context) => mWrapIn.Invoke(null, new object[] { context });
+            public void UnwrapIn(ExecutionContext context) => mUnwrapIn.Invoke(null, new object[] { context });
+        }
+        public sealed class NonGenericWrapper
+        {
+            public readonly MethodInfo mWrap;
+            public readonly MethodInfo mUnwrap;
+            public readonly MethodInfo mWrapIn;
+            public readonly MethodInfo mUnwrapIn;
+            public readonly bool HasInitior;
+
+            internal NonGenericWrapper(Type T)
+            {
+                var type = typeof(Wrapper<>).MakeGenericType(T);
+                mWrap = type.GetMethod("Wrap");
+                mUnwrap = type.GetMethod("Unwrap");
+                mWrapIn = type.GetMethod("WrapIn");
+                mUnwrapIn = type.GetMethod("UnwrapIn");
+                HasInitior = (bool)type.GetField("HasInitor").GetValue(null);
+                nongeneric_wrappers[T] = this;
+            }
+
+            private static readonly Dictionary<Type, NonGenericWrapper> nongeneric_wrappers = new Dictionary<Type, NonGenericWrapper>();
+            public NonGenericWrapper this[Type type]
+            {
+                get
+                {
+                    if (nongeneric_wrappers.TryGetValue(type, out var ret)) return ret;
+                    return new NonGenericWrapper(type);
+                }
+            }
+
+            public ExecutionContext Wrap(object obj) => (ExecutionContext)mWrap.Invoke(null, new object[] { obj });
+            public object Unwrap(ExecutionContext context) => mUnwrap.Invoke(null, new object[] { context });
+            public void WrapIn(object obj, ExecutionContext context) => mWrapIn.Invoke(null, new object[] { obj, context });
+            public void UnwrapIn(ExecutionContext context, object obj) => mUnwrapIn.Invoke(null, new object[] { context, obj });
+        }
+        #endregion
     }
 
     public static class Wrapper<T>
     {
-        private static readonly NonGenericWrapper wrapper;
+        public static readonly Func<ExecutionContext, T> Initor;
+        public static readonly bool HasInitor;
+
+        //Быстрое оборачивание заполняет переменные по отступу
+        public static readonly Action<T, ExecutionContext, LocalVariablesContainer> QuickWrapper;
+        //Безопасное оборачивание заполняет переменные по имени
+        public static readonly Action<T, ExecutionContext, LocalVariablesContainer> SafeWrapper;
+        public static readonly Action<LocalVariablesContainer, T> Unwrapper;
+
+        public static readonly Action<T, ExecutionContext> WrapName;
+        public static readonly Action<ExecutionContext, T> UnwrapName;
+
+        public static readonly Dictionary<string, int> ContextNames;
+        public static readonly string[] Names;
+        public static readonly int ContextSize;
+
         static Wrapper()
         {
-            wrapper = NonGenericWrapper.GetWrapper(typeof(T));
+            var d = Wrapper.InitWrapper(typeof(T));
+            QuickWrapper = (Action<T, ExecutionContext, LocalVariablesContainer>)d.Item1;
+            SafeWrapper = (Action<T, ExecutionContext, LocalVariablesContainer>)d.Item2;
+            Unwrapper = (Action<LocalVariablesContainer, T>)d.Item3;
+            WrapName = (Action<T, ExecutionContext>)d.Item4;
+            UnwrapName = (Action<ExecutionContext, T>)d.Item5;
+            Initor = (Func<ExecutionContext, T>)d.Item6;
+            HasInitor = Initor != null;
+            ContextNames = d.Item7;
+            Names = ContextNames.Keys.ToArray();
+            ContextSize = ContextNames.Count;
         }
-        public static T Unwrap(ExecutionContext context) => (T)wrapper.Unwrap(context);
-        public static void UnwrapStatic(ExecutionContext context) => wrapper.UnwrapStatic(context);
-        public static ExecutionContext Wrap(T value) => wrapper.Wrap(value);
-        public static ExecutionContext WrapStatic() => wrapper.WrapStatic();
 
-
-        public static T SafeUnwrap(ExecutionContext context) => (T)wrapper.SafeUnwrap(context);
-        public static void SafeUnwrapStatic(ExecutionContext context) => wrapper.SafeUnwrapStatic(context);
+        public static ExecutionContext Wrap(T obj)
+        {
+            var lc = new LocalVariablesContainer(ContextSize, new Dictionary<string, int>(ContextNames));
+            var ret = new ExecutionContext(false, false, lc);
+            QuickWrapper(obj, ret, lc);
+            WrapName(obj, ret);
+            return ret;
+        }
+        public static ContextWrap WrapUnder(T obj, ExecutionContext context)
+        {
+            if (obj == null) return null;
+            if (Wrapper.HasRecast(obj.GetType())) throw new NotSupportedException("This type can't be converted into context");
+            var lc = new LocalVariablesContainer(ContextSize, new Dictionary<string, int>(ContextNames));
+            var ret = new ExecutionContext(context, false, lc);
+            QuickWrapper(obj, ret, lc);
+            WrapName(obj, ret);
+            return ret.wrap;
+        }
+        public static T Unwrap(ExecutionContext context)
+        {
+            if (HasInitor)
+            {
+                var ret = Initor(context);
+                UnwrapName(context, ret);
+                Unwrapper(context.LocalVariables, ret);
+                return ret;
+            }
+            throw new NotSupportedException($"{typeof(T)} should have constructor");
+        }
+        public static T UnwrapUnder(ContextWrap context) => Unwrap(context.Context);
+        public static void WrapIn(T obj, ExecutionContext context)
+        {
+            SafeWrapper(obj, context, context.LocalVariables);
+            WrapName(obj, context);
+        }
+        public static void UnwrapIn(ExecutionContext context, T obj)
+        {
+            Unwrapper(context.LocalVariables, obj);
+            UnwrapName(context, obj);
+        }
     }
-
-    /// <summary>
-    /// Это свойство будет пропущено при разворачивании
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class WrapperSkipAttribute : Attribute
+    public static class StaticWrapper<T>
     {
-        public WrapperSkipAttribute() { }
-    }
+        public static readonly Action<ExecutionContext, LocalVariablesContainer> QuickWrapper;
+        public static readonly Action<ExecutionContext, LocalVariablesContainer> SafeWrapper;
+        public static readonly Action<LocalVariablesContainer> Unwrapper;
 
-    /// <summary>
-    /// В это свойство типа string будет вписано имя контекста
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class WrapperContextNameAttribute : Attribute
-    {
-        public WrapperContextNameAttribute() { }
+        public static readonly Action<ExecutionContext> WrapName;
+        public static readonly Action<ExecutionContext> UnwrapName;
+
+        public static readonly Dictionary<string, int> ContextNames;
+        public static readonly string[] Names;
+        public static readonly int ContextSize;
+
+        static StaticWrapper()
+        {
+            var d = Wrapper.InitStaticWrapper(typeof(T));
+            QuickWrapper = (Action<ExecutionContext, LocalVariablesContainer>)d.Item1;
+            SafeWrapper = (Action<ExecutionContext, LocalVariablesContainer>)d.Item2;
+            Unwrapper = (Action<LocalVariablesContainer>)d.Item3;
+            WrapName = (Action<ExecutionContext>)d.Item4;
+            UnwrapName = (Action<ExecutionContext>)d.Item5;
+            ContextNames = d.Item6;
+            Names = ContextNames.Keys.ToArray();
+            ContextSize = ContextNames.Count;
+        }
+
+        public static ExecutionContext Wrap()
+        {
+            var lc = new LocalVariablesContainer(ContextSize, new Dictionary<string, int>(ContextNames));
+            var ret = new ExecutionContext(false, false, lc);
+            QuickWrapper(ret, lc);
+            WrapName(ret);
+            return ret;
+        }
+        public static void Unwrap(ExecutionContext context)
+        {
+            UnwrapName(context);
+            Unwrapper(context.LocalVariables);
+        }
+        public static void WrapIn(ExecutionContext context)
+        {
+            SafeWrapper(context, context.LocalVariables);
+            WrapName(context);
+        }
+        public static void UnwrapIn(ExecutionContext context)
+        {
+            Unwrapper(context.LocalVariables);
+            UnwrapName(context);
+        }
     }
 }

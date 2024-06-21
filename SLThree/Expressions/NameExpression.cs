@@ -14,7 +14,7 @@ namespace SLThree
             TypeHint = typehint;
         }
 
-        public override string ExpressionToString() => Name;
+        public override string ExpressionToString() => $"{(TypeHint == null?"":TypeHint.ToString())}{Name}";
 
         private ExecutionContext counted;
         private int variable_index;

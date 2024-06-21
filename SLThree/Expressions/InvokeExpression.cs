@@ -1,7 +1,9 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {
@@ -26,10 +28,8 @@ namespace SLThree
 
         public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}({Arguments.JoinIntoString(", ")})";
 
-        public object GetValue(ExecutionContext context, object[] args)
+        public object InvokeForObj(ExecutionContext context, object[] args, object o)
         {
-            var o = Left.GetValue(context);
-
             if (o == null)
             {
                 if (null_conditional) return null;
@@ -40,6 +40,14 @@ namespace SLThree
             {
                 if (method.ParamNames.Length != args.Length) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 return method.GetValue(context, args);
+            }
+            else if (o is ContextWrap wrap)
+            {
+                if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is Method constructor)
+                {
+                    if (constructor.ParamNames.Length != args.Length) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    return wrap.Context.CreateInstance(context, constructor, args).wrap;
+                }
             }
             else if (o is MethodInfo mi)
             {
@@ -54,7 +62,7 @@ namespace SLThree
             else
             {
                 var type = o.GetType();
-                type.GetMethods()
+                return type.GetMethods()
                     .FirstOrDefault(x => x.Name == Left.ExpressionToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.Invoke(o, args);
             }
@@ -62,6 +70,13 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetValue(ExecutionContext context, object[] args)
+        {
+            return InvokeForObj(context, args, Left.GetValue(context));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, Arguments.ConvertAll(x => x.GetValue(context)));
@@ -89,9 +104,11 @@ namespace SLThree
             }
             else if (obj != null)
             {
-                return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                var method = obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                if (method != null)
+                    return method.Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                else return InvokeForObj(context, Arguments.ConvertAll(x => x.GetValue(context)), MemberAccess.GetNameExprValue(context, obj, Left as NameExpression));
             }
 
             return null;

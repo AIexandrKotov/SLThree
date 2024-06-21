@@ -31,9 +31,9 @@ namespace SLThree.sys
 #endif
         }
 
-        public static List<JIT.AbstractNameInfo> collect_vars(Method method, ExecutionContext context)
+        public static List<Native.AbstractNameInfo> collect_vars(Method method, ExecutionContext context)
         {
-            return JIT.NameCollector.Collect(method, context).Item1;
+            return Native.NameCollector.Collect(method, context).Item1;
         }
 
         public static MethodInfo opt(Method method, ContextWrap context)
@@ -47,7 +47,7 @@ namespace SLThree.sys
             try
             {
                 mb = dt.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Static, rettype, ptypes);
-                var ng = new JIT.NETGenerator(method, context.Context, mb, mb.GetILGenerator());
+                var ng = new Native.NETGenerator(method, context.Context, mb, mb.GetILGenerator());
                 ng.Visit(method);
             }
             catch (Exception e)

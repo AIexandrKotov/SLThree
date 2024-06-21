@@ -3,6 +3,7 @@ using SLThree.Extensions.Cloning;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SLThree
 {
@@ -30,10 +31,8 @@ namespace SLThree
 
         public override string ExpressionToString() => $"{Left}{(null_conditional ? ".?" : "")}<{GenericArguments.JoinIntoString(", ")}>({Arguments.JoinIntoString(", ")})";
 
-        public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
+        public object InvokeForObj(ExecutionContext context, Type[] generic_args, object[] args, object o)
         {
-            var o = Left.GetValue(context);
-
             if (o == null)
             {
                 if (null_conditional) return null;
@@ -56,7 +55,7 @@ namespace SLThree
             else
             {
                 var type = o.GetType();
-                type.GetMethods()
+                return type.GetMethods()
                     .FirstOrDefault(x => x.Name == Left.ExpressionToString().Replace(" ", "") && x.GetParameters().Length == Arguments.Length)
                     ?.MakeGenericMethod(generic_args)
                     .Invoke(o, args);
@@ -65,6 +64,13 @@ namespace SLThree
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetValue(ExecutionContext context, Type[] generic_args, object[] args)
+        {
+            return InvokeForObj(context, generic_args, args, Left.GetValue(context));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(ExecutionContext context)
         {
             return GetValue(context, GenericArguments.ConvertAll(x => (Type)x.GetValue(context)), Arguments.ConvertAll(x => x.GetValue(context)));
@@ -93,10 +99,10 @@ namespace SLThree
             }
             else if (obj != null)
             {
-                return obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length)
-                    .MakeGenericMethod(generic_args)
-                    .Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                var method = obj.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
+                if (method != null) return method.MakeGenericMethod(generic_args).Invoke(obj, Arguments.ConvertAll(x => x.GetValue(context)));
+                else return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), MemberAccess.GetNameExprValue(context, obj, Left as NameExpression));
             }
 
             return null;

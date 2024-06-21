@@ -15,6 +15,8 @@ namespace SLThree.sys
         public static object eval(string s) => Parser.This.EvalExpression(s);
         public static object eval(ContextWrap context, string s) => Parser.This.EvalExpression(s, context.Context);
 
+        public static object clone(ICloneable clone) => clone.Clone();
+
         public static string repr(object o) => TreeViewer.GetView(o);
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());
         public static string xml_repr(object o) => XmlViewer.GetView(o);
@@ -23,6 +25,13 @@ namespace SLThree.sys
         public static Method make_generic<T1>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1) });
         public static Method make_generic<T1, T2>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2) });
         public static Method make_generic<T1, T2, T3>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2), typeof(T3) });
+        internal static bool is_abstract(StatementList statement)
+        {
+            return statement.Statements.Length > 0
+                && statement.Statements[0] is ThrowStatement @throw
+                && @throw.ThrowExpression is StaticExpression expression
+                && expression.IsArtificial && expression.Object is AbstractInvokation;
+        }
 
         public static readonly List<Assembly> registred;
         static slt()

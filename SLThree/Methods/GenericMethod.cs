@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using SLThree.Visitors;
 using System;
 using System.CodeDom;
@@ -113,14 +114,14 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Type;
             }
-            public class New : GenericInfo<NewExpression>
+            /*public class New : GenericInfo<Ne>
             {
                 public New(NewExpression concrete, int position) : base(concrete, position)
                 {
                 }
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Typename;
-            }
+            }*/
             public class ArrayCreator : GenericInfo<CreatorArray>
             {
                 public ArrayCreator(CreatorArray concrete, int position) : base(concrete, position)
@@ -145,14 +146,14 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.RangeType;
             }
-            public class ContextCreator : GenericInfo<CreatorContext>
+/*            public class ContextCreator : GenericInfo<CreatorContextOld>
             {
-                public ContextCreator(CreatorContext concrete, int position) : base(concrete, position)
+                public ContextCreator(CreatorContextOld concrete, int position) : base(concrete, position)
                 {
                 }
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Typecast;
-            }
+            }*/
             public class Chooser : GenericInfo<UnaryGetChooser>
             {
                 public Chooser(UnaryGetChooser concrete, int position) : base(concrete, position)
@@ -339,7 +340,7 @@ namespace SLThree
             }
         }
 
-        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool binded, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, binded)
+        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive)
         {
             Generics = generics;
             GenericsInfo = GenericFinder.FindAll(this);
@@ -359,13 +360,35 @@ namespace SLThree
         }
 
         public readonly NameExpression[] Generics;
-        public override string ToString() => $"{DefinitionReturnType?.ToString() ?? "any"} {Name}<{Generics.JoinIntoString(", ")}>({DefinitionParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var unnamed = Name == DefaultMethodName;
+            if (slt.is_abstract(Statements))
+                sb.Append("abstract ");
+            else
+            {
+                if (Recursive)
+                    sb.Append("recursive ");
+                if (!Implicit)
+                    sb.Append("explicit ");
+            }
+            if (!unnamed)
+                sb.Append(Name);
+            sb.Append($"<{Generics.JoinIntoString(", ")}>");
+            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            return sb.ToString();
+        }
 
         public List<GenericInfo> GenericsInfo;
 
         public override Method CloneWithNewName(string name)
         {
-            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, Binded, Generics.CloneArray());
+            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, Generics.CloneArray())
+            {
+                Abstract = Abstract
+            };
         }
     }
 }

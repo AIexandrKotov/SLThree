@@ -1,11 +1,13 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
+using System.Linq;
 
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
     public static class console
     {
-        public static ContextWrap color = new ContextWrap(Wrapper<ConsoleColor>.WrapStatic());
+        public static ContextWrap color = typeof(ConsoleColor).StaticWrap().wrap;
         public static string readln() => Console.ReadLine();
         public static void write(object o) => Console.Write(o);
         public static void writeln() => Console.WriteLine();

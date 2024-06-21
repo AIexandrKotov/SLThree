@@ -1,16 +1,16 @@
-plus = left => new context {
+plus = left => context {
     left = left;
     with_right = right => this.left + right;
 }.with_right;
-mins = left => new context {
+mins = left => context {
     left = left;
     with_right = right => this.left - right;
 }.with_right;
-mult = left => new context {
+mult = left => context {
     left = left;
     with_right = right => this.left * right;
 }.with_right;
-divi = left => new context {
+divi = left => context {
     left = left;
     with_right = right => this.left / right;
 }.with_right;

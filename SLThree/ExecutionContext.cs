@@ -1,4 +1,5 @@
 ﻿using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Text;
 namespace SLThree
 {
 
+#pragma warning disable IDE1006 // Стили именования
     public class ExecutionContext
     {
         public interface IExecutable
@@ -32,6 +34,7 @@ namespace SLThree
         internal bool Returned;
         internal bool Broken;
         internal bool Continued;
+        internal int Creations = 0;
 
         public object ReturnedValue;
 
@@ -44,33 +47,34 @@ namespace SLThree
 
         }
 
-        public ExecutionContext(bool assign_to_global, bool create_private = true)
+        public ExecutionContext(bool assign_to_global, bool create_private = true, LocalVariablesContainer localVariables = null)
         {
+            LocalVariables = localVariables ?? new LocalVariablesContainer();
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
             if (create_private)
                 @private = new ContextWrap(new ExecutionContext(this, false));
             if (assign_to_global) SuperContext = global.Context;
         }
-
-        public ExecutionContext(ExecutionContext context, bool create_private = true)
+        public ExecutionContext(ExecutionContext context, bool create_private = true, LocalVariablesContainer localVariables = null)
         {
+            LocalVariables = localVariables ?? new LocalVariablesContainer();
             @this = new ContextWrap(this);
             wrap = new ContextWrap(this);
             if (create_private)
                 @private = new ContextWrap(new ExecutionContext(this, false));
             if (context != null) SuperContext = context;
         }
-
-        public ExecutionContext() : this(true, true) { }
+        public ExecutionContext() : this(true, true, null) { }
 
         public ContextWrap @this;
 
         internal ExecutionContext PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
         public readonly ContextWrap wrap;
-        internal ContextWrap super;
-        public readonly ContextWrap @private;
+        public ContextWrap super;
+        public ContextWrap @private;
+        public ContextWrap parent;
         internal ExecutionContext SuperContext { get => super?.Context; set => super = new ContextWrap(value); }
 
         public IEnumerable<ExecutionContext> GetHierarchy()
@@ -112,6 +116,76 @@ namespace SLThree
 
         }
 
-        public readonly LocalVariablesContainer LocalVariables = new LocalVariablesContainer();
+        public ExecutionContext CreateInstance(ExecutionContext definitioncontext, Method constructor, object[] args)
+        {
+            var ret = new ExecutionContext(definitioncontext);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            constructor.@this = ret.wrap;
+            constructor.GetValue(ret, args);
+            return ret;
+        }
+        public ExecutionContext CreateInstance(object[] args, SourceContext sourceContext)
+        {
+            var ret = new ExecutionContext(super.Context);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length)
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.@this = ret.wrap;
+                constructor.GetValue(ret, args);
+            }
+            return ret;
+        }
+        public void Implementation(ExecutionContext ret, Method constructor, object[] args)
+        {
+            constructor.@this = ret.wrap;
+            constructor.GetValue(ret, args);
+        }
+        public void Implementation(ExecutionContext ret, object[] args, SourceContext sourceContext)
+        {
+            if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length) 
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.@this = ret.wrap;
+                constructor.GetValue(ret, args);
+            }
+        }
+
+        public readonly LocalVariablesContainer LocalVariables;
+
+        internal ExecutionContext copy(ExecutionContext context)
+        {
+            LocalVariables.FillOther(context.LocalVariables);
+            //if (context.@private != null && @private != null)
+            //    @private.Context.LocalVariables.FillOther(context.@private.Context.LocalVariables);
+            return this;
+        }
+
+        public static object virtualize(object o, ExecutionContext context)
+        {
+            if (o is Method method)
+            {
+                method = method.CloneWithNewName(method.Name);
+                method.identity(context.wrap);
+                return method;
+            }
+            return o;
+        }
+
+        internal ExecutionContext implement(ExecutionContext context)
+        {
+            var vars = context.LocalVariables.Variables;
+            foreach (var x in context.LocalVariables.NamedIdentificators)
+            {
+                var o = vars[x.Value];
+                LocalVariables.SetValue(x.Key, virtualize(o, this));
+            }
+            return this;
+        }
     }
+#pragma warning restore IDE1006 // Стили именования
 }

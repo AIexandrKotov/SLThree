@@ -26,15 +26,16 @@ namespace SLThree
             sb.AppendLine($"context {Context.Name} {{");
             foreach (var x in Context.LocalVariables.GetAsDictionary())
             {
-
-                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
+                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}");
                 if (x.Value is ContextWrap wrap)
                 {
+                    if (wrap.Context.Name != x.Key) sb.Append($"{x.Key} = ");
                     if (outed_contexts.Contains(wrap)) sb.AppendLine($"context {wrap.Context.Name}; //already printed");
                     else sb.AppendLine(wrap.ToDetailedString(index + 1, outed_contexts) + ";");
                 }
                 else if (x.Value is ClassAccess ca)
                 {
+                    sb.Append($"{x.Key} = ");
                     var first = false;
                     foreach (var line in ca.ToString().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -43,7 +44,14 @@ namespace SLThree
                         first = true;
                     }
                 }
-                else sb.AppendLine(Decoration(x.Value)?.ToString() ?? "null" + ";");
+                else
+                {
+                    if (!(x.Value is Method m && m.Name == x.Key))
+                    {
+                        sb.Append($"{x.Key} = ");
+                    }
+                    sb.AppendLine(Decoration(x.Value)?.ToString() ?? "null" + ";");
+                }
             }
             index -= 1;
             sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");
@@ -60,11 +68,25 @@ namespace SLThree
             sb.AppendLine($"context {Context.Name} {{");
             foreach (var x in Context.LocalVariables.GetAsDictionary())
             {
-
-                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}{x.Key} = ");
-                if (x.Value is ContextWrap wrap) sb.AppendLine($"context {wrap.Context.Name};");
-                else if (x.Value is ClassAccess maca) sb.AppendLine($"access to {maca.Name.GetTypeString()};");
-                else sb.AppendLine((Decoration(x.Value)?.ToString() ?? "null") + ";");
+                sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}");
+                if (x.Value is ContextWrap wrap)
+                {
+                    if (wrap.Context.Name != x.Key) sb.Append($"{x.Key} = ");
+                    sb.AppendLine($"context {wrap.Context.Name};");
+                }
+                else if (x.Value is ClassAccess maca) 
+                {
+                    sb.Append($"{x.Key} = ");
+                    sb.AppendLine($"access to {maca.Name.GetTypeString()};");
+                }
+                else
+                {
+                    if (!(x.Value is Method m && m.Name == x.Key))
+                    {
+                        sb.Append($"{x.Key} = ");
+                    }
+                    sb.AppendLine((Decoration(x.Value)?.ToString() ?? "null") + ";");
+                }
             }
             index -= 1;
             sb.Append($"{(index == 0 ? "" : new string(' ', index * 4))}}}");

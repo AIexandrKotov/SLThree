@@ -71,5 +71,8 @@ namespace SLThree.Extensions
             => new ChanceChooser<TOut>(input.Values.Select(x => (selector(x.Item1), x.Item2)).ToArray());
         public static ChanceChooser<TOut> ConvertChooser<TIn, TOut>(this ChanceChooser<TIn> input) where TOut : TIn
             => new ChanceChooser<TOut>(input.Values.Select(x => ((TOut)x.Item1, x.Item2)).ToArray());
+
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Advanced)]
+        public static LocalVariablesContainer ToLocals(this Dictionary<string, object> dict) => LocalVariablesContainer.GetFromDictionary(dict);
     }
 }

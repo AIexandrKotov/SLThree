@@ -1,61 +1,88 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using System;
 using System.Linq;
 
 namespace SLThree
 {
     public class CreatorContext : BaseExpression
     {
-        public NameExpression Name;
-        public TypenameExpression Typecast;
-        public BaseStatement[] Body;
+        /*
+        ---Creating instances---
+        new context Name: TBase
+        new context Name
+        new context: TBase
+        new context
 
-        public bool HasCast => Typecast != null;
+        context Name: TBase {}
+        context Name {}
+        context: TBase {}
+        context {}
+        */
+        public BaseExpression Name { get; set; }
+        public BaseExpression[] Ancestors { get; set; }
+        public CreatorContextBody CreatorBody { get; set; }
+        public bool IsFreeCreator { get; set; }
+
         public bool HasName => Name != null;
-        public bool HasBody => Body.Length > 0;
 
-        public CreatorContext(SourceContext context) : this(null, null, new BaseStatement[0], context) { }
-
-        public CreatorContext(NameExpression name, SourceContext context) : this(name, null, new BaseStatement[0], context) { }
-
-        public CreatorContext(NameExpression name, TypenameExpression typecast, SourceContext context) : this(name, typecast, new BaseStatement[0], context) { }
-
-        public CreatorContext(BaseStatement[] body, SourceContext context) : this(null, null, body, context) { }
-
-        public CreatorContext(TypenameExpression typecast, SourceContext context) : this(null, typecast, new BaseStatement[0], context) { }
-
-        public CreatorContext(NameExpression name, TypenameExpression typecast, BaseStatement[] body, SourceContext context) : base(context)
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, SourceContext context) : base(context)
         {
             Name = name;
-            Typecast = typecast;
-            Body = body;
+            Ancestors = ancestors;
+            CreatorBody = body;
+            IsFreeCreator = is_free_creator;
         }
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            : this(name, ancestors, body, true, context) { }
+        public CreatorContext(BaseExpression name, CreatorContextBody body, SourceContext context)
+            : this(name, new BaseExpression[0], body, true, context) { }
+        public CreatorContext(BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+            : this(null, ancestors, body, true, context) { }
+        public CreatorContext(CreatorContextBody body, SourceContext context)
+            : this(null, new BaseExpression[0], body, true, context) { }
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, SourceContext context)
+            : this(name, ancestors, null, true, context) { }
+        public CreatorContext(BaseExpression name, SourceContext context)
+            : this(name, new BaseExpression[0], null, true, context) { }
+        public CreatorContext(BaseExpression[] ancestors, SourceContext context)
+            : this(null, ancestors, null, true, context) { }
+        public CreatorContext(SourceContext context)
+            : this(null, new BaseExpression[0], null, true, context) { }
 
-        public override string ExpressionToString() => $"new context {(HasName ? Name.Name : "")} {(HasCast ? $": {Typecast}" : "")} {{\n{Body.JoinIntoString("\n")}\n}}";
+        public override string ExpressionToString() => $"context {(HasName ? Name.ToString() : "")} {{\n{CreatorBody}\n}}";
 
-        private string last_context_name;
-        public string LastContextName => last_context_name;
+        private ExecutionContext counted_invoked;
+        private bool is_name_expr;
+        private int variable_index;
 
-        public override object GetValue(ExecutionContext context)
+        private string GetName() => GetLastName(Name);
+        public static string GetLastName(BaseExpression name)
         {
-            var ret = new ExecutionContext(context);
-            if (HasName) ret.Name = Name.Name;
-            last_context_name = ret.Name;
-            if (HasBody)
-            {
-                for (var i = 0; i < Body.Length; i++)
-                {
-                    if (Body[i] is ExpressionStatement es && es.Expression is BinaryAssign assign)
-                        assign.AssignValue(ret, assign.Left, assign.Right.GetValue(context));
-                    else if (Body[i] is ContextStatement cs)
-                        cs.GetValue(ret);
-                }
-            }
-            if (HasCast) return new ContextWrap(ret).CastToType(Typecast.GetValue(context).Cast<Type>());
-            return new ContextWrap(ret);
+            name.PrioriryRaised = false;
+            var n = name.ToString();
+            var index = n.LastIndexOf('.');
+            if (index == -1) return n;
+            else return n.Substring(index + 1);
         }
 
-        public override object Clone() => new CreatorContext(Name.CloneCast(), Typecast.CloneCast(), Body?.CloneArray(), SourceContext.CloneCast());
+        public object GetValue(ExecutionContext target, ExecutionContext context)
+        {
+            var ret = new ExecutionContext(target);
+            for (var i = 0; i < Ancestors.Length; i++)
+                ret.implement(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
+            CreatorBody?.GetValue(ret, context);
+            var wrap = ret.wrap;
+            if (HasName)
+            {
+                ret.Name = GetName();
+                if (IsFreeCreator)
+                    BinaryAssign.AssignToValue(target, Name, wrap, ref counted_invoked, ref is_name_expr, ref variable_index);
+            }
+            return wrap;
+        }
+
+        public override object GetValue(ExecutionContext context) => GetValue(context, context);
+
+        public override object Clone() => new CreatorContext(Name.CloneCast(), Ancestors.CloneArray(), CreatorBody.CloneCast(), IsFreeCreator, SourceContext.CloneCast());
     }
 }

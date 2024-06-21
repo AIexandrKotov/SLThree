@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net471;netstandard2.1;net6.0</TargetFrameworks>
     <Nullable>disable</Nullable>
@@ -13,63 +12,43 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.7.1.2989</Version>
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <FileVersion>$(Version)</FileVersion>
-    <ApplicationIcon>slthree.ico</ApplicationIcon>
-    <PackageReleaseNotes>Bugfixes:
-    - Add support for generic dict creators &lt;T, T&gt;{}</PackageReleaseNotes>
+    <Version>0.8.1</Version>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/0.8.0"))</PackageReleaseNotes>
+    <PackageReadmeFile>nugetreadme.md</PackageReadmeFile>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net471|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net471|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="docs\specification" />
     <None Remove="docs\versions\0.7.1" />
+    <None Remove="docs\versions\0.8.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <Content Include="slthree.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MSBump" Version="2.3.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Pegasus" Version="4.1.0" />
   </ItemGroup>
-
   <ItemGroup>
     <PegGrammar Include="syntax.peg" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="docs\specification" />
     <EmbeddedResource Include="docs\versions\0.1.0" />
@@ -83,6 +62,15 @@
     <EmbeddedResource Include="docs\versions\0.6.0" />
     <EmbeddedResource Include="docs\versions\0.7.0" />
     <EmbeddedResource Include="docs\versions\0.7.1" />
+    <EmbeddedResource Include="docs\versions\0.8.0" />
   </ItemGroup>
-
+  <ItemGroup>
+    <None Include="docs\nugetreadme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;..\verser\verser.exe&quot; --append &quot;SLThree&quot;" />
+  </Target>
 </Project>

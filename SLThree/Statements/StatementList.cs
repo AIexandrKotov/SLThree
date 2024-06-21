@@ -7,14 +7,14 @@ namespace SLThree
     public class StatementList : BaseStatement
     {
         public BaseStatement[] Statements;
-        private int count;
+        private protected int count;
 
         public StatementList() : base() { }
 
         public StatementList(IList<BaseStatement> statements, SourceContext context) : base(context)
         {
-            Statements = statements.ToArray();
-            count = statements.Count;
+            Statements = statements.Where(x => !(x is EmptyStatement)).ToArray();
+            count = Statements.Length;
         }
 
         public override string ToString() => $"{Statements.Length} statements";

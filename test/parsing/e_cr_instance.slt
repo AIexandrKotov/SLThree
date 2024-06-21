@@ -1,0 +1,17 @@
+new T;
+new T(args);
+new T: A;
+new T(args): A;
+new T {};
+new T(args) {};
+new T: A {};
+new T(args): A {};
+
+new T Name;
+new T(args) Name;
+new T Name: A;
+new T(args) Name: A;
+new T Name {};
+new T(args) Name {};
+new T Name: A {};
+new T(args) Name: A {};

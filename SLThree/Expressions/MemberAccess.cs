@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace SLThree
@@ -32,6 +33,49 @@ namespace SLThree
         private bool is_unwrap;
         private bool is_super;
         private bool is_upper;
+        private bool is_parent;
+
+        public static object GetNameExprValue(ExecutionContext context, object left, NameExpression Right)
+        {
+            if (left != null)
+            {
+                if (left is ContextWrap pred)
+                {
+                    if (Right is NameExpression predName)
+                    {
+                        if (predName.Name == "super")
+                        {
+                            return pred.Context.super;
+                        }
+                        else if (predName.Name == "parent")
+                        {
+                            return pred.Context.parent;
+                        }
+                        else if (predName.Name == "upper")
+                        {
+                            return pred.Context.PreviousContext?.wrap;
+                        }
+                        return pred.Context.LocalVariables.GetValue(predName.Name).Item1;
+                    }
+                }
+                var has_access = left is ClassAccess access;
+                var type = has_access ? (left as ClassAccess).Name : left.GetType();
+
+                var field = type.GetField(Right.Name);
+                if (field != null) return field.GetValue(left);
+                var prop = type.GetProperty(Right.Name);
+                if (prop != null) return prop.GetValue(left);
+                var nest_type = type.GetNestedType(Right.Name);
+                if (nest_type != null) return new ClassAccess(nest_type);
+                if (left is IDictionary dict)
+                    return dict[Right.Name];
+
+                throw new RuntimeError($"Name \"{Right.Name}\" not found in {type.GetTypeString()}", Right.SourceContext);
+            }
+
+            return null;
+        }
+
         public override object GetValue(ExecutionContext context)
         {
             var left = Left.GetValue(context);
@@ -39,6 +83,7 @@ namespace SLThree
             if (counted_contextwrapcache)
             {
                 if (is_super) return (left as ContextWrap).Context.super;
+                else if (is_parent) return (left as ContextWrap).Context.parent;
                 else if (is_upper) return (left as ContextWrap).Context.PreviousContext.wrap;
                 else return (left as ContextWrap).Context.LocalVariables.GetValue(variable_name).Item1;
             }
@@ -59,6 +104,12 @@ namespace SLThree
                             counted_contextwrapcache = true;
                             is_super = true;
                             return pred.Context.super;
+                        }
+                        else if (predName.Name == "parent")
+                        {
+                            counted_contextwrapcache = true;
+                            is_parent = true;
+                            return pred.Context.parent;
                         }
                         else if (predName.Name == "upper")
                         {
@@ -145,10 +196,15 @@ namespace SLThree
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {
-                            mth = mth.CloneWithNewName(nameExpression2.Name);
-                            mth.UpdateContextName();
-                            mth.definitionplace = new ContextWrap(context);
-                            value = mth;
+                            if (mth.Binded) value = mth;
+                            else
+                            {
+                                mth.Name = nameExpression2.Name;
+                                mth.UpdateContextName();
+                                mth.@this = new ContextWrap(context);
+                                mth.Binded = true;
+                                value = mth;
+                            }
                         }
                         context.LocalVariables.SetValue(other_context_name, value);
                     }

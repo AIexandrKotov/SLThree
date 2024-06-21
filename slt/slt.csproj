@@ -6,7 +6,7 @@
     <TargetFrameworks>net471;net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>2.0.0.700</Version>
+    <Version>0.0.0-alpha</Version>
     <BaseOutputPath>..\bin</BaseOutputPath>
     <ApplicationIcon>slthree.ico</ApplicationIcon>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSBump" Version="2.3.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 

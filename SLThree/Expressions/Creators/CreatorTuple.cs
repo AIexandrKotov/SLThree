@@ -9,7 +9,7 @@ namespace SLThree
     public class CreatorTuple : BaseExpression
     {
         public BaseExpression[] Expressions;
-        public (ExecutionContext, bool, int)[] Caches;
+        private (ExecutionContext, bool, int)[] Caches;
 
         public CreatorTuple(BaseExpression[] expressions, SourceContext context) : base(context)
         {
