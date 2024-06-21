@@ -62,4 +62,4 @@ Starting from language version 0.8.0, REPL no longer supports multiple versions 
 | 1.*             | 0.2.0 — 0.6.0   |
 
 ### Download
-[![stable](https://img.shields.io/badge/REPL_stable-2.0.0-00cc00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.7.0) [![stable](https://img.shields.io/badge/LANG_exp-0.7.0-ccaa00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.7.0)
+[![stable](https://img.shields.io/badge/stable-0.8.0-00cc00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.8.0)

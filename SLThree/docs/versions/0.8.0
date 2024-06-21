@@ -1,4 +1,4 @@
------- 0.8.0 Binding&Naming Update ------ [~.~.~]
+------ 0.8.0 Binding&Naming Update ------ [21.06.24]
 Language:
     - New method definition syntax
       `[modifs][Name][<T>](args) {...}`
