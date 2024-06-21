@@ -1,1 +1,0 @@
-"../building/vh.exe" "../SLThree/Properties/AssemblyInfo.cs" "build++"
