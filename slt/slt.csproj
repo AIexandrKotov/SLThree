@@ -6,7 +6,7 @@
     <TargetFrameworks>net471;net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>3.0.0-alpha</Version>
+    <Version>0.0.0-alpha</Version>
     <BaseOutputPath>..\bin</BaseOutputPath>
     <ApplicationIcon>slthree.ico</ApplicationIcon>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -20,7 +20,6 @@
     <None Remove="docs\versions\1.1.0" />
     <None Remove="docs\versions\1.2.0" />
     <None Remove="docs\versions\2.0.0" />
-    <None Remove="docs\versions\3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +33,6 @@
     <EmbeddedResource Include="docs\versions\1.1.0" />
     <EmbeddedResource Include="docs\versions\1.2.0" />
     <EmbeddedResource Include="docs\versions\2.0.0" />
-    <EmbeddedResource Include="docs\versions\3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

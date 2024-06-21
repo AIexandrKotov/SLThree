@@ -1,0 +1,7 @@
+foreach (x in a) ;
+foreach (x in a) {
+    ;
+}
+foreach (x in a) {
+    foreach (x in a) ;
+}

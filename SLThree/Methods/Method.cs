@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +13,15 @@ namespace SLThree
 {
     public class Method : ICloneable
     {
+        public const string DefaultMethodName = "$method";
+
         private ExecutionContext cached_context;
         public string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
         public readonly bool Implicit = false;
         public readonly bool Recursive = false;
+        public bool Abstract = false;
         public bool Binded = false;
 
         public readonly bool WithoutParams;
@@ -66,10 +70,24 @@ namespace SLThree
 
         public override string ToString()
         {
-            var args = new StringBuilder();
-            args.Append(ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", "));
-            return $"{(Recursive ? "recursive " : "")}{(Implicit ? "" : "explicit ")}{(WithoutParams ? "" : "params ")}{ReturnType?.ToString() ?? "any"} {Name}({args})";
-        } 
+            //return $"{(Recursive ? "recursive " : "")}{(Implicit ? "" : "explicit ")}{(WithoutParams ? "" : "params ")}{ReturnType?.ToString() ?? "any"} {Name}({args})";
+            var sb = new StringBuilder();
+            var unnamed = Name == DefaultMethodName;
+            if (Abstract)
+                sb.Append("abstract ");
+            else
+            {
+                if (Recursive)
+                    sb.Append("recursive ");
+                if (!Implicit)
+                    sb.Append("explicit ");
+            }
+            if (!unnamed)
+                sb.Append(Name);
+            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            return sb.ToString();
+        }
 
         public virtual ExecutionContext GetExecutionContext(object[] arguments, ExecutionContext super_context = null)
         {
@@ -149,10 +167,13 @@ namespace SLThree
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
             var context = GetExecutionContext(CheckOnParams(CheckOnDefaults(args)), old_context);
-            for (var i = 0; i < Statements.Statements.Length; i++)
+            var i = 0;
+            var bs = Statements.Statements;
+            var count = bs.Length;
+            while (i < count)
             {
                 if (context.Returned) return context.ReturnedValue;
-                else Statements.Statements[i].GetValue(context);
+                else bs[i++].GetValue(context);
             }
             if (context.Returned) return context.ReturnedValue;
             return null;
@@ -286,7 +307,10 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray());
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray())
+            {
+                Abstract = Abstract
+            };
         }
 
         public virtual object Clone()

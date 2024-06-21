@@ -21,7 +21,7 @@ while (true) {
     console.write(">>> ");
     input = console.readln().Trim();
     match (input) {
-        "0" ==> { break; };
+        "0" ==> break;
         "h" ==> out_help();
         "+" ==> console.writeln($"Вывод: {global.a + global.b}");
         "*" ==> console.writeln($"Вывод: {global.a * global.b}");

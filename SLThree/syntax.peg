@@ -24,8 +24,8 @@ statement <BaseStatement>
     / e:match_expression { new ExpressionStatement(e, state) }
     / e:context_expression { new ExpressionStatement(e, state) }
     / e:block_instance_expression { new ExpressionStatement(e, state) }
-    / "static" _required_ e:method_definition_statement { new ExpressionStatement(new StaticExpression(e, state), state) }
-    / "static" _ e:method_definition_nswm { new ExpressionStatement(new StaticExpression(e, state), state) }
+    / "static" _required_ e:method_definition_statement { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
+    / "static" _ e:method_definition_nswm { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
     / e:method_definition_statement { new ExpressionStatement(e, state) }
     / expression_statement
     / block_statement
@@ -105,8 +105,8 @@ expression <BaseExpression>
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
-    / "static" _required_ left:expression { new StaticExpression(left, state) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
     / condition_expression
     / match_expression
     / method_definition_expression
@@ -213,28 +213,29 @@ using_expression <UsingExpression>
     }
 
 condition_statement <ConditionExpression>
-    = "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:block_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
+    = expr:condition_expression _ ";" { expr }
+    / "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
+    / condition_expression_1
     / "if" _ "(" _ cond:expression _ ")" _ t:block_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
     / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
 
 condition_expression <ConditionExpression>
-    = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
-    / "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
+    = condition_expression_1
     / "if" _ "(" _ ")" _ statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
+
+condition_expression_1 <ConditionExpression>
+    = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
 
 match_expression <BaseExpression>
     = "match" _ "(" _ expr:expression _ ")" _ "{" _ 
-          matches:match_node<1,,";" _>
+          matches:match_node<1,,_>
           _ ";"?
     _ "}" { new MatchExpression(expr, matches, state) }
 
 match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
     = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:expression<1,,"," _> { exprs })
-      _ "==>" _ right:(
-        <BaseStatement>
-        expr:expression { new ExpressionStatement(expr, state) }
-        / block_statement
-    ) { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
+      _ "==>" _ right:statement
+    { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
 
 withoutinvokation_primary <BaseExpression> -memoize
     = left:withoutinvokation_primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
@@ -480,8 +481,8 @@ access_right <BaseExpression> -memoize
     / right:name { right }
 
 onlyname_access <BaseExpression> -memoize
-    = left:name _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
-    / right:name { right }
+    = left:special _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
+    / right:special { right }
 
 using <CreatorUsing>
     = t_name:typename { new CreatorUsing(t_name, state) }
@@ -503,11 +504,23 @@ method_definition_expression <FunctionDefinition>
       {
           new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new FunctionArgument[1] {arg}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
+    / abstract_method_expression
 method_definition_statement <FunctionDefinition>
     = method_definition_statement1
     / method_definition_statement2
     / method_definition_statement3
+    / abstract_method_statement
 
+abstract_method_statement <FunctionDefinition> = func:abstract_method_expression _ ";" { func }
+abstract_method_expression <FunctionDefinition>
+    = "abstract" _required_
+      name:withoutinvokation_primary _
+      generics:method_generic_part?
+      "(" _ args:arg_name<0,,"," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})?
+      {
+          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), null, GetOptional(ret), state)
+      }
 method_definition_statement1 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
@@ -549,7 +562,8 @@ method_mods_name <Tuple<string[], BaseExpression>>
     / name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(new string[0], name) }
 
 method_modificator
-    = "recursive"
+    = "abstract"
+    / "recursive"
     / "explicit"
     / "params"
     / "native"

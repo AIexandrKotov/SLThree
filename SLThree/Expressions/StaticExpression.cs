@@ -22,6 +22,9 @@ namespace SLThree
         private bool done;
         private object obj;
         private bool artificial;
+        
+        public bool IsArtificial => artificial;
+        public object Object => obj;
 
         public override object GetValue(ExecutionContext context)
         {

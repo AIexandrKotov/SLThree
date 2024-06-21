@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using SLThree.sys;
 using SLThree.Visitors;
 using System;
 using System.CodeDom;
@@ -359,13 +360,35 @@ namespace SLThree
         }
 
         public readonly NameExpression[] Generics;
-        public override string ToString() => $"{DefinitionReturnType?.ToString() ?? "any"} {Name}<{Generics.JoinIntoString(", ")}>({DefinitionParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})";
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var unnamed = Name == DefaultMethodName;
+            if (slt.is_abstract(Statements))
+                sb.Append("abstract ");
+            else
+            {
+                if (Recursive)
+                    sb.Append("recursive ");
+                if (!Implicit)
+                    sb.Append("explicit ");
+            }
+            if (!unnamed)
+                sb.Append(Name);
+            sb.Append($"<{Generics.JoinIntoString(", ")}>");
+            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            return sb.ToString();
+        }
 
         public List<GenericInfo> GenericsInfo;
 
         public override Method CloneWithNewName(string name)
         {
-            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.CloneArray());
+            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.CloneArray())
+            {
+                Abstract = Abstract
+            };
         }
     }
 }
