@@ -516,7 +516,7 @@ abstract_method_expression <FunctionDefinition>
     = "abstract" _required_
       name:withoutinvokation_primary _
       generics:method_generic_part?
-      "(" _ args:arg_name<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})?
       {
           new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), null, GetOptional(ret), state)
