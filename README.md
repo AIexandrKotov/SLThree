@@ -54,9 +54,11 @@ namespace TestSLThree
 
 ### LANG and REPL compatibility
 
+Starting from language version 0.8.0, REPL no longer supports multiple versions at once and is built for each language update.
+
 | REPL version    | LANG version    |
 |-----------------|-----------------|
-| 2.0.0           | 0.7.0+          |
+| 2.0.0           | 0.7.0           |
 | 1.*             | 0.2.0 — 0.6.0   |
 
 ### Download
