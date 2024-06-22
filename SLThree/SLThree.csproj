@@ -42,6 +42,7 @@
     <None Remove="docs\specification" />
     <None Remove="docs\versions\0.7.1" />
     <None Remove="docs\versions\0.8.0" />
+    <None Remove="docs\versions\0.8.1" />
     <None Remove="docs\versions\0.9.0" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +65,7 @@
     <EmbeddedResource Include="docs\versions\0.7.0" />
     <EmbeddedResource Include="docs\versions\0.7.1" />
     <EmbeddedResource Include="docs\versions\0.8.0" />
+    <EmbeddedResource Include="docs\versions\0.8.1" />
     <EmbeddedResource Include="docs\versions\0.9.0" />
   </ItemGroup>
   <ItemGroup>
