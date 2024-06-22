@@ -12,8 +12,8 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;scripts;script-lang</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.8.1</Version>
-    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/0.8.0"))</PackageReleaseNotes>
+    <Version>0.8.2</Version>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/0.8.1"))</PackageReleaseNotes>
     <PackageReadmeFile>nugetreadme.md</PackageReadmeFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
@@ -42,6 +42,7 @@
     <None Remove="docs\specification" />
     <None Remove="docs\versions\0.7.1" />
     <None Remove="docs\versions\0.8.0" />
+    <None Remove="docs\versions\0.8.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Pegasus" Version="4.1.0" />
@@ -63,6 +64,7 @@
     <EmbeddedResource Include="docs\versions\0.7.0" />
     <EmbeddedResource Include="docs\versions\0.7.1" />
     <EmbeddedResource Include="docs\versions\0.8.0" />
+    <EmbeddedResource Include="docs\versions\0.8.1" />
   </ItemGroup>
   <ItemGroup>
     <None Include="docs\nugetreadme.md">
