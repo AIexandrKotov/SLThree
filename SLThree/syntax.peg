@@ -207,7 +207,7 @@ condition_statement <ConditionExpression>
     = expr:condition_expression _ ";" { expr }
     / "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
     / condition_expression_1
-    / "if" _ "(" _ cond:expression _ ")" _ t:block_statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
+    / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
     / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
 
 condition_expression <ConditionExpression>
