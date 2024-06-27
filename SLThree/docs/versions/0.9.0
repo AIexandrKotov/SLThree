@@ -7,3 +7,5 @@ Language:
       `params f(args) => args;`
       `args(1, 2, 3); //[1, 2, 3]`
     - Calling methods with a variable number of arguments
+    - Syntax for creating methods from generics:
+      `_is<T>(a) => a is T; isi64 = _is<i64>;`
