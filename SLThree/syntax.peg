@@ -106,6 +106,7 @@ expression <BaseExpression>
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / left:binary_7 _ "$=" _ right:binary_9 { new BinaryAssignMacro(left, right, state) }
     / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
     / condition_expression
     / match_expression
@@ -251,6 +252,9 @@ primary <BaseExpression> -memoize
     / left:primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
     / left:primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
+    / "$" d:[0-9_]+ { new Macros.Element(int.Parse(d.JoinIntoString("").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / "$" x:block_statement { new MacrosDefinition(x, state) }
+    / "$(" _ x:expression _ ")" { new MacrosDefinition(x, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
     / "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
     / "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
