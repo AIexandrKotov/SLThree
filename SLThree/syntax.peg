@@ -10,6 +10,8 @@ file <BaseStatement>
 
 statement_list <StatementList>
     = st:statement<0,,_> { new StatementList(st, state) }
+expr_statement_list <BlockExpression>
+    = st:statement<0,,_> { new BlockExpression(st, state) }
 
 statement <BaseStatement>
     = return_statement
@@ -27,8 +29,8 @@ statement <BaseStatement>
     / "static" _required_ e:method_definition_statement { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
     / "static" _ e:method_definition_nswm { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
     / e:method_definition_statement { new ExpressionStatement(e, state) }
-    / expression_statement
     / block_statement
+    / expression_statement
     / ";" { new EmptyStatement(state) }
 
 return_statement <ReturnStatement>
@@ -47,6 +49,10 @@ continue_statement <ContinueStatement>
 block_statement <StatementList>
     = "{" _ st:statement_list _ "}" { st }
     / "{" _ st:statement_list _ { Panic<StatementList>(new SyntaxError("Unclosed block", state)) }
+
+block_expression <BlockExpression>
+    = "{" _ st:expr_statement_list _ "}" { st }
+    / "{" _ st:expr_statement_list _ { Panic<BlockExpression>(new SyntaxError("Unclosed block", state)) }
 
 while_statement <WhileLoopStatement>
     = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), state) }
@@ -253,8 +259,8 @@ primary <BaseExpression> -memoize
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
-    / "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
-    / "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
+    // "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
+    // "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
     / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
     // "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
@@ -267,6 +273,7 @@ primary <BaseExpression> -memoize
     / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
     / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
     / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
+    / block_expression
     / special
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }

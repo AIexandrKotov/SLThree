@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace SLThree
 {
-
     public class ReflectionExpression : BaseExpression
     {
         public BaseExpression Left;
