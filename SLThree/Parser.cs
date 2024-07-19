@@ -139,11 +139,25 @@ namespace SLThree
 
             return new ConditionExpression(condition, body, other, body.SourceContext);
         }
-        
+
+        #region Tree Searching
         private sealed class VFirst<T>: AbstractVisitor where T: class, ExecutionContext.IExecutable
         {
             public T Found = null;
             public Func<T, bool> Predicate = x => true;
+            public bool StopAtDeferred = true;
+
+            public override void VisitExpression(FunctionDefinition expression)
+            {
+                if (StopAtDeferred) return;
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(CastExpression expression)
+            {
+                if (expression.as_is && StopAtDeferred) return;
+                base.VisitExpression(expression);
+            }
 
             public override void VisitExpression(BaseExpression expression)
             {
@@ -192,6 +206,7 @@ namespace SLThree
             ret = has.Found;
             return has.Found != null;
         }
+        #endregion
 
         public static void UncachebleCheck(object o, string suffix = " after static")
         {
@@ -206,6 +221,21 @@ namespace SLThree
             if (Any<UsingExpression>(o, @using => @using.Alias != null, out var wrongusing))
                 throw new LogicalError($"Unexpected named using{suffix}", wrongusing.SourceContext);
         }
+
+        private FunctionArgument[] DefaultValueCheck(FunctionArgument[] arg)
+        {
+            foreach (var x in arg)
+                if (x.DefaultValue != null)
+                    UncachebleCheck(x.DefaultValue, " as default value");
+            return arg;
+        }
+        private FunctionArgument DefaultValueCheck(FunctionArgument x)
+        {
+            if (x.DefaultValue != null)
+                UncachebleCheck(x.DefaultValue, " as default value");
+            return x;
+        }
+
         private BaseExpression ReorderStatic(StaticExpression expression)
         {
             //if (did.TryGetValue(expression, out var expr)) return expr;

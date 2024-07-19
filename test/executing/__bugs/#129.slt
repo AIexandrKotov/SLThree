@@ -1,0 +1,2 @@
+static x = (y = 25) as is;
+static x = (x => a = x);
