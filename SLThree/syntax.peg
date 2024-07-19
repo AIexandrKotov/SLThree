@@ -586,7 +586,7 @@ typename_node <BaseExpression> -memoize
     / special
 
 func_arg <FunctionArgument>
-    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, state) }
+    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, DefaultValueCheck(expr), state) }
     / name:arg_name { new FunctionArgument(name, state) }
 
 arg_name <NameExpression>
