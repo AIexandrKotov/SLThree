@@ -91,21 +91,13 @@ namespace SLThree
                     throw new NotImplementedException();
                 }
             }
-            public class DictionaryCreator : GenericInfo<CreatorDictionary>, IComplexedGenericInfo
+            public class DictionaryCreator : GenericInfo<CreatorDictionary>
             {
-                public bool IsTypeOfValue;
-                public DictionaryCreator(CreatorDictionary concrete, int position, bool isTypeOfValue) : base(concrete, position)
+                public DictionaryCreator(CreatorDictionary concrete, int position) : base(concrete, position)
                 {
-                    IsTypeOfValue = isTypeOfValue;
                 }
-                public override ref TypenameExpression GetPlacer()
-                {
-                    if (IsTypeOfValue) return ref Concrete.DictionaryType[1];
-                    else return ref Concrete.DictionaryType[0];
-                }
+                public override ref TypenameExpression GetPlacer() => ref Concrete.Type;
             }
-
-
             public class CastGenericInfo : GenericInfo<CastExpression>
             {
                 public CastGenericInfo(CastExpression concrete, int position) : base(concrete, position)
@@ -295,9 +287,6 @@ namespace SLThree
                                         {
                                             Infos.Add(new Reflection(reflection, i, false, j));
                                         }
-                                break;
-                            case CreatorDictionary creatorDictionary:
-                                Infos.Add(new DictionaryCreator(creatorDictionary, i, creatorDictionary.DictionaryType[1].Typename is NameExpression dictKeyTypeName && dictKeyTypeName.Name == Generics[i]));
                                 break;
                             default:
                                 Infos.Add(GetGenericInfo(place, i));

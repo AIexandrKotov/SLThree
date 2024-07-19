@@ -117,12 +117,14 @@ namespace SLThree.Visitors
         }
         public virtual void VisitExpression(CreatorDictionary expression)
         {
-            if (expression.DictionaryType != null)
-            {
-                VisitExpression(expression.DictionaryType[0]);
-                VisitExpression(expression.DictionaryType[1]);
-            }
-            foreach (var x in expression.Entries)
+            Executables.Add(expression);
+            VisitExpression(expression.Type);
+            Executables.Remove(expression);
+            if (expression.Name != null)
+                VisitExpression(expression.Name);
+            foreach (var x in expression.Arguments)
+                VisitExpression(x);
+            foreach (var x in expression.Body)
             {
                 VisitExpression(x.Key);
                 VisitExpression(x.Value);

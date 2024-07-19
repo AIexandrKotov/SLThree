@@ -25,6 +25,7 @@ statement <BaseStatement>
     / e:condition_statement { new ExpressionStatement(e, state) }
     / e:match_expression { new ExpressionStatement(e, state) }
     / e:context_expression { new ExpressionStatement(e, state) }
+    / e:dictionary_expression { new ExpressionStatement(e, state) }
     / e:block_instance_expression { new ExpressionStatement(e, state) }
     / "static" _required_ e:method_definition_statement { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
     / "static" _ e:method_definition_nswm { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, state)), state) }
@@ -113,6 +114,7 @@ binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
+    / block_expression
     / condition_expression
     / match_expression
     / method_definition_expression
@@ -258,12 +260,10 @@ primary <BaseExpression> -memoize
     / left:primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
-    / "(" _ x:expression _ ")" { x.RaisePriority() }
-    // "<" _ t:typename<2,2,"," _> _ ">" _ "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), t.ToArray(), state) }
-    // "{" _ etrs:dictionary_entry <0,,"," _> _ ("," _ )? "}" { new CreatorDictionary(etrs.ToArray(), state) }
+   / "(" _ x:expression _ ")" { x.RaisePriority() }
     / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
-    // "new" _required_ "context" c: context { c }
     / "new" _required_ "using" _required_ u: using { u }
+    / dictionary_expression
     / using_expression
     / new_context_expression
     / context_expression
@@ -273,7 +273,6 @@ primary <BaseExpression> -memoize
     / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
     / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
     / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
-    / block_expression
     / special
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
@@ -326,6 +325,38 @@ context_expression <BaseExpression>
     _ body:(<CreatorContextBody> _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }) { 
         new CreatorContext(body, state)
     }
+
+dictionary_expression <BaseExpression>
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T(args) Name {};
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    _ body:dictionary_body { 
+        CreatorDictionary.NamedCaseTypeArgsBody(t, name, args.ToArray(), body.ToArray(), state)
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    _ body:dictionary_body { 
+        CreatorDictionary.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), state)
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:dictionary_body { 
+        CreatorDictionary.NamedCaseTypeBody(t, name, body.ToArray(), state)
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:dictionary_body { 
+        CreatorDictionary.CaseTypeBody(t, body.ToArray(), state)
+    }
+
+dictionary_body <IList<CreatorDictionary.Entry>>
+    = "{" _ entries:dictionary_entry<1,,"," _> _ "}" { entries }
+
+dictionary_entry <CreatorDictionary.Entry>
+    = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
 
 instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
@@ -479,9 +510,6 @@ block_instance_expression <BaseExpression>
         CreatorInstance.CaseTypeBody(t, body, state)
     }
 
-dictionary_entry <CreatorDictionary.Entry>
-    = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
-
 access_right <BaseExpression> -memoize
     = left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
     / left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), state) }
@@ -505,8 +533,6 @@ method_definition_expression <FunctionDefinition>
       {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
-    / method_definition_statement2
-    / method_definition_statement3
     / generics:method_generic_part?
       arg:func_arg
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
@@ -516,8 +542,6 @@ method_definition_expression <FunctionDefinition>
     / abstract_method_expression
 method_definition_statement <FunctionDefinition>
     = method_definition_statement1
-    / method_definition_statement2
-    / method_definition_statement3
     / abstract_method_statement
 
 abstract_method_statement <FunctionDefinition> = func:abstract_method_expression _ ";" { func }
@@ -535,22 +559,7 @@ method_definition_statement1 <FunctionDefinition>
       generics:method_generic_part? 
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
-      }
-method_definition_statement2 <FunctionDefinition>
-    = mods_name:method_mods_name?
-      generics:method_generic_part? 
-      "(" _ args:func_arg<0,,"," _> _ ")" 
-      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
-      {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], args.ToArray(), body, GetOptional(ret), state)
-      }
-method_definition_statement3 <FunctionDefinition>
-    = generics:method_generic_part?
-      arg:func_arg
-      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ body:block_statement
-      {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new FunctionArgument[1] {arg}, GetListStatement(body), GetOptional(ret), state)
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
       }
     
 

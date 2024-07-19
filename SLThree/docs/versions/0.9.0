@@ -1,5 +1,9 @@
 ------ 0.9.0 Parameters Update ------ [~.~.~]
 Language:
+    - Blocks `{...}` is expressions now
+    - Dictionary initializers new syntax:
+      `new dict { 1: 2, 3: 4 }`
+      `new dict<i64, i64> { 1: 2, 3: 4 }`
     - Syntax sugar for overloading methods
     - Defining methods with default parameters
       `(x = 5, y = 10) => x + y;`
