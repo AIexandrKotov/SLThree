@@ -322,6 +322,7 @@ namespace SLThree
                             var property = (PropertyInfo)member;
                             if (!property.CanRead) return;
                             if (!property.CanWrite && member.GetCustomAttribute<WrapReadonlyAttribute>() == null) return;
+                            if (property.GetIndexParameters().Length != 0) return;
                             var m = new WrappingMemberInfo
                             {
                                 MemberInfo = member,

@@ -11,3 +11,4 @@ Language:
       `_is<T>(a) => a is T; isi64 = _is<i64>;`
 Bugfixes:
     - Ignoring deffered code in static (#129)
+    - Ignoring indexed properties in wrappers (#130)
