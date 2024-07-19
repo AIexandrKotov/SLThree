@@ -15,7 +15,7 @@ ASSERT(self, (cntxt.a is tested_type) as is);
 ASSERT(self, ((new using slt).eval(self, "2 as tested_type") is tested_type) as is);
 
 //dictionary
-dct = { "key": value = 3, };
+dct = new dict { "key": value = 3, };
 ASSERT(self, (dct["key"] == value) as is);
 
 //tuple

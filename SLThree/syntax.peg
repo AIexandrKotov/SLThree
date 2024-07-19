@@ -353,7 +353,7 @@ dictionary_expression <BaseExpression>
     }
 
 dictionary_body <IList<CreatorDictionary.Entry>>
-    = "{" _ entries:dictionary_entry<1,,"," _> _ "}" { entries }
+    = "{" _ entries:dictionary_entry<1,,"," _> _ ("," _)? "}" { entries }
 
 dictionary_entry <CreatorDictionary.Entry>
     = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
@@ -595,7 +595,7 @@ typename_node <BaseExpression> -memoize
     / special
 
 func_arg <FunctionArgument>
-    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, DefaultValueCheck(expr), state) }
+    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, state) }
     / name:arg_name { new FunctionArgument(name, state) }
 
 arg_name <NameExpression>

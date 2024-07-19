@@ -1,1 +1,1 @@
-newdict = <TKey, TValue>() => <TKey, TValue>{};
+newdict = <TKey, TValue>() => new dict<TKey, TValue>{};
