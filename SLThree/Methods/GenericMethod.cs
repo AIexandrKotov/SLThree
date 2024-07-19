@@ -98,6 +98,14 @@ namespace SLThree
                 }
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Type;
             }
+            public class InstanceCreator : GenericInfo<CreatorInstance>
+            {
+                public InstanceCreator(CreatorInstance concrete, int position) : base(concrete, position)
+                {
+                }
+
+                public override ref TypenameExpression GetPlacer() => ref Concrete.Type;
+            }
             public class CastGenericInfo : GenericInfo<CastExpression>
             {
                 public CastGenericInfo(CastExpression concrete, int position) : base(concrete, position)

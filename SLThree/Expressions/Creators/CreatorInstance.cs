@@ -152,7 +152,7 @@ namespace SLThree
             CreatorContext = creatorContext;
         }
 
-        public TypenameExpression Type { get; set; }
+        public TypenameExpression Type;
         public BaseExpression Name { get; set; }
         public BaseExpression[] Arguments { get; set; }
         public CreatorContext CreatorContext { get; set; }
