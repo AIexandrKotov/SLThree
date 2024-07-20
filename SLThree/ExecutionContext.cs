@@ -38,8 +38,6 @@ namespace SLThree
 
         public object ReturnedValue;
 
-        public readonly List<Exception> Errors = new List<Exception>();
-
         public static readonly ContextWrap global = new ContextWrap(new ExecutionContext(false) { ForbidImplicit = false, Name = "global" });
 
         static ExecutionContext()
