@@ -324,8 +324,14 @@ namespace slt
             return value;
         }
 
-        public static void OutAsOutput(object value)
+        public static void OutAsOutput(object value, BaseStatement statements = null)
         {
+            if (statements != null && value is ClassAccess)
+            {
+                var statement = statements is StatementList sl ? sl.Statements[sl.Statements.Length - 1] : statements;
+                if (statement is ExpressionStatement expr && (expr.Expression is CreatorUsing || expr.Expression is UsingExpression))
+                    return;
+            }
             if (value is null) return;
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(GetOutput(value));
@@ -342,7 +348,7 @@ namespace slt
             {
                 var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
                 var o = st.GetValue(executionContext);
-                if (show_result) OutAsOutput(o);
+                if (show_result) OutAsOutput(o, st);
             }
             catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
             catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
@@ -360,7 +366,7 @@ namespace slt
             {
                 var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
                 var o = st.GetValue(executionContext);
-                if (show_result) OutAsOutput(o);
+                if (show_result) OutAsOutput(o, st);
             }
             catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
             catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
@@ -990,7 +996,7 @@ namespace slt
                         if (REPLPerfomance) ExecutingStopwatch.Stop();
                         cancelationToken = false;
                         Console.ResetColor();
-                        OutAsOutput(value);
+                        OutAsOutput(value, st);
                         if (REPLPerfomance)
                         {
                             Console.ForegroundColor = ConsoleColor.Magenta;
