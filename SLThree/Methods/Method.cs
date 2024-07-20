@@ -96,7 +96,7 @@ namespace SLThree
             {
                 ret = new ExecutionContext(false, false);
                 ret.Name = contextName;
-                ret.PreviousContext = super_context;
+                ret.PreviousContext = super_context?.wrap;
                 ret.LocalVariables.FillArguments(this, arguments);
                 ret.@this = definitionplace;
                 ret.ForbidImplicit = !Implicit;
@@ -119,7 +119,7 @@ namespace SLThree
                     cached_context = ret;
                 }
                 ret.Name = contextName;
-                ret.PreviousContext = super_context;
+                ret.PreviousContext = super_context?.wrap;
                 ret.LocalVariables.FillArguments(this, arguments);
                 ret.ForbidImplicit = !Implicit;
             }

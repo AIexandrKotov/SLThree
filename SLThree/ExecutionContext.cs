@@ -67,7 +67,7 @@ namespace SLThree
 
         public ContextWrap @this;
 
-        internal ExecutionContext PreviousContext;
+        internal ContextWrap PreviousContext;
         //public ContextWrap pred => new ContextWrap(PreviousContext);
         public readonly ContextWrap wrap;
         public ContextWrap super;

@@ -53,7 +53,7 @@ namespace SLThree
                         }
                         else if (predName.Name == "upper")
                         {
-                            return pred.Context.PreviousContext?.wrap;
+                            return pred.Context.PreviousContext;
                         }
                         return pred.Context.LocalVariables.GetValue(predName.Name).Item1;
                     }
@@ -84,7 +84,7 @@ namespace SLThree
             {
                 if (is_super) return (left as ContextWrap).Context.super;
                 else if (is_parent) return (left as ContextWrap).Context.parent;
-                else if (is_upper) return (left as ContextWrap).Context.PreviousContext.wrap;
+                else if (is_upper) return (left as ContextWrap).Context.PreviousContext;
                 else return (left as ContextWrap).Context.LocalVariables.GetValue(variable_name).Item1;
             }
             else if (counted_contextwrapcache2)
@@ -115,7 +115,7 @@ namespace SLThree
                         {
                             counted_contextwrapcache = true;
                             is_upper = true;
-                            return pred.Context.PreviousContext?.wrap;
+                            return pred.Context.PreviousContext;
                         }
                         variable_name = predName.ExpressionToString().Replace(" ", "");
                         counted_contextwrapcache = true;
