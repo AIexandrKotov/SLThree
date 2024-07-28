@@ -1,0 +1,8 @@
+f(x = 5) => x;
+ASSERT(self, (f() == 5) as is);
+ASSERT(self, (f(10) == 10) as is);
+
+f(x = 10, y = 20) => x + y;
+ASSERT(self, (f() == 30) as is);
+ASSERT(self, (f(20) == 40) as is);
+ASSERT(self, (f(20, 30) == 50) as is);

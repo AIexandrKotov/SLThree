@@ -131,14 +131,14 @@ namespace SLThree
         public object[] CheckOnDefaults(object[] args)
         {
             if (WithoutDefaults) return args;
-            if (args.Length >= (ParamNames.Length - RequiredArguments)) return args;
+            if (args.Length > (ParamNames.Length - RequiredArguments)) return args;
             var ret = new object[ParamNames.Length];
             Array.Copy(args, ret, args.Length);
             var i = args.Length - RequiredArguments;
             var j = Math.Min(args.Length, DefaultValues.Length);
             var count = Math.Max(ret.Length - args.Length, 0);
             for (var id = 0; id < count; id++)
-                ret[i++] = DefaultValues[j++].GetValue(cached_context);
+                ret[j++] = DefaultValues[i++].GetValue(cached_context);
             return ret;
         }
 
