@@ -47,4 +47,4 @@ namespace TestSLThree
 ```
 
 ### Download
-[![stable](https://img.shields.io/badge/stable-0.8.0-00cc00)](https://github.com/AIexandrKotov/SLThree/releases/tag/0.8.0)
+[Releases](https://github.com/AIexandrKotov/SLThree/releases)
