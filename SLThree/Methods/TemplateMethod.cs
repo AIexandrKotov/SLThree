@@ -387,7 +387,11 @@ namespace SLThree
 
             private interface IComplexedGenericInfo { }
 
-
+            public class InvokeExpressionGeneric : GenericInfo<InvokeExpression>, IComplexedGenericInfo
+            {
+                public InvokeExpressionGeneric(InvokeExpression concrete, int position) : base(concrete, position) { }
+                public override ref BaseExpression GetPlacer() => ref Concrete.Left;
+            }
             public class BinaryOperatorGeneric : GenericInfo<BinaryOperator>, IComplexedGenericInfo
             {
                 public bool IsRight;
@@ -569,12 +573,23 @@ namespace SLThree
                 }
                 base.VisitExpression(expression);
             }
+
             public override void VisitExpression(UnaryOperator expression)
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new UnaryOperatorGeneric(expression, i));
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(InvokeExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.Left is NameExpression name && name.Name == Generics[i])
+                        Infos.Add(new InvokeExpressionGeneric(expression, i));
                 }
                 base.VisitExpression(expression);
             }
