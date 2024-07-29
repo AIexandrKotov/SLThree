@@ -25,13 +25,16 @@ namespace SLThree
 
         public string[] Modificators;
         public BaseExpression FunctionName;
-        public NameExpression[] GenericArguments;
+        public (NameExpression, TemplateMethod.ConstraintDefinition)[] GenericArguments;
         public FunctionArgument[] Arguments;
         public StatementList FunctionBody;
         public TypenameExpression ReturnTypeHint;
+        public bool not_template;
+
+        private bool @params;
         private bool not_native;
 
-        public FunctionDefinition(string[] modificators, BaseExpression name, NameExpression[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
+        public FunctionDefinition(string[] modificators, BaseExpression name, (NameExpression, TemplateMethod.ConstraintDefinition)[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
         {
             Modificators = modificators;
             FunctionName = name;
@@ -41,7 +44,8 @@ namespace SLThree
             ReturnTypeHint = typehint;
             var many = Modificators.GroupBy(x => x).FirstOrDefault(x => x.Count() > 1);
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
-            var @params = modificators.Contains("params");
+            @params = modificators.Contains("params");
+            not_template = !modificators.Contains("template");
             if (@params && Arguments.Length < 1) throw new LogicalError("Params method should have at least one parameter", context);
             var defaultid = args.Length;
             for (var i = 0; i < args.Length; i++)
@@ -78,21 +82,26 @@ namespace SLThree
                     Modificators.Contains("recursive"),
                     !@params,
                     Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray());
-                else Method = new GenericMethod(
-                    FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
-                    Arguments.Select(x => x.Name.Name).ToArray(),
-                    FunctionBody,
-                    Arguments.Select(x => x.Name.TypeHint).ToArray(),
-                    ReturnTypeHint,
-                    null,
-                    !Modificators.Contains("explicit"),
-                    Modificators.Contains("recursive"),
-                    !@params,
-                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
-                    GenericArguments);
+                else
+                    Method = not_template ? (Method)new GenericMethod(
+                        FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
+                        Arguments.Select(x => x.Name.Name).ToArray(),
+                        FunctionBody,
+                        Arguments.Select(x => x.Name.TypeHint).ToArray(),
+                        ReturnTypeHint,
+                        null,
+                        !Modificators.Contains("explicit"),
+                        Modificators.Contains("recursive"),
+                        !@params,
+                        Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
+                        GenericArguments.ConvertAll(x => x.Item1))
+                    : null;
             }
 
-            Method.Abstract = is_abstract;
+            if (Method != null)
+            {
+                Method.Abstract = is_abstract;
+            }
             not_native = !Modificators.Contains("native");
         }
 
@@ -131,7 +140,25 @@ namespace SLThree
         {
             if (not_native)
             {
-                var method = Method.CloneCast();
+                Method method;
+                if (not_template)
+                {
+                    method = Method.CloneCast();
+                }
+                else {
+                    method = new TemplateMethod(
+                    FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
+                    Arguments.Select(x => x.Name.Name).ToArray(),
+                    FunctionBody,
+                    Arguments.Select(x => x.Name.TypeHint).ToArray(),
+                    ReturnTypeHint,
+                    null,
+                    !Modificators.Contains("explicit"),
+                    Modificators.Contains("recursive"),
+                    !@params,
+                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
+                    GenericArguments.Select(x => (x.Item1, x.Item2?.GetConstraint(x.Item1.Name, context) ?? new TemplateMethod.AnyConstraint(x.Item1.SourceContext))).ToArray());
+                }
                 method.@this = context?.wrap;
                 if (FunctionName != null)
                 {
@@ -150,7 +177,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new FunctionDefinition(Modificators.CloneArray(), FunctionName.CloneCast(), GenericArguments.CloneArray(), Arguments.CloneArray(), Modificators.Contains("abstract") ? null : FunctionBody.CloneCast(), ReturnTypeHint.CloneCast(), SourceContext.CloneCast());
+            return new FunctionDefinition(Modificators.CloneArray(), FunctionName.CloneCast(), GenericArguments.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())), Arguments.CloneArray(), Modificators.Contains("abstract") ? null : FunctionBody.CloneCast(), ReturnTypeHint.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

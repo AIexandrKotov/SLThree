@@ -17,6 +17,7 @@ namespace SLThree.Visitors
                 case BaseExpression expression: VisitExpression(expression); return;
                 case BaseStatement statement: VisitStatement(statement); return;
                 case ExecutionContext context: Visit(context); return;
+                case TemplateMethod method: Visit(method); return;
                 case GenericMethod method: Visit(method); return;
                 case Method method: Visit(method); return;
             }
@@ -28,6 +29,11 @@ namespace SLThree.Visitors
                 VisitStatement(method.Statements.Statements[i]);
         }
         public virtual void Visit(GenericMethod method)
+        {
+            for (var i = 0; i < method.Statements.Statements.Length; i++)
+                VisitStatement(method.Statements.Statements[i]);
+        }
+        public virtual void Visit(TemplateMethod method)
         {
             for (var i = 0; i < method.Statements.Statements.Length; i++)
                 VisitStatement(method.Statements.Statements[i]);

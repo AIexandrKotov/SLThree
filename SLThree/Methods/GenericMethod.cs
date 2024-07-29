@@ -20,6 +20,9 @@ namespace SLThree
         public abstract class GenericInfo
         {
             public virtual BaseExpression Placement { get; }
+            /// <summary>
+            /// Индекс дженерика (напр. для &lt;T1, T2&gt; T1 - 0, T2 - 1)
+            /// </summary>
             public int GenericPosition;
 
             public abstract ref TypenameExpression GetPlacer();
@@ -373,8 +376,8 @@ namespace SLThree
             if (!unnamed)
                 sb.Append(Name);
             sb.Append($"<{Generics.JoinIntoString(", ")}>");
-            sb.Append($"({ParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
-            sb.Append($": {ReturnType?.ToString() ?? "any"}");
+            sb.Append($"({DefinitionParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {DefinitionReturnType?.ToString() ?? "any"}");
             return sb.ToString();
         }
 

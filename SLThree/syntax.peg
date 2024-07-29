@@ -278,6 +278,20 @@ primary <BaseExpression> -memoize
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
 
+constraint <TemplateMethod.ConstraintDefinition> -memoize
+    = left:constraint _ "+" _ right:constraint { new TemplateMethod.CombineConstraintDefinition(left, right, state) }
+    / constraint_intersect
+
+constraint_intersect <TemplateMethod.ConstraintDefinition> -memoize
+    = left:constraint_intersect _ "|" _ right:constraint_intersect { new TemplateMethod.IntersectionConstraintDefinition(left, right, state) }
+    / constraint_primary
+
+constraint_primary <TemplateMethod.ConstraintDefinition>
+    = "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
+        new ReturnStatement(func, state), state
+    ) }
+    / name:onlyname_access { new TemplateMethod.NameConstraintDefinition(name, state) }
+
 new_context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context Name: TBase
@@ -531,13 +545,13 @@ method_definition_expression <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
     / generics:method_generic_part?
       arg:func_arg
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], new FunctionArgument[1] {DefaultValueCheck(arg)}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], new FunctionArgument[1] {DefaultValueCheck(arg)}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
     / abstract_method_expression
 method_definition_statement <FunctionDefinition>
@@ -552,14 +566,14 @@ abstract_method_expression <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})?
       {
-          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), null, GetOptional(ret), state)
+          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), null, GetOptional(ret), state)
       }
 method_definition_statement1 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
       }
     
 
@@ -568,11 +582,15 @@ method_definition_nswm <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
       body:block_statement {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new NameExpression[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
       }
 
-method_generic_part <IList<NameExpression>>
-    = "<" _ generic_args:name<1,,"," _> _ ">" _ { generic_args }
+method_generic_part <IList<ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>>
+    = "<" _ generic_args:generic_arg<1,,"," _> _ ">" _ { generic_args }
+
+generic_arg <ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>
+    = generic_name:name _ ":" _ cnstr:constraint { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, cnstr) }
+    / generic_name:name { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, null) }
 
 method_mods_name <Tuple<string[], BaseExpression>>
     = mods:method_modificator<1,,_required_> _required_ name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(mods.ToArray(), name) }
@@ -585,6 +603,7 @@ method_modificator
     / "explicit"
     / "params"
     / "native"
+    / "template"
 
 typename <TypenameExpression>
     = t_node:typename_node _ "<" _ t_list:typename<1,,"," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }
