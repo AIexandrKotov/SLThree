@@ -20,6 +20,8 @@ namespace SLThree
         public abstract class ConstraintDefinition : BaseExpression
         {
             public ConstraintDefinition(SourceContext context) : base(context) { }
+            public ConstraintDefinition(bool priority, SourceContext context) : base(priority, context) { }
+
             public override object GetValue(ExecutionContext context) => throw new NotSupportedException();
             public abstract Constraint GetConstraint(string current_template, ExecutionContext context);
         }
@@ -28,6 +30,11 @@ namespace SLThree
             public BaseExpression Name;
 
             public NameConstraintDefinition(BaseExpression name, SourceContext context) : base(context)
+            {
+                Name = name;
+            }
+
+            public NameConstraintDefinition(BaseExpression name, bool priority, SourceContext context) : base(priority, context)
             {
                 Name = name;
             }
@@ -93,12 +100,17 @@ namespace SLThree
             }
 
             public override string ExpressionToString() => Name.ToString();
-            public override object Clone() => new NameConstraintDefinition(Name.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new NameConstraintDefinition(Name.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
         public class FunctionConstraintDefinition : ConstraintDefinition
         {
             public BaseStatement Statement;
             public FunctionConstraintDefinition(BaseStatement statement, SourceContext context) : base(context)
+            {
+                Statement = statement;
+            }
+
+            public FunctionConstraintDefinition(BaseStatement statement, bool priority, SourceContext context) : base(priority, context)
             {
                 Statement = statement;
             }
@@ -110,13 +122,19 @@ namespace SLThree
 
             public override string ExpressionToString() => $"=> {Statement}";
 
-            public override object Clone() => new FunctionConstraintDefinition(Statement.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new FunctionConstraintDefinition(Statement.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
         public class CombineConstraintDefinition : ConstraintDefinition
         {
             public ConstraintDefinition Left, Right;
 
             public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, SourceContext context) : base(context)
+            {
+                Left = left;
+                Right = right;
+            }
+
+            public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, SourceContext context) : base(priority, context)
             {
                 Left = left;
                 Right = right;
@@ -129,13 +147,19 @@ namespace SLThree
 
             public override string ExpressionToString() => $"{Left} + {Right}";
 
-            public override object Clone() => new CombineConstraintDefinition(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new CombineConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
         public class IntersectionConstraintDefinition : ConstraintDefinition
         {
             public ConstraintDefinition Left, Right;
 
             public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, SourceContext context) : base(context)
+            {
+                Left = left;
+                Right = right;
+            }
+
+            public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, SourceContext context) : base(priority, context)
             {
                 Left = left;
                 Right = right;
@@ -148,7 +172,7 @@ namespace SLThree
 
             public override string ExpressionToString() => $"{Left} | {Right}";
 
-            public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
 
         public abstract class Constraint : ICloneable

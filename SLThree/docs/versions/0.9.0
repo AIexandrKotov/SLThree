@@ -7,6 +7,12 @@ Language:
           `<T1: value + i64 | u64, T2: => T2 >= 10>() => T1 + T2;`
         - Make generic
           `slt.make_template(f, -[2]);`
+        - New entity for code generation - Macros
+          Macros clearly store the context in which they were created
+          `$(2 + 2)`, `${using linq;}`
+          Assignation by variable reference macros
+          `a = 2; ra = $(a); ra $= 4; a == 4;`
+          This reference can also be passed as generic parameter
     - Blocks `{...}` is expressions now
     - Dictionary initializers new syntax:
       `new dict { 1: 2, 3: 4 }`

@@ -291,7 +291,8 @@ constraint_intersect <TemplateMethod.ConstraintDefinition> -memoize
     / constraint_primary
 
 constraint_primary <TemplateMethod.ConstraintDefinition>
-    = "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
+    = "(" _ cnstr:constraint _ ")" { (TemplateMethod.ConstraintDefinition)cnstr.RaisePriority() }
+    / "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
         new ReturnStatement(func, state), state
     ) }
     / name:onlyname_access { new TemplateMethod.NameConstraintDefinition(name, state) }
