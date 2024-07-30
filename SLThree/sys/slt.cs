@@ -27,7 +27,7 @@ namespace SLThree.sys
         public static Method make_generic<T1, T2>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2) });
         public static Method make_generic<T1, T2, T3>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1), typeof(T2), typeof(T3) });
         public static Method make_template(TemplateMethod method, object[] args)
-            => method.MakeGenericMethod(args.ConvertAll(x => (TemplateMethod.Apply.Runtime, x)));
+            => method.MakeGenericMethod(args.ConvertAll(x => (TemplateMethod.GenericMaking.Constraint, x)));
         internal static bool is_abstract(StatementList statement)
         {
             return statement.Statements.Length > 0

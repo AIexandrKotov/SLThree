@@ -4,6 +4,7 @@ using SLThree.sys;
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -184,54 +185,67 @@ namespace SLThree
             public Constraint(bool priority, SourceContext context) => (SourceContext, PrioriryRaised) = (context, priority);
             public override string ToString() => PrioriryRaised ? $"({ConstraintToString()})" : ConstraintToString();
             public abstract string ConstraintToString();
-            public abstract bool Applicable(object target);
+            public abstract bool Applicable(GenericMaking making, object target);
+            public abstract GenericMakingConstraint GetMakingConstraint();
+            public static GenericMakingConstraint CombineMakingConstraint(GenericMakingConstraint left, GenericMakingConstraint right)
+            {
+                return left & right;
+            }
+            public static GenericMakingConstraint IntersectionMakingConstraint(GenericMakingConstraint left, GenericMakingConstraint right)
+            {
+                return left | right;
+            }
             public abstract object Clone();
         }
-
         public class AnyConstraint : Constraint
         {
             public AnyConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"any";
 
-            public override bool Applicable(object target) => true;
+            public override bool Applicable(GenericMaking making, object target) => true;
 
             public override object Clone() => new AnyConstraint(SourceContext.CloneCast());
+
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class ValueConstraint : Constraint
         {
             public ValueConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"value";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return !(target is BaseExpression);
+                return making.HasFlag(GenericMaking.AsValue);
             }
 
             public override object Clone() => new ValueConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowValues;
         }
         public class NameConstraint : Constraint
         {
             public NameConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"name";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return target is NameExpression;
+                return making.HasFlag(GenericMaking.AsName);
             }
 
             public override object Clone() => new NameConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowNames;
         }
         public class TypeConstraint : Constraint
         {
             public TypeConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"type";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return target is TypenameExpression;
+                return making.HasFlag(GenericMaking.AsType);
             }
 
             public override object Clone() => new TypeConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowTypes;
         }
         public class ConcrecteTypeConstraint : Constraint
         {
@@ -239,36 +253,39 @@ namespace SLThree
             public ConcrecteTypeConstraint(Type type, SourceContext context) : base(context) => Type = type;
             public override string ConstraintToString() => $"{Type.GetTypeString()}";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
                 return target?.GetType().IsType(Type) ?? false;
             }
 
             public override object Clone() => new ConcrecteTypeConstraint(Type, SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class ExprConstraint : Constraint
         {
             public ExprConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"expr";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return target is BaseExpression;
+                return making.HasFlag(GenericMaking.AsExpression);
             }
 
             public override object Clone() => new ExprConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowExpressions;
         }
         public class CodeConstraint : Constraint
         {
             public CodeConstraint(SourceContext context) : base(context) { }
             public override string ConstraintToString() => $"code";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return target is BlockExpression;
+                return making.HasFlag(GenericMaking.AsCode);
             }
 
             public override object Clone() => new CodeConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowCode;
         }
         public class CombineConstraint : Constraint
         {
@@ -281,14 +298,15 @@ namespace SLThree
                 Right = right;
             }
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return Left.Applicable(target) && Right.Applicable(target);
+                return Left.Applicable(making, target) && Right.Applicable(making, target);
             }
 
             public override string ConstraintToString() => $"{Left} + {Right}";
 
             public override object Clone() => new CombineConstraint(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => CombineMakingConstraint(Left.GetMakingConstraint(), Right.GetMakingConstraint());
         }
         public class IntersectionConstraint : Constraint
         {
@@ -300,12 +318,13 @@ namespace SLThree
                 Left = left;
                 Right = right;
             }
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return Left.Applicable(target) || Right.Applicable(target);
+                return Left.Applicable(making, target) || Right.Applicable(making, target);
             }
             public override string ConstraintToString() => $"{Left} | {Right}";
             public override object Clone() => new IntersectionConstraint(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => IntersectionMakingConstraint(Left.GetMakingConstraint(), Right.GetMakingConstraint());
         }
         public class FunctionConstraint : Constraint
         {
@@ -316,12 +335,13 @@ namespace SLThree
             public readonly Method Predicate;
             public override string ConstraintToString() => $"=> ...";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
                 return Predicate.Invoke(target).Cast<bool>();
             }
 
             public override object Clone() => new FunctionConstraint(Predicate.CloneCast(), SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class CustomConstraint : Constraint
         {
@@ -336,12 +356,13 @@ namespace SLThree
 
             public override string ConstraintToString() => $"constraint {Name}: {Constraint}";
 
-            public override bool Applicable(object target)
+            public override bool Applicable(GenericMaking making, object target)
             {
-                return Constraint.Applicable(target);
+                return Constraint.Applicable(making, target);
             }
 
             public override object Clone() => new CustomConstraint(Name, Constraint.CloneCast(), SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => Constraint.GetMakingConstraint();
         }
 
         public abstract class GenericInfo
@@ -352,100 +373,63 @@ namespace SLThree
             /// </summary>
             public int GenericPosition;
 
-            private static Dictionary<Type, Func<BaseExpression, int, GenericInfo>> GenericConstructors = 
-                    typeof(GenericInfo)
-                    .GetNestedTypes()
-                    .Where(x => !x.GetInterfaces().Contains(typeof(IComplexedGenericInfo)))
-                    .Select(x => (x, x.BaseType?.GetGenericArguments()[0]))
-                    .ToDictionary(x => x.Item2, x =>
-                    {
-                        var method = new DynamicMethod($"Constructor${x.x.Name}", typeof(GenericInfo), new Type[] { typeof(BaseExpression), typeof(int) });
-                        var constructor = x.x.GetConstructor(new Type[2] { x.Item2, typeof(int) });
-                        var il = method.GetILGenerator();
-
-                        il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Isinst, x.x);
-                        il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Newobj, constructor);
-                        il.Emit(OpCodes.Ret);
-
-                        return (Func<BaseExpression, int, GenericInfo>)method.CreateDelegate(typeof(Func<BaseExpression, int, GenericInfo>));
-                    });
-
-            public abstract ref BaseExpression GetPlacer();
-            public virtual void MakeGeneric(BaseExpression expression) => GetPlacer() = expression;
-            public void MakeValue(object any) => MakeGeneric(new StaticExpression(any));
-
-
-            public static GenericInfo GetGenericInfo(BaseExpression expression, int pos)
+            public static TypenameExpression AsType(object any)
             {
-                var type = expression.GetType();
-                if (GenericConstructors.TryGetValue(type, out var info))
-                    return info.Invoke(expression, pos);
-                else throw new RuntimeError($"Templates not supported in {type.GetTypeString()}", expression.SourceContext);
+                if (any is ClassAccess ca) return new TypenameGenericPart() { Type = ca.Name };
+                return new TypenameGenericPart() { Type = (Type)any };
+            }
+            public static NameExpression AsName(object any)
+            {
+                if (any is NameExpression expr) return expr;
+                if (any is StringLiteral str) return new NameExpression((string)str.Value, str.SourceContext);
+                return new NameExpression(any.ToString(), null);
+            }
+            public static BaseExpression AsExpression(object any)
+            {
+                if (any is BaseExpression expr) return expr;
+                throw new RuntimeError($"{any} is not expression", null);
+            }
+            public static BaseStatement AsStatement(object any)
+            {
+                if (any is BaseStatement st1) return st1;
+                if (any is BlockExpression be) return new StatementList(be.Statements, be.SourceContext.CloneCast());
+                throw new RuntimeError($"{any} is not code", null);
+            }
+            public static BaseExpression AsStatementList(BaseStatement statement)
+            {
+                if (statement is StatementList sl)
+                    return new BlockExpression(sl.Statements, sl.SourceContext);
+                return new BlockExpression(new BaseStatement[1] { statement }, statement.SourceContext);
             }
 
-            private interface IComplexedGenericInfo { }
-
-            public class InvokeExpressionGeneric : GenericInfo<InvokeExpression>, IComplexedGenericInfo
+            public abstract void MakeValue(object any);
+            public abstract void MakeType(TypenameExpression type);
+            public abstract void MakeName(NameExpression name);
+            public abstract void MakeExpression(BaseExpression expression);
+            public abstract void MakeCode(BaseStatement statement);
+            public void Make(GenericMaking making, object any)
             {
-                public InvokeExpressionGeneric(InvokeExpression concrete, int position) : base(concrete, position) { }
-                public override ref BaseExpression GetPlacer() => ref Concrete.Left;
-            }
-            public class BinaryOperatorGeneric : GenericInfo<BinaryOperator>, IComplexedGenericInfo
-            {
-                public bool IsRight;
-
-                public BinaryOperatorGeneric(BinaryOperator concrete, int position) : base(concrete, position) { }
-                
-                public override void MakeGeneric(BaseExpression expression)
+                switch (making)
                 {
-                    if (IsRight) Concrete.Right = expression;
-                    else Concrete.Left = expression;
+                    case GenericMaking.AsValue:
+                        MakeValue(any);
+                        return;
+                    case GenericMaking.AsType:
+                        MakeType(AsType(any));
+                        return;
+                    case GenericMaking.AsName:
+                        MakeName(AsName(any));
+                        return;
+                    case GenericMaking.AsExpression:
+                        MakeExpression(AsExpression(any)); 
+                        return;
+                    case GenericMaking.AsCode:
+                        MakeCode(AsStatement(any));
+                        return;
                 }
-
-                public override ref BaseExpression GetPlacer()
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            public class UnaryOperatorGeneric : GenericInfo<UnaryOperator>
-            {
-                public UnaryOperatorGeneric(UnaryOperator concrete, int position) : base(concrete, position) { }
-
-                public override ref BaseExpression GetPlacer() => ref Concrete.Left;
             }
         }
-        public static class SupraGenericInfo
-        {
-            public class ExpressionGeneric : SupraGenericInfo<ExpressionStatement>
-            {
-                public ExpressionGeneric(ExpressionStatement concrete, int position) : base(concrete, position)
-                {
-                }
-
-                public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
-            }
-            public class ReturnGeneric : SupraGenericInfo<ReturnStatement>
-            {
-                public ReturnGeneric(ReturnStatement concrete, int position) : base(concrete, position)
-                {
-                }
-
-                public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
-            }
-        }
-        public abstract class SupraGenericInfo<T> : GenericInfo where T: BaseStatement
-        {
-            public T Concrete;
-            public sealed override object Placement => Concrete;
-            public SupraGenericInfo(T concrete, int position)
-            {
-                Concrete = concrete;
-                GenericPosition = position;
-            }
-        }
-        public abstract class GenericInfo<T> : GenericInfo where T : BaseExpression
+        public abstract class GenericInfo<T> : GenericInfo where T : class
         {
             public T Concrete;
             public sealed override object Placement => Concrete;
@@ -455,24 +439,244 @@ namespace SLThree
                 GenericPosition = position;
             }
         }
-        public class GenericMethodSignature : GenericInfo
+        public abstract class ExprGenericInfo<T> : GenericInfo<T> where T : BaseExpression
         {
-            public TemplateMethod Method;
-            public int position;
-            public override void MakeGeneric(BaseExpression expression)
+            public ExprGenericInfo(T concrete, int position) : base(concrete, position) { }
+        }
+        public abstract class CodeGenericInfo<T> : GenericInfo<T> where T: BaseStatement
+        {
+            public CodeGenericInfo(T concrete, int position) : base(concrete, position) { }
+        }
+        public abstract class SameBehaviourExprGenericInfo<T> : ExprGenericInfo<T> where T : BaseExpression
+        {
+            public SameBehaviourExprGenericInfo(T concrete, int position) : base(concrete, position) { }
+
+            public abstract ref BaseExpression GetPlacer();
+
+            public override void MakeValue(object any)
             {
-                if (position == -1) Method.ReturnType = expression as TypenameExpression;
-                else Method.ParamTypes[position] = expression as TypenameExpression;
+                GetPlacer() = new StaticExpression(any);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                GetPlacer() = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                GetPlacer() = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                GetPlacer() = expression;
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                GetPlacer() = AsStatementList(statement);
+            }
+        }
+        public abstract class SameBehaviourCodeGenericInfo<T> : CodeGenericInfo<T> where T : BaseStatement
+        {
+            public SameBehaviourCodeGenericInfo(T concrete, int position) : base(concrete, position) { }
+
+            public abstract ref BaseExpression GetPlacer();
+
+            public override void MakeValue(object any)
+            {
+                GetPlacer() = new StaticExpression(any);
+            }
+            
+            public override void MakeType(TypenameExpression type)
+            {
+                GetPlacer() = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                GetPlacer() = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                GetPlacer() = expression;
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                GetPlacer() = AsStatementList(statement);
+            }
+        }
+        #region GenericInfoDefinitions
+
+        public class InvokeExpressionNamePartGeneric : SameBehaviourExprGenericInfo<InvokeExpression>
+        {
+            public InvokeExpressionNamePartGeneric(InvokeExpression concrete, int position) : base(concrete, position) { }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Left;
+        }
+        public class InvokeExpressionArgPartGeneric : SameBehaviourExprGenericInfo<InvokeExpression>
+        {
+            public int ArgumentPosition;
+            public InvokeExpressionArgPartGeneric(InvokeExpression concrete, int position, int argument) : base(concrete, position) {
+                ArgumentPosition = argument;
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Arguments[ArgumentPosition];
+        }
+        public class BinaryOperatorGeneric : SameBehaviourExprGenericInfo<BinaryOperator>
+        {
+            public bool IsRight;
+
+            public BinaryOperatorGeneric(BinaryOperator concrete, int position, bool is_right) : base(concrete, position) {
+                IsRight = is_right;
             }
 
             public override ref BaseExpression GetPlacer()
             {
-                throw new NotImplementedException();
+                if (IsRight) return ref Concrete.Right;
+                else return ref Concrete.Left;
+            }
+        }
+        public class UnaryOperatorGeneric : SameBehaviourExprGenericInfo<UnaryOperator>
+        {
+            public UnaryOperatorGeneric(UnaryOperator concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Left;
+        }
+        public class CastExpressionLeftPartGeneric : SameBehaviourExprGenericInfo<CastExpression>
+        {
+            public CastExpressionLeftPartGeneric(CastExpression concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Left;
+        }
+        public class CastExpressionRightPartGeneric : ExprGenericInfo<CastExpression>
+        {
+            public CastExpressionRightPartGeneric(CastExpression concrete, int position) : base(concrete, position) { }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.Type = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.Type = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+
+        public class ReturnStatementGeneric : SameBehaviourCodeGenericInfo<ReturnStatement>
+        {
+            public ReturnStatementGeneric(ReturnStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
+        }
+        public class ExpressionStatementGeneric : SameBehaviourCodeGenericInfo<ExpressionStatement>
+        {
+            public ExpressionStatementGeneric(ExpressionStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
+        }
+        #endregion
+
+        public class GenericMethodSignature : GenericInfo
+        {
+            public TemplateMethod Method;
+            public int position;
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                if (position == -1) Method.ReturnType = type;
+                else Method.ParamTypes[position] = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                if (position == -1) Method.ReturnType = new TypenameExpression(name, name.SourceContext);
+                else Method.ParamTypes[position] = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                if (position == -1) Method.ReturnType = new TypenameExpression(expression, expression.SourceContext);
+                else Method.ParamTypes[position] = new TypenameExpression(expression, expression.SourceContext);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
             }
         }
         internal class GenericFinder : AbstractVisitor
         {
             public string[] Generics;
+            public GenericMakingConstraint[] PredefinedConstraints;
+            public List<(int, GenericMakingConstraint, GenericMakingConstraint, ExecutionContext.IExecutable)> GainedConstraints = new List<(int, GenericMakingConstraint, GenericMakingConstraint, ExecutionContext.IExecutable)>();
+
+            private void StealConstraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
+            {
+                var nc = PredefinedConstraints[position];
+                if (nc.HasFlag(constraint))
+                    nc ^= constraint;
+                if (nc == 0)
+                    throw new ContraitConstraint(Generics[position], constraint, executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
+                FixContraint(position, nc, executable);
+            }
+            private void FixContraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
+            {
+                if (!PredefinedConstraints[position].HasFlag(constraint))
+                    throw new ContraitConstraint(Generics[position], constraint, executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
+                else GainConstraint(position, constraint, executable);
+            }
+            private GenericMakingConstraint BinarySum(IEnumerable<GenericMakingConstraint> constraints)
+            {
+                var sum = (GenericMakingConstraint)0;
+                foreach (var x in constraints)
+                    sum |= x;
+                return sum;
+            }
+            private void CheckAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
+            {
+                if (contraints.Any(x => !PredefinedConstraints[position].HasFlag(x)))
+                    throw new ContraitConstraint(Generics[position], contraints.First(x => !PredefinedConstraints[position].HasFlag(x)), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
+                else GainConstraint(position, BinarySum(contraints), executable);
+            }
+            private void GainConstraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
+            {
+                for (var (i, j) = ((int)PredefinedConstraints[position], (int)constraint); j > 0; i >>= 1, j >>= 1)
+                {
+                    if ((i & 0b1) > (j & 0b1))
+                    {
+                        GainedConstraints.Add((position, PredefinedConstraints[position], constraint, executable));
+                        PredefinedConstraints[position] = constraint;
+                        break;
+                    }
+                }
+            }
+
             public TemplateMethod Method;
 
             public List<GenericInfo> Infos = new List<GenericInfo>();
@@ -483,7 +687,7 @@ namespace SLThree
                 {
                     if (statement is ExpressionStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
                     {
-                        Infos.Add(new SupraGenericInfo.ExpressionGeneric(expr, i));
+                        Infos.Add(new ExpressionStatementGeneric(expr, i));
                     }
                 }
                 base.VisitStatement(statement);
@@ -495,7 +699,7 @@ namespace SLThree
                 {
                     if (statement is ReturnStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
                     {
-                        Infos.Add(new SupraGenericInfo.ReturnGeneric(expr, i));
+                        Infos.Add(new ReturnStatementGeneric(expr, i));
                     }
                 }
                 base.VisitStatement(statement);
@@ -509,6 +713,7 @@ namespace SLThree
                     {
                         if (Executables.Count == 0)
                         {
+                            CheckAllow(i, expression, GenericMakingConstraint.AllowTypes);
                             Infos.Add(new GenericMethodSignature()
                             {
                                 Method = Method,
@@ -517,45 +722,25 @@ namespace SLThree
                             });
                             break;
                         }
-                        var place = Executables[Executables.Count - 1] as BaseExpression;
-                        if (place == expression) place = Executables[Executables.Count - 2] as BaseExpression;
-                        switch (place)
-                        {
-                            /*case TypenameExpression typename:
-                                for (var j = 0; j < typename.Generics.Length; j++)
-                                    if (typename.Generics[j].Typename?.Cast<NameExpression>().Name == Generics[i])
-                                    {
-                                        Infos.Add(new Typename(typename, i, j));
-                                    }
-                                break;
-                            case InvokeGenericExpression invokeGeneric:
-                                for (var j = 0; j < invokeGeneric.GenericArguments.Length; j++)
-                                    if (invokeGeneric.GenericArguments[j].Typename?.Cast<NameExpression>().Name == Generics[i])
-                                    {
-                                        Infos.Add(new TemplateInfo.InvokeGenericExpression(invokeGeneric, i, j));
-                                    }
-                                break;
-                            case ReflectionExpression reflection:
-                                if (reflection.MethodGenericArguments != null)
-                                    for (var j = 0; j < reflection.MethodGenericArguments.Length; j++)
-                                        if (reflection.MethodGenericArguments[j].Typename?.Cast<NameExpression>().Name == Generics[i])
-                                        {
-                                            Infos.Add(new Reflection(reflection, i, true, j));
-                                        }
-                                if (reflection.MethodArguments != null)
-                                    for (var j = 0; j < reflection.MethodArguments.Length; j++)
-                                        if (reflection.MethodArguments[j].Typename?.Cast<NameExpression>().Name == Generics[i])
-                                        {
-                                            Infos.Add(new Reflection(reflection, i, false, j));
-                                        }
-                                break;*/
-                            default:
-                                Infos.Add(GetGenericInfo(place, i));
-                                break;
-                        }
                     }
                     base.VisitExpression(expression);
                 }
+            }
+
+            public override void VisitExpression(MemberAccess expression)
+            {
+                VisitExpression(expression as BinaryOperator);
+            }
+            public override void VisitExpression(CastExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.Left is NameExpression name1 && name1.Name == Generics[i])
+                    {
+                        Infos.Add(new CastExpressionLeftPartGeneric(expression, i));
+                    }
+                }
+                base.VisitExpression(expression);
             }
 
             public override void VisitExpression(BinaryOperator expression)
@@ -564,11 +749,16 @@ namespace SLThree
                 {
                     if (expression.Left is NameExpression name && name.Name == Generics[i]) 
                     {
-                        Infos.Add(new BinaryOperatorGeneric(expression, i) { IsRight = false });
+                        Infos.Add(new BinaryOperatorGeneric(expression, i, false));
                     }
-                    if (expression.Right is NameExpression name2 && name2.Name == Generics[i])
+                    if (expression is BinaryIs && expression.Right is TypenameExpression name2 && name2.Typename.ToString() == Generics[i])
                     {
-                        Infos.Add(new BinaryOperatorGeneric(expression, i) { IsRight = true });
+                        CheckAllow(i, expression.Right, GenericMakingConstraint.AllowTypes);
+                        Infos.Add(new BinaryOperatorGeneric(expression, i, true));
+                    }
+                    if (expression.Right is NameExpression name3 && name3.Name == Generics[i])
+                    {
+                        Infos.Add(new BinaryOperatorGeneric(expression, i, true));
                     }
                 }
                 base.VisitExpression(expression);
@@ -589,7 +779,15 @@ namespace SLThree
                 for (var i = 0; i < Generics.Length; i++)
                 {
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
-                        Infos.Add(new InvokeExpressionGeneric(expression, i));
+                    {
+                        StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
+                        Infos.Add(new InvokeExpressionNamePartGeneric(expression, i));
+                    }
+                    for (var j = 0; j < expression.Arguments.Length; j++)
+                    {
+                        if (expression.Arguments[j] is NameExpression arg_name && arg_name.Name == Generics[i])
+                            Infos.Add(new InvokeExpressionArgPartGeneric(expression, i, j));
+                    }
                 }
                 base.VisitExpression(expression);
             }
@@ -616,80 +814,90 @@ namespace SLThree
                 base.Visit(method);
             }
 
-            public static List<GenericInfo> FindAll(TemplateMethod method)
+            public static (List<GenericInfo>, GenericMakingConstraint[]) FindAll(TemplateMethod method)
             {
                 var gf = new GenericFinder();
                 gf.Generics = method.Generics.ConvertAll(x => x.Item1.Name);
+                gf.PredefinedConstraints = method.Generics.ConvertAll(x => x.Item2.GetMakingConstraint());
                 gf.Method = method;
                 gf.Visit(method);
-                return gf.Infos;
+                return (gf.Infos, gf.PredefinedConstraints);
             }
         }
 
-        public enum Apply
+        [Flags]
+        public enum GenericMakingConstraint
         {
-            Expression = 0,
-            Value = 1,
-            Type = 2,
-            Runtime = 0xFF,
+            AllowNames = 0x1,
+            AllowTypes = 0x2,
+            AllowExpressions = 0x4,
+            AllowCode = 0x8,
+            AllowValues = 0x10,
+
+            AllowAll = AllowNames | AllowTypes | AllowExpressions | AllowCode | AllowValues,
+        }
+        public enum GenericMaking
+        {
+            AsValue = 0,
+            AsType = 1,
+            AsName = 2,
+            AsExpression = 3,
+            AsCode = 4,
+
+            Constraint = 5,
+            Runtime = 6,
+        }
+        public static GenericMaking GetMakingBasedOnConstraint(GenericMakingConstraint constraint)
+        {
+            if (constraint.HasFlag(GenericMakingConstraint.AllowValues))
+                return GenericMaking.AsValue;
+            if (constraint.HasFlag(GenericMakingConstraint.AllowCode))
+                return GenericMaking.AsCode;
+            if (constraint.HasFlag(GenericMakingConstraint.AllowExpressions))
+                return GenericMaking.AsExpression;
+            if (constraint.HasFlag(GenericMakingConstraint.AllowNames))
+                return GenericMaking.AsName;
+            if (constraint.HasFlag(GenericMakingConstraint.AllowTypes))
+                return GenericMaking.AsType;
+            throw new ArgumentException(nameof(constraint));
+        }
+        public static GenericMaking GetMakingBasedOnRuntime(GenericMakingConstraint constraint, object value)
+        {
+            return GenericMaking.AsValue;
         }
 
         public TemplateMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, (NameExpression, Constraint)[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values)
         {
             Generics = generics;
-            GenericsInfo = GenericFinder.FindAll(this);
+            (GenericsInfo, MakingConstraints) = GenericFinder.FindAll(this);
             DefinitionParamTypes = ParamTypes.CloneArray();
-            DefinitionReturnType = ReturnType.CloneCast();
+            DefinitionReturnType = ReturnType.CloneCast(); 
         }
 
         public readonly TypenameExpression[] DefinitionParamTypes;
         public readonly TypenameExpression DefinitionReturnType;
 
-        public Method MakeGenericMethod((Apply, object)[] args)
+        public Method MakeGenericMethod((GenericMaking, object)[] args)
         {
             for (var i = 0; i < Generics.Length; i++)
-                if (!Generics[i].Item2.Applicable(args[i].Item2))
+                if (!Generics[i].Item2.Applicable(args[i].Item1, args[i].Item2))
                     throw new RuntimeError($"{args[i].Item2.GetType().GetTypeString()} {args[i].Item2} doesn't fit the \"{Generics[i].Item2}\"", Generics[i].Item2.SourceContext);
             foreach (var x in GenericsInfo)
             {
                 var pos = x.GenericPosition;
-                switch (args[pos].Item1)
-                {
-                    case Apply.Expression:
-                        x.MakeGeneric(args[pos].Item2 as BaseExpression);
-                        break;
-                    case Apply.Type:
-                        x.MakeGeneric(args[pos].Item2 as TypenameExpression);
-                        break;
-                    case Apply.Value:
-                        x.MakeValue(args[pos].Item2);
-                        break;
-                    case Apply.Runtime:
-                        {
-                            switch (args[pos].Item2)
-                            {
-                                case TypenameExpression typename:
-                                    x.MakeGeneric(typename);
-                                    break;
-                                case BaseExpression expression:
-                                    x.MakeGeneric(expression);
-                                    break;
-                                case Type type:
-                                    x.MakeGeneric(new TypenameGenericPart() { Type = type });
-                                    break;
-                                default:
-                                    x.MakeValue(args[pos].Item2);
-                                    break;
-                            }
-                            break;
-                        }
-                }
+                var making = args[pos].Item1;
+                if (making == GenericMaking.Constraint)
+                    making = GetMakingBasedOnConstraint(MakingConstraints[pos]);
+                else if (making == GenericMaking.Runtime)
+                    making = GetMakingBasedOnRuntime(MakingConstraints[pos], args[pos].Item2);
+                x.Make(making, args[pos].Item2);
             }
-                
+
             return base.CloneWithNewName(Name);
         }
 
         public readonly (NameExpression, Constraint)[] Generics;
+        public readonly GenericMakingConstraint[] MakingConstraints;
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -715,7 +923,7 @@ namespace SLThree
 
         public override Method CloneWithNewName(string name)
         {
-            return new TemplateMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
+            return new TemplateMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), DefinitionParamTypes.CloneArray(), DefinitionReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
             {
                 Abstract = Abstract
             };

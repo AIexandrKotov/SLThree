@@ -25,7 +25,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             if (normal) return Wrapper.UnwrapCast(Type.GetValue(context).Cast<Type>(), Left.GetValue(context));
-            else return Left.DropPriority();
+            else return Left.CloneCast().DropPriority();
         }
 
         public override object Clone()
