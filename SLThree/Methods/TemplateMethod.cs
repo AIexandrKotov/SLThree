@@ -54,7 +54,8 @@ namespace SLThree
                         return (Constraint)o;
                 }
             }
-            public override Constraint GetConstraint(string current_template, ExecutionContext context)
+
+            public Constraint GetNameConstraint(BaseExpression Name, string current_template, ExecutionContext context)
             {
                 if (Name is NameExpression name)
                 {
@@ -77,27 +78,20 @@ namespace SLThree
                                 return new CodeConstraint(SourceContext.CloneCast());
                             default:
                                 {
-                                    var type = name.Name.ToType();
-                                    if (type == null) throw new RuntimeError($"Constraint {name.Name} not found", SourceContext);
-                                    else return new ConcrecteTypeConstraint(type, SourceContext.CloneCast());
+                                    return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
                                 }
                         }
                     }
-                    else return TakeConstraint(v.Item1);
+                    return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
                 }
-                else if (Name is MemberAccess memberAccess)
-                {
-                    var val = memberAccess.GetValue(context);
-                    if (val == null)
-                    {
-                        var name2 = memberAccess.ToString();
-                        var type = name2.ToType();
-                        if (type == null) throw new RuntimeError($"Constraint {name2} not found", SourceContext);
-                        else return new ConcrecteTypeConstraint(type, SourceContext.CloneCast());
-                    }
-                    else return TakeConstraint(val);
-                }
+                else return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
                 throw new RuntimeError($"Constraint {Name} not found", SourceContext);
+            }
+            public override Constraint GetConstraint(string current_template, ExecutionContext context)
+            {
+                if (Name is TypenameExpression te && (te.Generics?.Length ?? 0) == 0 && !te.is_array)
+                    return GetNameConstraint(te.Typename, current_template, context);
+                else return new ConcrecteTypeConstraint((Type)Name.GetValue(context), SourceContext.CloneCast());
             }
 
             public override string ExpressionToString() => Name.ToString();

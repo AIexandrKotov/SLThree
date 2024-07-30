@@ -295,6 +295,7 @@ constraint_primary <TemplateMethod.ConstraintDefinition>
     / "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
         new ReturnStatement(func, state), state
     ) }
+    / name:typename { new TemplateMethod.NameConstraintDefinition(name, state) }
     / name:onlyname_access { new TemplateMethod.NameConstraintDefinition(name, state) }
 
 new_context_expression <BaseExpression>
