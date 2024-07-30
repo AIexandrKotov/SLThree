@@ -11,7 +11,7 @@ namespace SLThree
         public TypenameExpression[] Generics;
 
         private string type_str;
-        private bool is_array;
+        internal bool is_array;
         public int array_inds = 1;
 
         private bool type_cached;
@@ -52,10 +52,10 @@ namespace SLThree
             if (static_type != null)
                 return static_type;
             static_type = type_str.ToType();
-            if (static_type == null)
-                throw new LogicalError($"Type \"{type_str}\" not found", SourceContext);
             if (!is_array)
             {
+                if (static_type == null)
+                    throw new LogicalError($"Type \"{type_str}\" not found", SourceContext);
                 if (Generics == null) return static_type;
                 return static_type = static_type.MakeGenericType(Generics.ConvertAll(x => x.GetStaticValue()));
             }
