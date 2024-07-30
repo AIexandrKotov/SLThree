@@ -30,3 +30,4 @@ Bugfixes:
     - Ignoring deffered code in static (#129)
     - Ignoring indexed properties in wrappers (#130)
     - Generic supporting for 0.8 initializers (#131)
+    - Arrays supporting in static typeof (#132)
