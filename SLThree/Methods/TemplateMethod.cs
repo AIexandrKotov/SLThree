@@ -645,18 +645,11 @@ namespace SLThree
                     throw new ContraitConstraint(Generics[position], constraint, executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
                 else GainConstraint(position, constraint, executable);
             }
-            private GenericMakingConstraint BinarySum(IEnumerable<GenericMakingConstraint> constraints)
-            {
-                var sum = (GenericMakingConstraint)0;
-                foreach (var x in constraints)
-                    sum |= x;
-                return sum;
-            }
             private void CheckAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
             {
                 if (contraints.Any(x => !PredefinedConstraints[position].HasFlag(x)))
                     throw new ContraitConstraint(Generics[position], contraints.First(x => !PredefinedConstraints[position].HasFlag(x)), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
-                else GainConstraint(position, BinarySum(contraints), executable);
+                else GainConstraint(position, contraints.Aggregate((x, y) => x | y), executable);
             }
             private void GainConstraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
             {
