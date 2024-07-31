@@ -79,6 +79,20 @@ namespace SLThree.Visitors
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
                 case UsingExpression expr: VisitExpression(expr); return;
+                case TemplateMethod.ConstraintDefinition expr: VisitConstraint(expr); return;
+            }
+            Executables.Remove(expression);
+        }
+
+        public void VisitConstraint(TemplateMethod.ConstraintDefinition expression)
+        {
+            Executables.Add(expression);
+            switch (expression)
+            {
+                case TemplateMethod.NameConstraintDefinition expr: VisitConstraint(expr); return;
+                case TemplateMethod.FunctionConstraintDefinition expr: VisitConstraint(expr); return;
+                case TemplateMethod.CombineConstraintDefinition expr: VisitConstraint(expr); return;
+                case TemplateMethod.IntersectionConstraintDefinition expr: VisitConstraint(expr); return;
             }
             Executables.Remove(expression);
         }
@@ -161,6 +175,22 @@ namespace SLThree.Visitors
         public virtual void VisitExpression(InvokeExpression expression)
         {
             VisitExpression(expression.Left);
+            foreach (var x in expression.Arguments)
+            {
+                VisitExpression(x);
+            }
+        }
+
+        public void VisitExpression(InvokeTemplateExpression expression)
+        {
+            VisitExpression(expression.Left);
+            Executables.Add(expression);
+            foreach (var x in expression.GenericArguments)
+            {
+                VisitExpression(x.Item1);
+                VisitExpression(x.Item2);
+            }
+            Executables.Remove(expression);
             foreach (var x in expression.Arguments)
             {
                 VisitExpression(x);
@@ -413,7 +443,47 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(StaticExpression expression)
         {
-            VisitExpression(expression.Right);
+            if (!expression.IsArtificial)
+                VisitExpression(expression.Right);
+        }
+
+        public void VisitExpression(BlockExpression expression)
+        {
+            for (var i = 0; i < expression.Statements.Length; i++)
+                VisitStatement(expression.Statements[i]);
+        }
+
+        public void VisitExpression(FunctionArgument expression)
+        {
+            VisitExpression(expression.Name);
+            VisitExpression(expression.DefaultValue);
+        }
+
+        public void VisitExpression(InvokeTemplateExpression.GenericMakingDefinition expression)
+        {
+            VisitExpression(expression.Expression);
+        }
+
+        public void VisitConstraint(TemplateMethod.NameConstraintDefinition expression)
+        {
+            VisitExpression(expression.Name);
+        }
+
+        public void VisitConstraint(TemplateMethod.FunctionConstraintDefinition expression)
+        {
+            VisitStatement(expression.Statement);
+        }
+
+        public void VisitConstraint(TemplateMethod.CombineConstraintDefinition expression)
+        {
+            VisitConstraint(expression.Left);
+            VisitConstraint(expression.Right);
+        }
+
+        public void VisitConstraint(TemplateMethod.IntersectionConstraintDefinition expression)
+        {
+            VisitConstraint(expression.Left);
+            VisitConstraint(expression.Right);
         }
     }
 }

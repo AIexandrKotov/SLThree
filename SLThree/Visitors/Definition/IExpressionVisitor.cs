@@ -20,6 +20,7 @@
         void VisitExpression(InterpolatedString expression);
         void VisitExpression(InvokeExpression expression);
         void VisitExpression(InvokeGenericExpression expression);
+        void VisitExpression(InvokeTemplateExpression expression);
         void VisitExpression(FunctionDefinition expression);
         void VisitExpression(MemberAccess expression);
         void VisitExpression(NameExpression expression);
@@ -27,12 +28,16 @@
         void VisitExpression(TypenameExpression expression);
         void VisitExpression(MatchExpression expression);
         void VisitExpression(StaticExpression expression);
-        void VisitExpression(UsingExpression statement);
+        void VisitExpression(UsingExpression expression);
+        void VisitExpression(BlockExpression expression);
 
         void VisitExpression(Special expression);
         void VisitExpression(Literal expression);
         void VisitExpression(UnaryOperator expression);
         void VisitExpression(BinaryOperator expression);
         void VisitExpression(TernaryOperator expression);
+
+        void VisitExpression(FunctionArgument expression);
+        void VisitExpression(InvokeTemplateExpression.GenericMakingDefinition expression);
     }
 }
