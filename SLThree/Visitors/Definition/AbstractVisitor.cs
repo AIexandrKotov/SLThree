@@ -84,7 +84,7 @@ namespace SLThree.Visitors
             Executables.Remove(expression);
         }
 
-        public void VisitConstraint(TemplateMethod.ConstraintDefinition expression)
+        public virtual void VisitConstraint(TemplateMethod.ConstraintDefinition expression)
         {
             Executables.Add(expression);
             switch (expression)
@@ -181,7 +181,7 @@ namespace SLThree.Visitors
             }
         }
 
-        public void VisitExpression(InvokeTemplateExpression expression)
+        public virtual void VisitExpression(InvokeTemplateExpression expression)
         {
             VisitExpression(expression.Left);
             Executables.Add(expression);
@@ -212,7 +212,21 @@ namespace SLThree.Visitors
         }
         public virtual void VisitExpression(FunctionDefinition expression)
         {
-            Visit(expression.Method);
+            VisitExpression(expression.FunctionName);
+            foreach (var x in expression.GenericArguments)
+            {
+                VisitExpression(x.Item1);
+                VisitExpression(x.Item2);
+            }
+            foreach (var x in expression.Arguments)
+            {
+                VisitExpression(x.Name);
+                if (x.DefaultValue != null)
+                    VisitExpression(x.DefaultValue);
+            }
+            if (expression.ReturnTypeHint != null)
+                VisitExpression(expression.ReturnTypeHint);
+            VisitStatement(expression.FunctionBody);
         }
 
         public virtual void VisitExpression(NameExpression expression)
@@ -447,40 +461,40 @@ namespace SLThree.Visitors
                 VisitExpression(expression.Right);
         }
 
-        public void VisitExpression(BlockExpression expression)
+        public virtual void VisitExpression(BlockExpression expression)
         {
             for (var i = 0; i < expression.Statements.Length; i++)
                 VisitStatement(expression.Statements[i]);
         }
 
-        public void VisitExpression(FunctionArgument expression)
+        public virtual void VisitExpression(FunctionArgument expression)
         {
             VisitExpression(expression.Name);
             VisitExpression(expression.DefaultValue);
         }
 
-        public void VisitExpression(InvokeTemplateExpression.GenericMakingDefinition expression)
+        public virtual void VisitExpression(InvokeTemplateExpression.GenericMakingDefinition expression)
         {
             VisitExpression(expression.Expression);
         }
 
-        public void VisitConstraint(TemplateMethod.NameConstraintDefinition expression)
+        public virtual void VisitConstraint(TemplateMethod.NameConstraintDefinition expression)
         {
             VisitExpression(expression.Name);
         }
 
-        public void VisitConstraint(TemplateMethod.FunctionConstraintDefinition expression)
+        public virtual void VisitConstraint(TemplateMethod.FunctionConstraintDefinition expression)
         {
             VisitStatement(expression.Statement);
         }
 
-        public void VisitConstraint(TemplateMethod.CombineConstraintDefinition expression)
+        public virtual void VisitConstraint(TemplateMethod.CombineConstraintDefinition expression)
         {
             VisitConstraint(expression.Left);
             VisitConstraint(expression.Right);
         }
 
-        public void VisitConstraint(TemplateMethod.IntersectionConstraintDefinition expression)
+        public virtual void VisitConstraint(TemplateMethod.IntersectionConstraintDefinition expression)
         {
             VisitConstraint(expression.Left);
             VisitConstraint(expression.Right);
