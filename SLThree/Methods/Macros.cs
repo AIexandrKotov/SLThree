@@ -7,18 +7,18 @@ namespace SLThree
 {
     public class Macros : ExecutionContext.IExecutable
     {
-        public class Element : BaseExpression
+        public class MacrosElement : BaseExpression
         {
             public Macros Macros;
             public int Id;
 
-            public Element(int id, SourceContext context) : base(context)
+            public MacrosElement(int id, SourceContext context) : base(context)
             {
                 if (id > 255) throw new ArgumentException(nameof(id), "The number of macro arguments is limited to 256");
                 Id = id;
             }
 
-            public Element Bind(Macros macros)
+            public MacrosElement Bind(Macros macros)
             {
                 Macros = macros;
                 return this;
@@ -35,7 +35,7 @@ namespace SLThree
 
             public override object Clone()
             {
-                return new Element(Id, SourceContext.CloneCast()) { Macros = Macros };
+                return new MacrosElement(Id, SourceContext.CloneCast()) { Macros = Macros };
             }
         }
 
@@ -55,7 +55,7 @@ namespace SLThree
 
             public override void VisitExpression(BaseExpression expression)
             {
-                if (expression is Element element)
+                if (expression is MacrosElement element)
                 {
                     element.Bind(macros);
                     if (element.Id > max) max = element.Id;

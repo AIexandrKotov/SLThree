@@ -265,7 +265,7 @@ primary <BaseExpression> -memoize
     / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
-    / "$" d:[0-9_]+ { new Macros.Element(int.Parse(d.JoinIntoString("").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / "$" d:[0-9_]+ { new Macros.MacrosElement(int.Parse(d.JoinIntoString("").Replace("_", ""), CultureInfo.InvariantCulture), state) }
     / "$" x:block_statement { new MacrosDefinition(x, state) }
     / "$(" _ x:expression _ ")" { new MacrosDefinition(x, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
@@ -402,11 +402,11 @@ dictionary_expression <BaseExpression>
         CreatorDictionary.CaseTypeBody(t, body.ToArray(), state)
     }
 
-dictionary_body <IList<CreatorDictionary.Entry>>
+dictionary_body <IList<CreatorDictionary.DictionaryEntry>>
     = "{" _ entries:dictionary_entry<1,,"," _> _ ("," _)? "}" { entries }
 
-dictionary_entry <CreatorDictionary.Entry>
-    = left:expression _ ":" _ right:expression { new CreatorDictionary.Entry(left, right, state) } 
+dictionary_entry <CreatorDictionary.DictionaryEntry>
+    = left:expression _ ":" _ right:expression { new CreatorDictionary.DictionaryEntry(left, right, state) } 
 
 instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
