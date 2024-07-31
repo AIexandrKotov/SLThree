@@ -625,7 +625,7 @@ namespace SLThree
                 throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
             }
         }
-        internal class GenericFinder : AbstractVisitor
+        public class GenericFinder : AbstractVisitor
         {
             public string[] Generics;
             public GenericMakingConstraint[] PredefinedConstraints;
