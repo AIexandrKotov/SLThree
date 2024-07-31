@@ -253,12 +253,15 @@ withoutinvokation_primary <BaseExpression> -memoize
     / onlyname_access
 
 primary <BaseExpression> -memoize
-    = left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
+    = left:primary _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
+    / left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
     / left:primary _ "." _ "?" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, state) }
     / left:primary _ "."? _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, state) }
     / left:primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
     / left:primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "$" d:[0-9_]+ { new Macros.Element(int.Parse(d.JoinIntoString("").Replace("_", ""), CultureInfo.InvariantCulture), state) }
@@ -281,6 +284,32 @@ primary <BaseExpression> -memoize
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = old_generic_invokation
+    / maki:generic_making _ ":" _ expr:(<BaseExpression>block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(maki, new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state)) }
+    / maki:generic_making _ "=" _ expr:(<BaseExpression>block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
+    / ":" _ expr:(<BaseExpression>block_expression / primary) { 
+        new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
+        new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state))
+    }
+    / "=" _ expr:(<BaseExpression>block_expression / primary) { 
+        new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
+        expr)
+    }
+
+old_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = "as" _required_ "type" _ ":" _ expr:typename { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", state), state), 
+        expr) }
+    / "as" _required_ "type" _ "=" _ expr:(<BaseExpression> block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", state), state), 
+        expr) }
+
+generic_making <BaseExpression>
+    = "as" _required_ maki:primary { new InvokeTemplateExpression.GenericMakingDefinition(maki, state) }
 
 constraint <TemplateMethod.ConstraintDefinition> -memoize
     = left:constraint _ "+" _ right:constraint { new TemplateMethod.CombineConstraintDefinition(left, right, state) }
@@ -531,7 +560,8 @@ block_instance_expression <BaseExpression>
     }
 
 access_right <BaseExpression> -memoize
-    = left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
+    = left:name _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), state) }
+    / left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
     / left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), state) }
     / left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / right:access_right { right }

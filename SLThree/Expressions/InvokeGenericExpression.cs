@@ -44,6 +44,8 @@ namespace SLThree
                 if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
                 if (o is GenericMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args).GetValue(context, args);
+                if (o is TemplateMethod template_method)
+                    return template_method.MakeGenericMethod(generic_args.ConvertAll(x => (TemplateMethod.GenericMaking.AsType, (object)x))).GetValue(context, args);
 
                 throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
             }

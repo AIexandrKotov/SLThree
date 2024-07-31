@@ -5,8 +5,14 @@ Language:
           `template f<T>() => T;`
         - Constraints on parameters
           `<T1: value + i64 | u64, T2: => T2 >= 10>() => T1 + T2;`
-        - Make generic
-          `slt.make_template(f, -[2]);`
+        - Invokation (and making without `()`):
+          `template f<T>() {
+               x(a1, a2) => (a1, a2);
+               return x(T, T as is);
+           }
+           f<as value : (2 + 2)>();
+           f<as expr : (2 + 2)>();
+           f<as value = (2 + 2)>();`
         - New entity for code generation - Macros
           Macros clearly store the context in which they were created
           `$(2 + 2)`, `${using linq;}`

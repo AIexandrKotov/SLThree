@@ -367,29 +367,29 @@ namespace SLThree
             /// </summary>
             public int GenericPosition;
 
-            public static TypenameExpression AsType(object any)
+            public TypenameExpression AsType(object any)
             {
                 if (any is ClassAccess ca) return new TypenameGenericPart() { Type = ca.Name };
                 return new TypenameGenericPart() { Type = (Type)any };
             }
-            public static NameExpression AsName(object any)
+            public NameExpression AsName(object any)
             {
                 if (any is NameExpression expr) return expr;
                 if (any is StringLiteral str) return new NameExpression((string)str.Value, str.SourceContext);
                 return new NameExpression(any.ToString(), null);
             }
-            public static BaseExpression AsExpression(object any)
+            public BaseExpression AsExpression(object any)
             {
                 if (any is BaseExpression expr) return expr;
-                throw new RuntimeError($"{any} is not expression", null);
+                throw new RuntimeError($"{any} is not expression", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
             }
-            public static BaseStatement AsStatement(object any)
+            public BaseStatement AsStatement(object any)
             {
                 if (any is BaseStatement st1) return st1;
                 if (any is BlockExpression be) return new StatementList(be.Statements, be.SourceContext.CloneCast());
-                throw new RuntimeError($"{any} is not code", null);
+                throw new RuntimeError($"{any} is not code", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
             }
-            public static BaseExpression AsStatementList(BaseStatement statement)
+            public BaseExpression AsStatementList(BaseStatement statement)
             {
                 if (statement is StatementList sl)
                     return new BlockExpression(sl.Statements, sl.SourceContext);
@@ -876,13 +876,12 @@ namespace SLThree
             for (var i = 0; i < Generics.Length; i++)
                 if (!Generics[i].Item2.Applicable(args[i].Item1, args[i].Item2))
                     throw new RuntimeError($"{args[i].Item2.GetType().GetTypeString()} {args[i].Item2} doesn't fit the \"{Generics[i].Item2}\"", Generics[i].Item2.SourceContext);
+            var constraints = args.Select((x, i) => x.Item1 == GenericMaking.Constraint ? GetMakingBasedOnConstraint(MakingConstraints[i]) : x.Item1).ToArray();
             foreach (var x in GenericsInfo)
             {
                 var pos = x.GenericPosition;
-                var making = args[pos].Item1;
-                if (making == GenericMaking.Constraint)
-                    making = GetMakingBasedOnConstraint(MakingConstraints[pos]);
-                else if (making == GenericMaking.Runtime)
+                var making = constraints[pos];
+                if (making == GenericMaking.Runtime)
                     making = GetMakingBasedOnRuntime(MakingConstraints[pos], args[pos].Item2);
                 x.Make(making, args[pos].Item2);
             }
