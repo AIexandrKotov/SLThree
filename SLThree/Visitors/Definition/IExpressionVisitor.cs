@@ -30,6 +30,7 @@
         void VisitExpression(StaticExpression expression);
         void VisitExpression(UsingExpression expression);
         void VisitExpression(BlockExpression expression);
+        void VisitExpression(ConstraintExpression expression);
 
         void VisitExpression(Special expression);
         void VisitExpression(Literal expression);

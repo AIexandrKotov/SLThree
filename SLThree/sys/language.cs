@@ -124,7 +124,7 @@ namespace SLThree.sys
 
         public static void temp()
         {
-            show(typeof(TemplateMethod.GenericFinder));
+            show(typeof(GenericMethod.GenericFinder), typeof(TemplateMethod.GenericFinder));
         }
     }
 #pragma warning restore IDE1006 // Стили именования

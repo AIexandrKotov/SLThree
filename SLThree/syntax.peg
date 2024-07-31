@@ -276,6 +276,7 @@ primary <BaseExpression> -memoize
     / new_context_expression
     / context_expression
     / instance_expression
+    / constraint_expression
     / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
@@ -285,6 +286,12 @@ primary <BaseExpression> -memoize
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
     / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+
+constraint_expression <ConstraintExpression>
+    = "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, null, c, state) }
+    / "constraint" _required_ n:primary  _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, n, c, state) }
+    / "constraint" _required_ n:primary _ ":" _ c:constraint { new ConstraintExpression(n, c, state) }
+    / "constraint" _ ":" _ c:constraint { new ConstraintExpression(null, c, state) }
 
 generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
     = old_generic_invokation

@@ -65,6 +65,10 @@ namespace SLThree.Visitors
                 case StaticExpression expr: VisitExpression(expr); return;
                 case InvokeExpression expr: VisitExpression(expr); return;
                 case InvokeGenericExpression expr: VisitExpression(expr); return;
+                case InvokeTemplateExpression expr: VisitExpression(expr); return;
+                case InvokeTemplateExpression.GenericMakingDefinition expr: VisitExpression(expr); return;
+                case MakeGenericExpression expr: VisitExpression(expr); return;
+                case MakeTemplateExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
                 case IndexExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
@@ -79,6 +83,9 @@ namespace SLThree.Visitors
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
                 case UsingExpression expr: VisitExpression(expr); return;
+                case BlockExpression expr: VisitExpression(expr); return;
+                case FunctionArgument expr: VisitExpression(expr); return;
+                case ConstraintExpression expr: VisitExpression(expr); return;
                 case TemplateMethod.ConstraintDefinition expr: VisitConstraint(expr); return;
             }
             Executables.Remove(expression);
@@ -498,6 +505,14 @@ namespace SLThree.Visitors
         {
             VisitConstraint(expression.Left);
             VisitConstraint(expression.Right);
+        }
+
+        public virtual void VisitExpression(ConstraintExpression expression)
+        {
+            VisitExpression(expression.Target);
+            if (expression.Name != null)
+                VisitExpression(expression.Name);
+            VisitConstraint(expression.Body);
         }
     }
 }

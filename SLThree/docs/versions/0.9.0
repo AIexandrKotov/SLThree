@@ -5,6 +5,8 @@ Language:
           `template f<T>() => T;`
         - Constraints on parameters
           `<T1: value + i64 | u64, T2: => T2 >= 10>() => T1 + T2;`
+        - Constraint expression to describe them in advance
+          `constraint [Name][ on T]: expr | value`
         - Invokation (and making without `()`):
           `template f<T>() {
                x(a1, a2) => (a1, a2);
