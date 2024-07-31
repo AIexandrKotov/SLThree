@@ -5,8 +5,8 @@ namespace SLThree
 {
     public class ConditionExpression : BaseExpression
     {
-        public BaseExpression Condition { get; set; }
-        public BaseStatement[] Body { get; set; }
+        public BaseExpression Condition;
+        public BaseStatement[] Body;
 
         public ConditionExpression() { }
         public ConditionExpression(BaseExpression condition, BaseStatement[] body, int falsestart, SourceContext context) : base(context)

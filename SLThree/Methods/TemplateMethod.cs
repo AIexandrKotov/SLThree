@@ -9,6 +9,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
@@ -18,6 +19,9 @@ namespace SLThree
 {
     public class TemplateMethod : Method
     {
+        #region Constraints
+
+        #region Definitions
         public abstract class ConstraintDefinition : BaseExpression
         {
             public ConstraintDefinition(SourceContext context) : base(context) { }
@@ -170,7 +174,7 @@ namespace SLThree
 
             public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
-
+        #endregion
         public abstract class Constraint : ICloneable
         {
             public bool PrioriryRaised { get; set; }
@@ -360,6 +364,11 @@ namespace SLThree
             public override GenericMakingConstraint GetMakingConstraint() => Constraint.GetMakingConstraint();
         }
 
+        #endregion
+
+        #region GenericInfos
+
+        #region Head
         public abstract class GenericInfo
         {
             public virtual object Placement { get; }
@@ -504,7 +513,9 @@ namespace SLThree
                 GetPlacer() = AsStatementList(statement);
             }
         }
-        #region GenericInfoDefinitions
+        #endregion
+
+        #region Generic
 
         public class InvokeExpressionNamePartGeneric : SameBehaviourExprGenericInfo<InvokeExpression>
         {
@@ -579,6 +590,184 @@ namespace SLThree
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
         }
+        public class ConditionExpressionGeneric : SameBehaviourExprGenericInfo<ConditionExpression>
+        {
+            public ConditionExpressionGeneric(ConditionExpression concrete, int position) : base(concrete, position) { }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Condition;
+        }
+        public class NameConstraintGeneric : SameBehaviourExprGenericInfo<NameConstraintDefinition>
+        {
+            public NameConstraintGeneric(NameConstraintDefinition concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Name;
+        }
+        public class CreatorArrayTypePartGeneric : ExprGenericInfo<CreatorArray>
+        {
+            public CreatorArrayTypePartGeneric(CreatorArray concrete, int position) : base(concrete, position)
+            {
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.ListType = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.ListType = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+        public class CreatorArrayArgPartGeneric : SameBehaviourExprGenericInfo<CreatorArray>
+        {
+            public int ArgumentPosition;
+
+            public CreatorArrayArgPartGeneric(CreatorArray concrete, int position, int argumentPosition) : base(concrete, position)
+            {
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Expressions[ArgumentPosition];
+        }
+        public class CreatorListTypePartGeneric : ExprGenericInfo<CreatorList>
+        {
+            public CreatorListTypePartGeneric(CreatorList concrete, int position) : base(concrete, position)
+            {
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.ListType = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.ListType = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+        public class CreatorListArgPartGeneric : SameBehaviourExprGenericInfo<CreatorList>
+        {
+            public int ArgumentPosition;
+
+            public CreatorListArgPartGeneric(CreatorList concrete, int position, int argumentPosition) : base(concrete, position)
+            {
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Expressions[ArgumentPosition];
+        }
+        public class FunctionDefinitionNamePartGeneric : SameBehaviourExprGenericInfo<FunctionDefinition>
+        {
+            public FunctionDefinitionNamePartGeneric(FunctionDefinition concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.FunctionName;
+        }
+        public class FunctionDefinitionArgumentNamePartGeneric : ExprGenericInfo<FunctionDefinition>
+        {
+            public int ArgumentPosition;
+
+            public FunctionDefinitionArgumentNamePartGeneric(FunctionDefinition concrete, int position, int argumentPosition) : base(concrete, position)
+            {
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.Arguments[ArgumentPosition].Name = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+        public class FunctionDefinitionArgumentTypePartGeneric : ExprGenericInfo<FunctionDefinition>
+        {
+            public int ArgumentPosition;
+            public FunctionDefinitionArgumentTypePartGeneric(FunctionDefinition concrete, int position, int argumentPosition) : base(concrete, position)
+            {
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.Arguments[ArgumentPosition].Name.TypeHint = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.Arguments[ArgumentPosition].Name.TypeHint = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+        public class FunctionDefinitionArgumentDefaultValuePartGeneric : SameBehaviourExprGenericInfo<FunctionDefinition>
+        {
+            public int ArgumentPosition;
+
+            public FunctionDefinitionArgumentDefaultValuePartGeneric(FunctionDefinition concrete, int position, int argumentPosition) : base(concrete, position)
+            {
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.Arguments[ArgumentPosition].DefaultValue;
+        }
 
         public class ReturnStatementGeneric : SameBehaviourCodeGenericInfo<ReturnStatement>
         {
@@ -625,6 +814,8 @@ namespace SLThree
                 throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
             }
         }
+        #endregion
+
         public class GenericFinder : AbstractVisitor
         {
             public string[] Generics;
@@ -646,11 +837,16 @@ namespace SLThree
                     throw new ContraitConstraint(Generics[position], constraint, executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
                 else GainConstraint(position, constraint, executable);
             }
-            private void CheckAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
+            private void CheckAllAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
             {
                 if (contraints.Any(x => !PredefinedConstraints[position].HasFlag(x)))
                     throw new ContraitConstraint(Generics[position], contraints.First(x => !PredefinedConstraints[position].HasFlag(x)), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
                 else GainConstraint(position, contraints.Aggregate((x, y) => x | y), executable);
+            }
+            private void CheckAnyAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
+            {
+                if (!contraints.Any(x => PredefinedConstraints[position].HasFlag(x)))
+                    throw new ContraitConstraint(Generics[position], contraints.Aggregate((x, y) => x | y), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
             }
             private void GainConstraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
             {
@@ -693,32 +889,11 @@ namespace SLThree
                 base.VisitStatement(statement);
             }
 
-            public override void VisitExpression(TypenameExpression expression)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if (expression.Typename is NameExpression name && (name.Name == Generics[i]))
-                    {
-                        if (Executables.Count == 0)
-                        {
-                            CheckAllow(i, expression, GenericMakingConstraint.AllowTypes);
-                            Infos.Add(new GenericMethodSignature()
-                            {
-                                Method = Method,
-                                GenericPosition = i,
-                                position = Method.ReturnType == expression ? -1 : Array.IndexOf(Method.ParamTypes, expression)
-                            });
-                            break;
-                        }
-                    }
-                    base.VisitExpression(expression);
-                }
-            }
-
             public override void VisitExpression(MemberAccess expression)
             {
                 VisitExpression(expression as BinaryOperator);
             }
+
             public override void VisitExpression(CastExpression expression)
             {
                 for (var i = 0; i < Generics.Length; i++)
@@ -726,6 +901,59 @@ namespace SLThree
                     if (expression.Left is NameExpression name1 && name1.Name == Generics[i])
                     {
                         Infos.Add(new CastExpressionLeftPartGeneric(expression, i));
+                    }
+                    if ((!expression.as_is) && (!expression.Type.is_array) && expression.Type.Typename is NameExpression name3 && name3.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression.Type, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                        Infos.Add(new CastExpressionRightPartGeneric(expression, i));
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(CreatorArray expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if ((!(expression.ListType?.is_array ?? false)) && expression.ListType?.Typename is NameExpression name && name.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression.ListType, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                        Infos.Add(new CreatorArrayTypePartGeneric(expression, i));
+                    }
+                    for (var j = 0; j < expression.Expressions.Length; j++)
+                    {
+                        if (expression.Expressions[j] is NameExpression arg_name && arg_name.Name == Generics[i])
+                            Infos.Add(new CreatorArrayArgPartGeneric(expression, i, j));
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(CreatorList expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if ((!(expression.ListType?.is_array ?? false)) && expression.ListType?.Typename is NameExpression name && name.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression.ListType, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                        Infos.Add(new CreatorListTypePartGeneric(expression, i));
+                    }
+                    for (var j = 0; j < expression.Expressions.Length; j++)
+                    {
+                        if (expression.Expressions[j] is NameExpression arg_name && arg_name.Name == Generics[i])
+                            Infos.Add(new CreatorListArgPartGeneric(expression, i, j));
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(ConditionExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.Condition is NameExpression name1 && name1.Name == Generics[i])
+                    {
+                        Infos.Add(new ConditionExpressionGeneric(expression, i));
                     }
                 }
                 base.VisitExpression(expression);
@@ -741,7 +969,7 @@ namespace SLThree
                     }
                     if (expression is BinaryIs && expression.Right is TypenameExpression name2 && name2.Typename.ToString() == Generics[i])
                     {
-                        CheckAllow(i, expression.Right, GenericMakingConstraint.AllowTypes);
+                        CheckAllAllow(i, expression.Right, GenericMakingConstraint.AllowTypes);
                         Infos.Add(new BinaryOperatorGeneric(expression, i, true));
                     }
                     if (expression.Right is NameExpression name3 && name3.Name == Generics[i])
@@ -780,18 +1008,59 @@ namespace SLThree
                 base.VisitExpression(expression);
             }
 
+            public override void VisitConstraint(NameConstraintDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.Name is NameExpression name && name.Name == Generics[i])
+                        Infos.Add(new NameConstraintGeneric(expression, i));
+                }
+                base.VisitConstraint(expression);
+            }
+
+            public override void VisitExpression(FunctionDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.FunctionName is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new FunctionDefinitionNamePartGeneric(expression, i));
+                    }
+                    for (var j = 0; j < expression.Arguments.Length; j++)
+                    {
+                        if (expression.Arguments[j].Name is NameExpression arg_name && arg_name.Name == Generics[i])
+                        {
+                            CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowValues);
+                            Infos.Add(new FunctionDefinitionArgumentNamePartGeneric(expression, i, j));
+                        }
+                        if (expression.Arguments[j].Name.TypeHint?.Typename is NameExpression arg_name3 && !expression.Arguments[j].Name.TypeHint.is_array && arg_name3.Name == Generics[i])
+                        {
+                            CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowValues);
+                            Infos.Add(new FunctionDefinitionArgumentNamePartGeneric(expression, i, j));
+                        }
+                        if (expression.Arguments[j].DefaultValue is NameExpression arg_name2 && arg_name2.Name == Generics[i])
+                        {
+                            Infos.Add(new FunctionDefinitionArgumentDefaultValuePartGeneric(expression, i, j));
+                        }
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
             public override void Visit(Method method)
             {
-                if (Method != method) return;
                 for (var i = 0; i < method.ParamTypes.Length; i++)
                     if (method.ParamTypes[i] != null)
                         VisitExpression(method.ParamTypes[i]);
                 if (method.ReturnType != null)
                     VisitExpression(method.ReturnType);
+                for (var i = 0; i < method.DefaultValues.Length; i++)
+                    if (method.DefaultValues[i] != null)
+                        VisitExpression(method.DefaultValues[i]);
                 base.Visit(method);
             }
 
-            public override void Visit(TemplateMethod method)
+            public void VisitTM(TemplateMethod method)
             {
                 if (Method != method) return;
                 for (var i = 0; i < method.ParamTypes.Length; i++)
@@ -799,7 +1068,11 @@ namespace SLThree
                         VisitExpression(method.ParamTypes[i]);
                 if (method.ReturnType != null)
                     VisitExpression(method.ReturnType);
-                base.Visit(method);
+                for (var i = 0; i < method.DefaultValues.Length; i++)
+                    if (method.DefaultValues[i] != null)
+                        VisitExpression(method.DefaultValues[i]);
+                for (var i = 0; i < method.Statements.Statements.Length; i++)
+                    VisitStatement(method.Statements.Statements[i]);
             }
 
             public static (List<GenericInfo>, GenericMakingConstraint[]) FindAll(TemplateMethod method)
@@ -808,7 +1081,7 @@ namespace SLThree
                 gf.Generics = method.Generics.ConvertAll(x => x.Item1.Name);
                 gf.PredefinedConstraints = method.Generics.ConvertAll(x => x.Item2.GetMakingConstraint());
                 gf.Method = method;
-                gf.Visit(method);
+                gf.VisitTM(method);
                 return (gf.Infos, gf.PredefinedConstraints);
             }
         }
