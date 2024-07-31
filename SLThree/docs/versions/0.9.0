@@ -32,7 +32,7 @@ Language:
     - Calling methods with a variable number of arguments
     - Syntax for creating methods from generics:
       `_is<T>(a) => a is T; isi64 = _is<i64>;`
-    - Null-coalescing extended assign operator `??=`
+    - Null-coalescing augmented assign operator `??=`
 Bugfixes:
     - Ignoring deffered code in static (#129)
     - Ignoring indexed properties in wrappers (#130)
