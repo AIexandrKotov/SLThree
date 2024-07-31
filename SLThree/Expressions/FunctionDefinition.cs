@@ -149,15 +149,15 @@ namespace SLThree
                     method = new TemplateMethod(
                     FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
                     Arguments.Select(x => x.Name.Name).ToArray(),
-                    FunctionBody,
-                    Arguments.Select(x => x.Name.TypeHint).ToArray(),
-                    ReturnTypeHint,
+                    FunctionBody.CloneCast(),
+                    Arguments.Select(x => x.Name.TypeHint.CloneCast()).ToArray(),
+                    ReturnTypeHint.CloneCast(),
                     null,
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
                     !@params,
-                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
-                    GenericArguments.Select(x => (x.Item1, x.Item2?.GetConstraint(x.Item1.Name, context) ?? new TemplateMethod.AnyConstraint(x.Item1.SourceContext))).ToArray());
+                    Arguments.Select(x => x.DefaultValue.CloneCast()).Where(x => x != null).ToArray(),
+                    GenericArguments.Select(x => (x.Item1.CloneCast(), x.Item2?.GetConstraint(x.Item1.Name, context) ?? new TemplateMethod.AnyConstraint(x.Item1.SourceContext))).ToArray());
                 }
                 method.@this = context?.wrap;
                 if (FunctionName != null)
