@@ -112,7 +112,8 @@ namespace SLThree
 
             public override Constraint GetConstraint(string current_template, ExecutionContext context)
             {
-                return new FunctionConstraint(new Method("constraint", new string[1] { current_template }, new StatementList(new BaseStatement[1] { Statement }, Statement.SourceContext), new TypenameExpression[1], null, context.wrap, true, false, true, new BaseExpression[0]), SourceContext.CloneCast());
+                var st = Statement.CloneCast();
+                return new FunctionConstraint(new Method("constraint", new string[1] { current_template }, new StatementList(new BaseStatement[1] { st }, st.SourceContext), new TypenameExpression[1], null, context.wrap, true, false, true, new BaseExpression[0]), SourceContext.CloneCast());
             }
 
             public override string ExpressionToString() => $"=> {Statement}";
