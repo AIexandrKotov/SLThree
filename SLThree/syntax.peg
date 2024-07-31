@@ -130,6 +130,7 @@ binary_9 <BaseExpression> -memoize
     / left:binary_7 _ "&=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitAnd(left, right, state), state) }
     / left:binary_7 _ "|=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitOr(left, right, state), state) }
     / left:binary_7 _ "^=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitXor(left, right, state), state) }
+    / left:binary_7 _ "??=" _ right:binary_9 { new BinaryAssign(left, new NullCoalescing(left, right, state), state) }
     / ternary_0
     
 ternary_0 <BaseExpression> -memoize
