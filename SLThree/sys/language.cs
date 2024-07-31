@@ -121,6 +121,11 @@ namespace SLThree.sys
         {
             show(typeof(TreeViewer), typeof(XmlViewer), typeof(NETGenerator));
         }
+
+        public static void temp()
+        {
+            show(typeof(TemplateMethod.GenericFinder));
+        }
     }
 #pragma warning restore IDE1006 // Стили именования
 }
