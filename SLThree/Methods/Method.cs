@@ -97,7 +97,7 @@ namespace SLThree
                 ret = new ExecutionContext(false, false);
                 ret.Name = contextName;
                 ret.PreviousContext = super_context?.wrap;
-                ret.LocalVariables.FillArguments(this, arguments);
+                ret.LocalVariables.FillArguments(this, CheckOnParams(CheckOnDefaults(arguments, ret)));
                 ret.@this = definitionplace;
                 ret.ForbidImplicit = !Implicit;
                 return ret;
@@ -120,13 +120,27 @@ namespace SLThree
                 }
                 ret.Name = contextName;
                 ret.PreviousContext = super_context?.wrap;
-                ret.LocalVariables.FillArguments(this, arguments);
+                ret.LocalVariables.FillArguments(this, CheckOnParams(CheckOnDefaults(arguments, ret)));
                 ret.ForbidImplicit = !Implicit;
             }
             return ret;
         }
 
         public virtual object GetValue(object[] args) => GetValue(null, args);
+
+        public object[] CheckOnDefaults(object[] args, ExecutionContext context)
+        {
+            if (WithoutDefaults) return args;
+            if (args.Length > (ParamNames.Length - RequiredArguments)) return args;
+            var ret = new object[ParamNames.Length];
+            Array.Copy(args, ret, args.Length);
+            var i = args.Length - RequiredArguments;
+            var j = Math.Min(args.Length, DefaultValues.Length);
+            var count = Math.Max(ret.Length - args.Length, 0);
+            for (var id = 0; id < count; id++)
+                ret[j++] = DefaultValues[i++].GetValue(context);
+            return ret;
+        }
 
         public object[] CheckOnDefaults(object[] args)
         {
@@ -166,7 +180,7 @@ namespace SLThree
 
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
-            var context = GetExecutionContext(CheckOnParams(CheckOnDefaults(args)), old_context);
+            var context = GetExecutionContext(args, old_context);
             var i = 0;
             var bs = Statements.Statements;
             var count = bs.Length;
