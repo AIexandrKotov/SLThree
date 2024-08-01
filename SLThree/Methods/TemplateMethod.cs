@@ -377,6 +377,11 @@ namespace SLThree
             /// </summary>
             public int GenericPosition;
 
+            public GenericInfo(int position)
+            {
+                GenericPosition = position;
+            }
+
             public TypenameExpression AsType(object any)
             {
                 if (any is ClassAccess ca) return new TypenameGenericPart() { Type = ca.Name };
@@ -386,6 +391,7 @@ namespace SLThree
             {
                 if (any is NameExpression expr) return expr;
                 if (any is StringLiteral str) return new NameExpression((string)str.Value, str.SourceContext);
+                if (any is string str2) return new NameExpression(str2, null);
                 return new NameExpression(any.ToString(), null);
             }
             public BaseExpression AsExpression(object any)
@@ -437,10 +443,9 @@ namespace SLThree
         {
             public T Concrete;
             public sealed override object Placement => Concrete;
-            public GenericInfo(T concrete, int position)
+            public GenericInfo(T concrete, int position) : base(position)
             {
                 Concrete = concrete;
-                GenericPosition = position;
             }
         }
         public abstract class ExprGenericInfo<T> : GenericInfo<T> where T : BaseExpression
@@ -779,41 +784,151 @@ namespace SLThree
             public ExpressionStatementGeneric(ExpressionStatement concrete, int position) : base(concrete, position) { }
             public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
         }
-        #endregion
 
-        public class GenericMethodSignature : GenericInfo
+        public class OwnParameterNameGeneric : GenericInfo
         {
-            public TemplateMethod Method;
-            public int position;
+            public TemplateMethod Owner;
+            public int ArgumentPosition;
+
+            public OwnParameterNameGeneric(int position, TemplateMethod owner, int argumentPosition) : base(position)
+            {
+                Owner = owner;
+                ArgumentPosition = argumentPosition;
+            }
 
             public override void MakeValue(object any)
             {
-                throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
+                throw new UnavailableGenericParameterName(GenericMaking.AsValue, Owner.OriginalParamNames[ArgumentPosition]);
             }
 
             public override void MakeType(TypenameExpression type)
             {
-                if (position == -1) Method.ReturnType = type;
-                else Method.ParamTypes[position] = type;
+                throw new UnavailableGenericParameterName(GenericMaking.AsType, Owner.OriginalParamNames[ArgumentPosition]);
             }
 
             public override void MakeName(NameExpression name)
             {
-                if (position == -1) Method.ReturnType = new TypenameExpression(name, name.SourceContext);
-                else Method.ParamTypes[position] = new TypenameExpression(name, name.SourceContext);
+                Owner.ParamNames[ArgumentPosition] = name.Name;
             }
 
             public override void MakeExpression(BaseExpression expression)
             {
-                if (position == -1) Method.ReturnType = new TypenameExpression(expression, expression.SourceContext);
-                else Method.ParamTypes[position] = new TypenameExpression(expression, expression.SourceContext);
+                throw new UnavailableGenericParameterName(GenericMaking.AsExpression, Owner.OriginalParamNames[ArgumentPosition]);
             }
 
             public override void MakeCode(BaseStatement statement)
             {
-                throw new UnavailableGenericMaking(GenericMaking.AsValue, null, this);
+                throw new UnavailableGenericParameterName(GenericMaking.AsCode, Owner.OriginalParamNames[ArgumentPosition]);
             }
         }
+        public class OwnParameterTypeGeneric : GenericInfo
+        {
+            public TemplateMethod Owner;
+            public int ArgumentPosition;
+
+            public OwnParameterTypeGeneric(int position, TemplateMethod owner, int argumentPosition) : base(position)
+            {
+                Owner = owner;
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericParameterType(GenericMaking.AsValue, Owner.OriginalParamNames[ArgumentPosition]);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Owner.ParamTypes[ArgumentPosition] = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Owner.ParamTypes[ArgumentPosition] = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericParameterType(GenericMaking.AsExpression, Owner.OriginalParamNames[ArgumentPosition]);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericParameterType(GenericMaking.AsCode, Owner.OriginalParamNames[ArgumentPosition]);
+            }
+        }
+        public class OwnReturnTypeGeneric : GenericInfo
+        {
+            public TemplateMethod Owner;
+
+            public OwnReturnTypeGeneric(int position, TemplateMethod owner) : base(position)
+            {
+                Owner = owner;
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericResultType(GenericMaking.AsValue);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Owner.ReturnType = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Owner.ReturnType = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericResultType(GenericMaking.AsExpression);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericResultType(GenericMaking.AsCode);
+            }
+        }
+        public class OwnDefaultValueGeneric : GenericInfo
+        {
+            public TemplateMethod Owner;
+            public int ArgumentPosition;
+
+            public OwnDefaultValueGeneric(int position, TemplateMethod owner, int argumentPosition) : base(position)
+            {
+                Owner = owner;
+                ArgumentPosition = argumentPosition;
+            }
+
+            public override void MakeValue(object any)
+            {
+                Owner.DefaultValues[ArgumentPosition] = new StaticExpression(any);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Owner.DefaultValues[ArgumentPosition] = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Owner.DefaultValues[ArgumentPosition] = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                Owner.DefaultValues[ArgumentPosition] = expression;
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                Owner.DefaultValues[ArgumentPosition] = AsStatementList(statement);
+            }
+        }
+        #endregion
+
         #endregion
 
         public class GenericFinder : AbstractVisitor
@@ -1060,9 +1175,42 @@ namespace SLThree
                 base.Visit(method);
             }
 
-            public void VisitTM(TemplateMethod method)
+            public void VisitOwn(TemplateMethod method)
             {
                 if (Method != method) return;
+
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    for (var j = 0; j < method.ParamNames.Length; j++)
+                        if (method.ParamNames[j] == Generics[i])
+                        {
+                            CheckAllAllow(j, method.ParamTypes[j], GenericMakingConstraint.AllowNames);
+                            Infos.Add(new OwnParameterNameGeneric(i, method, j));
+                        }
+                    for (var j = 0; j < method.ParamTypes.Length; j++)
+                        if (method.ParamTypes[j] != null)
+                        {
+                            if (method.ParamTypes[j].Typename is NameExpression paramTypeName && paramTypeName.Name == Generics[i])
+                            {
+                                CheckAnyAllow(j, method.ParamTypes[j], GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                                Infos.Add(new OwnParameterTypeGeneric(i, method, j));
+                            }
+                        }
+                    if (method.ReturnType != null)
+                        if (method.ReturnType.Typename is NameExpression retTypeName && retTypeName.Name == Generics[i])
+                        {
+                            CheckAnyAllow(i, method.ReturnType, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                            Infos.Add(new OwnReturnTypeGeneric(i, method));
+                        }
+                    for (var j = 0; j < method.DefaultValues.Length; j++)
+                        if (method.DefaultValues[j] != null)
+                        {
+                            if (method.DefaultValues[j] is NameExpression defaultValue && defaultValue.Name == Generics[i])
+                                Infos.Add(new OwnDefaultValueGeneric(i, method, j));
+                        }
+                }
+
+
                 for (var i = 0; i < method.ParamTypes.Length; i++)
                     if (method.ParamTypes[i] != null)
                         VisitExpression(method.ParamTypes[i]);
@@ -1081,7 +1229,7 @@ namespace SLThree
                 gf.Generics = method.Generics.ConvertAll(x => x.Item1.Name);
                 gf.PredefinedConstraints = method.Generics.ConvertAll(x => x.Item2.GetMakingConstraint());
                 gf.Method = method;
-                gf.VisitTM(method);
+                gf.VisitOwn(method);
                 return (gf.Infos, gf.PredefinedConstraints);
             }
         }

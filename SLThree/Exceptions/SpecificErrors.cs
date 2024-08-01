@@ -32,6 +32,46 @@ namespace SLThree
             : base($"It is impossible to make generic {making} in {gi.GetType().GetTypeString()}", expression?.SourceContext) { }
     }
     /// <summary>
+    /// Недоступная Generic-подстановка
+    /// </summary>
+    [Serializable]
+    public class UnavailableGenericParameterName : RuntimeError
+    {
+        public UnavailableGenericParameterName() : base() { }
+        public UnavailableGenericParameterName(TemplateMethod.GenericMaking making, string parameter)
+            : base($"It is impossible to make generic {making} for {parameter} parameter name", null) { }
+    }
+    /// <summary>
+    /// Недоступная Generic-подстановка
+    /// </summary>
+    [Serializable]
+    public class UnavailableGenericParameterType : RuntimeError
+    {
+        public UnavailableGenericParameterType() : base() { }
+        public UnavailableGenericParameterType(TemplateMethod.GenericMaking making, string parameter)
+            : base($"It is impossible to make generic {making} for {parameter} parameter type", null) { }
+    }
+    /// <summary>
+    /// Недоступная Generic-подстановка
+    /// </summary>
+    [Serializable]
+    public class UnavailableGenericResultType : RuntimeError
+    {
+        public UnavailableGenericResultType() : base() { }
+        public UnavailableGenericResultType(TemplateMethod.GenericMaking making)
+            : base($"It is impossible to make generic {making} for result type", null) { }
+    }
+    /// <summary>
+    /// Недоступная Generic-подстановка
+    /// </summary>
+    [Serializable]
+    public class UnavailableGenericParameterDefaultValue : RuntimeError
+    {
+        public UnavailableGenericParameterDefaultValue() : base() { }
+        public UnavailableGenericParameterDefaultValue(TemplateMethod.GenericMaking making, string parameter)
+            : base($"It is impossible to make generic {making} for {parameter} parameter defaultvalue", null) { }
+    }
+    /// <summary>
     /// Несогласованность ограничений
     /// </summary>
     [Serializable]
