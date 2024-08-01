@@ -1130,13 +1130,19 @@ namespace SLThree
         public TemplateMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, (NameExpression, Constraint)[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values)
         {
             Generics = generics;
+            OriginalParamNames = ParamNames.CloneArray();
+            OriginalParamTypes = ParamTypes.CloneArray();
+            OriginalReturnType = ReturnType.CloneCast();
+            OriginalDefaultValues = DefaultValues.CloneCast();
+            OriginalStatements = Statements.CloneCast();
             (GenericsInfo, MakingConstraints) = GenericFinder.FindAll(this);
-            DefinitionParamTypes = ParamTypes.CloneArray();
-            DefinitionReturnType = ReturnType.CloneCast(); 
         }
 
-        public readonly TypenameExpression[] DefinitionParamTypes;
-        public readonly TypenameExpression DefinitionReturnType;
+        public readonly string[] OriginalParamNames;
+        public readonly TypenameExpression[] OriginalParamTypes;
+        public readonly TypenameExpression OriginalReturnType;
+        public readonly BaseExpression[] OriginalDefaultValues;
+        public readonly StatementList OriginalStatements;
 
         public Method MakeGenericMethod((GenericMaking, object)[] args)
         {
@@ -1153,7 +1159,7 @@ namespace SLThree
                 x.Make(making, args[pos].Item2);
             }
 
-            return base.CloneWithNewName(Name);
+            return CreateMethod();
         }
 
         public readonly (NameExpression, Constraint)[] Generics;
@@ -1174,8 +1180,8 @@ namespace SLThree
             if (!unnamed)
                 sb.Append(Name);
             sb.Append($"<{Generics.Select(x => $"{x.Item1}: {x.Item2}").JoinIntoString(", ")}>");
-            sb.Append($"({DefinitionParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
-            sb.Append($": {DefinitionReturnType?.ToString() ?? "any"}");
+            sb.Append($"({OriginalParamTypes.ConvertAll(x => x?.ToString() ?? "any").JoinIntoString(", ")})");
+            sb.Append($": {OriginalReturnType?.ToString() ?? "any"}");
             return sb.ToString();
         }
 
@@ -1183,7 +1189,14 @@ namespace SLThree
 
         public override Method CloneWithNewName(string name)
         {
-            return new TemplateMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), DefinitionParamTypes.CloneArray(), DefinitionReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
+            return new TemplateMethod(name, ParamNames?.CloneArray(), OriginalStatements.CloneCast(), OriginalParamTypes.CloneArray(), OriginalReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, OriginalDefaultValues.CloneArray(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
+            {
+                Abstract = Abstract
+            };
+        }
+        public Method CreateMethod()
+        {
+            return new Method(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray())
             {
                 Abstract = Abstract
             };

@@ -452,7 +452,7 @@ namespace slt
                 {
                     if (x.Value is GenericMethod gmethod)
                     {
-                        return (gmethod.DefinitionReturnType?.ToString() ?? "any", gmethod.DefinitionParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, gmethod.Generics.ConvertAll(a => a.Name));
+                        return (gmethod.OriginalReturnType?.ToString() ?? "any", gmethod.OriginalParamTypes.Select(t => t?.ToString() ?? "any").ToArray(), true, gmethod.Generics.ConvertAll(a => a.Name));
                     }
                     if (x.Value is Method method)
                     {
