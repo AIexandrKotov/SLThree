@@ -222,7 +222,11 @@ namespace SLThree
                 throw new LogicalError($"Unexpected named instantation{suffix}", wronginstance.SourceContext);
             if (Any<UsingExpression>(o, @using => @using.Alias != null, out var wrongusing))
                 throw new LogicalError($"Unexpected named using{suffix}", wrongusing.SourceContext);
+            if (Any<ConstraintExpression>(o, constraint => constraint.Name != null, out var wrongconstraint))
+                throw new LogicalError($"Unexpected named constraint{suffix}", wrongconstraint.SourceContext);
         }
+
+        //public static void NotSupportedNullContextCheck()
 
         private FunctionArgument[] DefaultValueCheck(FunctionArgument[] arg)
         {
@@ -261,6 +265,8 @@ namespace SLThree
                 return new BinaryAssign(@using.Alias.CloneCast(), expression, @using.SourceContext);
             if (expression.Right is CreatorDictionary dictionary && dictionary.Name != null)
                 return new BinaryAssign(dictionary.Name.CloneCast(), expression, dictionary.SourceContext);
+            if (expression.Right is ConstraintExpression constraint && constraint.Name != null)
+                return new BinaryAssign(constraint.Name.CloneCast(), expression, constraint.SourceContext);
             return ReorderStaticMethod(expression);
         }
         private BaseExpression ReorderStaticMethod(StaticExpression expression)
