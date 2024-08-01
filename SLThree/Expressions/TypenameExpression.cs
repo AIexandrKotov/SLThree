@@ -10,12 +10,8 @@ namespace SLThree
         public BaseExpression Typename;
         public TypenameExpression[] Generics;
 
-        private string type_str;
         internal bool is_array;
         public int array_inds = 1;
-
-        private bool type_cached;
-        private int type_variable_id;
 
         private Type static_type;
 
@@ -25,7 +21,7 @@ namespace SLThree
         {
             Typename = expression;
             Generics = generics;
-            type_str = Typename.ToString() + (Generics == null ? "" : $"`{Generics.Length}");
+            var type_str = GetTypename();
             if (type_str.StartsWith("array"))
             {
                 var skipped = type_str.Skip(5).JoinIntoString("").Split('`');
@@ -42,15 +38,18 @@ namespace SLThree
 
         }
 
+        public string GetTypename() => Typename.ToString() + (Generics == null ? "" : $"`{Generics.Length}");
+
         public override string ExpressionToString()
         {
-            return $"{type_str}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
+            return $"{GetTypename()}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
         }
 
         public virtual Type GetStaticValue()
         {
             if (static_type != null)
                 return static_type;
+            var type_str = GetTypename();
             static_type = type_str.ToType();
             if (!is_array)
             {
@@ -66,6 +65,7 @@ namespace SLThree
         {
             if (!is_array)
             {
+                var type_str = GetTypename();
                 static_type = type_str.ToType();
                 if (static_type == null)
                     throw new RuntimeError($"Type \"{type_str}\" not found", SourceContext);
@@ -84,15 +84,10 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            if (type_cached)
-            {
-                return Isolate(context.LocalVariables.GetValue(type_variable_id));
-            }
+            var type_str = GetTypename();
             var type = context.LocalVariables.GetValue(type_str);
             if (type.Item1 != null)
             {
-                type_cached = true;
-                type_variable_id = type.Item2;
                 if (!is_array)
                 {
                     if (Generics == null) return Isolate(type.Item1);
