@@ -86,7 +86,12 @@ namespace SLThree
                                 }
                         }
                     }
-                    return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
+                    else
+                    {
+                        if (v.Item1 is Constraint constraint)
+                            return constraint;
+                        else return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
+                    }
                 }
                 else return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
                 throw new RuntimeError($"Constraint {Name} not found", SourceContext);

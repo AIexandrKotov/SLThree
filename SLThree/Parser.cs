@@ -230,15 +230,15 @@ namespace SLThree
 
         private FunctionArgument[] DefaultValueCheck(FunctionArgument[] arg)
         {
-            foreach (var x in arg)
-                if (x.DefaultValue != null)
-                    UncachebleCheck(x.DefaultValue, " as default value");
+            //foreach (var x in arg)
+            //    if (x.DefaultValue != null)
+            //        UncachebleCheck(x.DefaultValue, " as default value");
             return arg;
         }
         private FunctionArgument DefaultValueCheck(FunctionArgument x)
         {
-            if (x.DefaultValue != null)
-                UncachebleCheck(x.DefaultValue, " as default value");
+            //if (x.DefaultValue != null)
+            //    UncachebleCheck(x.DefaultValue, " as default value");
             return x;
         }
 
