@@ -589,13 +589,13 @@ method_definition_expression <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
     / generics:method_generic_part?
       arg:func_arg
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], new FunctionArgument[1] {DefaultValueCheck(arg)}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], new FunctionArgument[1] {(arg)}, GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
       }
     / abstract_method_expression
 method_definition_statement <FunctionDefinition>
@@ -610,14 +610,14 @@ abstract_method_expression <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})?
       {
-          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), null, GetOptional(ret), state)
+          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), null, GetOptional(ret), state)
       }
 method_definition_statement1 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
-          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), state)
       }
     
 
@@ -626,7 +626,7 @@ method_definition_nswm <FunctionDefinition>
       "(" _ args:func_arg<0,,"," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
       body:block_statement {
-          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], DefaultValueCheck(args.ToArray()), body, GetOptional(ret), state)
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), state)
       }
 
 method_generic_part <IList<ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>>

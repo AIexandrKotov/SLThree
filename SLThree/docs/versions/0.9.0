@@ -40,3 +40,4 @@ Bugfixes:
     - Ignoring indexed properties in wrappers (#130)
     - Generic supporting for 0.8 initializers (#131)
     - Arrays supporting in static typeof (#132)
+    - Generic cloning policy is now lossless
