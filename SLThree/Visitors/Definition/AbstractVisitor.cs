@@ -312,7 +312,6 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(TypenameExpression expression)
         {
-            VisitExpression(expression.Typename);
             if (expression.Generics != null)
             {
                 Executables.Add(expression);
