@@ -611,90 +611,6 @@ namespace SLThree
             public NameConstraintGeneric(NameConstraintDefinition concrete, int position) : base(concrete, position) { }
             public override ref BaseExpression GetPlacer() => ref Concrete.Name;
         }
-        public class CreatorArrayTypePartGeneric : ExprGenericInfo<CreatorArray>
-        {
-            public CreatorArrayTypePartGeneric(CreatorArray concrete, int position) : base(concrete, position)
-            {
-            }
-
-            public override void MakeValue(object any)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
-            }
-
-            public override void MakeType(TypenameExpression type)
-            {
-                Concrete.ListType = type;
-            }
-
-            public override void MakeName(NameExpression name)
-            {
-                Concrete.ListType = new TypenameExpression(name, name.SourceContext);
-            }
-
-            public override void MakeExpression(BaseExpression expression)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
-            }
-
-            public override void MakeCode(BaseStatement statement)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
-            }
-        }
-        public class CreatorArrayArgPartGeneric : SameBehaviourExprGenericInfo<CreatorArray>
-        {
-            public int ArgumentPosition;
-
-            public CreatorArrayArgPartGeneric(CreatorArray concrete, int position, int argumentPosition) : base(concrete, position)
-            {
-                ArgumentPosition = argumentPosition;
-            }
-
-            public override ref BaseExpression GetPlacer() => ref Concrete.Expressions[ArgumentPosition];
-        }
-        public class CreatorListTypePartGeneric : ExprGenericInfo<CreatorList>
-        {
-            public CreatorListTypePartGeneric(CreatorList concrete, int position) : base(concrete, position)
-            {
-            }
-
-            public override void MakeValue(object any)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
-            }
-
-            public override void MakeType(TypenameExpression type)
-            {
-                Concrete.ListType = type;
-            }
-
-            public override void MakeName(NameExpression name)
-            {
-                Concrete.ListType = new TypenameExpression(name, name.SourceContext);
-            }
-
-            public override void MakeExpression(BaseExpression expression)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
-            }
-
-            public override void MakeCode(BaseStatement statement)
-            {
-                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
-            }
-        }
-        public class CreatorListArgPartGeneric : SameBehaviourExprGenericInfo<CreatorList>
-        {
-            public int ArgumentPosition;
-
-            public CreatorListArgPartGeneric(CreatorList concrete, int position, int argumentPosition) : base(concrete, position)
-            {
-                ArgumentPosition = argumentPosition;
-            }
-
-            public override ref BaseExpression GetPlacer() => ref Concrete.Expressions[ArgumentPosition];
-        }
         public class FunctionDefinitionNamePartGeneric : SameBehaviourExprGenericInfo<FunctionDefinition>
         {
             public FunctionDefinitionNamePartGeneric(FunctionDefinition concrete, int position) : base(concrete, position) { }
@@ -1026,42 +942,6 @@ namespace SLThree
                     {
                         CheckAnyAllow(i, expression.Type, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
                         Infos.Add(new CastExpressionRightPartGeneric(expression, i));
-                    }
-                }
-                base.VisitExpression(expression);
-            }
-
-            public override void VisitExpression(CreatorArray expression)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if ((!(expression.ListType?.is_array ?? false)) && expression.ListType?.Typename is NameExpression name && name.Name == Generics[i])
-                    {
-                        CheckAnyAllow(i, expression.ListType, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
-                        Infos.Add(new CreatorArrayTypePartGeneric(expression, i));
-                    }
-                    for (var j = 0; j < expression.Expressions.Length; j++)
-                    {
-                        if (expression.Expressions[j] is NameExpression arg_name && arg_name.Name == Generics[i])
-                            Infos.Add(new CreatorArrayArgPartGeneric(expression, i, j));
-                    }
-                }
-                base.VisitExpression(expression);
-            }
-
-            public override void VisitExpression(CreatorList expression)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if ((!(expression.ListType?.is_array ?? false)) && expression.ListType?.Typename is NameExpression name && name.Name == Generics[i])
-                    {
-                        CheckAnyAllow(i, expression.ListType, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
-                        Infos.Add(new CreatorListTypePartGeneric(expression, i));
-                    }
-                    for (var j = 0; j < expression.Expressions.Length; j++)
-                    {
-                        if (expression.Expressions[j] is NameExpression arg_name && arg_name.Name == Generics[i])
-                            Infos.Add(new CreatorListArgPartGeneric(expression, i, j));
                     }
                 }
                 base.VisitExpression(expression);

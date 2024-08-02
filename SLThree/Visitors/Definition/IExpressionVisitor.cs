@@ -4,10 +4,8 @@
     {
         void VisitExpression(BaseExpression expression);
 
-        void VisitExpression(CreatorArray expression);
         void VisitExpression(CreatorNewArray expression);
         void VisitExpression(CreatorDictionary expression);
-        void VisitExpression(CreatorList expression);
         void VisitExpression(CreatorRange expression);
         void VisitExpression(CreatorTuple expression);
         void VisitExpression(CreatorUsing expression);

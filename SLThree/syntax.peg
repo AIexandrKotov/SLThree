@@ -205,7 +205,6 @@ unary <BaseExpression>
     / i16:("-" ([0-9_]+ ("i16"))) { new ShortLiteral(short.Parse(i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, state) }
     / i32:("-" ([0-9_]+ ("i32"))) { new IntLiteral(int.Parse(i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), i32, state) }
     / i64:("-" ([0-9_]+ ("i64"))) { new LongLiteral(long.Parse(i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, state) }
-    / "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), state) }
     / "-" _ left:binary_min { new UnaryRem(left, state) }
     / "~" _ left:binary_min { new UnaryBitNot(left, state) }
     / "!" _ left:binary_min { new UnaryNot(left, state) }
@@ -279,9 +278,6 @@ primary <BaseExpression> -memoize
     / constraint_expression
     / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
-    / "<" _ t:typename _ ">" _ "-[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorArray(args.ToArray(), t, state) }
-    / "<" _ t:typename _ ">" _ "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), t, state) }
-    / "[" _ args:expression<0,,"," _> _ ("," _ )? "]" { new CreatorList(args.ToArray(), state) }
     / special
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
@@ -295,14 +291,14 @@ constraint_expression <ConstraintExpression>
 
 generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
     = old_generic_invokation
-    / maki:generic_making _ ":" _ expr:(<BaseExpression>block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(maki, new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state)) }
-    / maki:generic_making _ "=" _ expr:(<BaseExpression>block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
-    / ":" _ expr:(<BaseExpression>block_expression / primary) { 
+    / maki:generic_making _ ":" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state)) }
+    / maki:generic_making _ "=" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
+    / ":" _ expr:block_or_primary { 
         new ValueTuple<BaseExpression, BaseExpression>(
             new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
         new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state))
     }
-    / "=" _ expr:(<BaseExpression>block_expression / primary) { 
+    / "=" _ expr:block_or_primary { 
         new ValueTuple<BaseExpression, BaseExpression>(
             new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
         expr)
@@ -312,9 +308,12 @@ old_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
     = "as" _required_ "type" _ ":" _ expr:typename { new ValueTuple<BaseExpression, BaseExpression>(
             new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", state), state), 
         expr) }
-    / "as" _required_ "type" _ "=" _ expr:(<BaseExpression> block_expression / primary) { new ValueTuple<BaseExpression, BaseExpression>(
+    / "as" _required_ "type" _ "=" _ expr:block_expression { new ValueTuple<BaseExpression, BaseExpression>(
             new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", state), state), 
         expr) }
+
+block_or_primary <BaseExpression>
+    = block_expression / primary
 
 generic_making <BaseExpression>
     = "as" _required_ maki:primary { new InvokeTemplateExpression.GenericMakingDefinition(maki, state) }

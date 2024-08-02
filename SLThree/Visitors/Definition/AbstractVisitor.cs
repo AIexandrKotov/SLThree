@@ -73,12 +73,10 @@ namespace SLThree.Visitors
                 case IndexExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
                 case CreatorDictionary expr: VisitExpression(expr); return;
-                case CreatorList expr: VisitExpression(expr); return;
                 case CreatorUsing expr: VisitExpression(expr); return;
                 case ReflectionExpression expr: VisitExpression(expr); return;
                 case TypenameExpression expr: VisitExpression(expr); return;
                 case CreatorNewArray expr: VisitExpression(expr); return;
-                case CreatorArray expr: VisitExpression(expr); return;
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
@@ -122,25 +120,6 @@ namespace SLThree.Visitors
             Executables.Add(expression);
             VisitExpression(expression.Type);
             Executables.Remove(expression);
-        }
-        public virtual void VisitExpression(CreatorList expression)
-        {
-            if (expression.ListType != null)
-                VisitExpression(expression.ListType);
-            foreach (var x in expression.Expressions)
-            {
-                VisitExpression(x);
-            }
-        }
-
-        public virtual void VisitExpression(CreatorArray expression)
-        {
-            if (expression.ListType != null)
-                VisitExpression(expression.ListType);
-            foreach (var x in expression.Expressions)
-            {
-                VisitExpression(x);
-            }
         }
         public virtual void VisitExpression(CreatorDictionary expression)
         {

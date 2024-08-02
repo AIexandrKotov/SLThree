@@ -125,22 +125,6 @@ namespace SLThree
 
                 public override ref TypenameExpression GetPlacer() => ref Concrete.Typename;
             }*/
-            public class ArrayCreator : GenericInfo<CreatorArray>
-            {
-                public ArrayCreator(CreatorArray concrete, int position) : base(concrete, position)
-                {
-                }
-
-                public override ref TypenameExpression GetPlacer() => ref Concrete.ListType;
-            }
-            public class ListCreator : GenericInfo<CreatorList>
-            {
-                public ListCreator(CreatorList concrete, int position) : base(concrete, position)
-                {
-                }
-
-                public override ref TypenameExpression GetPlacer() => ref Concrete.ListType;
-            }
             public class RangeCreator : GenericInfo<CreatorRange>
             {
                 public RangeCreator(CreatorRange concrete, int position) : base(concrete, position)
