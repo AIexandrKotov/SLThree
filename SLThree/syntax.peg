@@ -268,7 +268,6 @@ primary <BaseExpression> -memoize
     / "$" x:block_statement { new MacrosDefinition(x, state) }
     / "$(" _ x:expression _ ")" { new MacrosDefinition(x, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
-    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
     / "new" _required_ "using" _required_ u: using { u }
     / new_context_expression
     / collection_expression
@@ -410,6 +409,9 @@ collection_expression <BaseExpression>
     _ body:collection_body { 
         CreatorCollection.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), state)
     }
+//--------CREATOR--NEW--ARRAY------------------------------------------------
+//        new T[10];
+    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, state) }
 //--------CREATOR--DICTIONARY------------------------------------------------
 //        new T Name {};
     / "new" _required_ t:typename _ name:primary

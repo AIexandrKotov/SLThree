@@ -115,6 +115,71 @@ namespace SLThree
             throw new RuntimeError($"The collection initializer cannot be used for the type {type.GetTypeString()}", SourceContext);
         }
 
+        public static Queue<T> ToQueue<T>(IEnumerable<object> source, Queue<T> target, bool forbid_implicit)
+        {
+            var list = target ?? new Queue<T>();
+            if (forbid_implicit)
+            {
+                foreach (var item in source)
+                    list.Enqueue(item.Cast<T>());
+            }
+            else
+            {
+                foreach (var item in source)
+                    list.Enqueue(item.CastToType<T>());
+            }
+            return list;
+        }
+        public static Stack<T> ToStack<T>(IEnumerable<object> source, Stack<T> target, bool forbid_implicit)
+        {
+            var list = target ?? new Stack<T>();
+            if (forbid_implicit)
+            {
+                foreach (var item in source)
+                    list.Push(item.Cast<T>());
+            }
+            else
+            {
+                foreach (var item in source)
+                    list.Push(item.CastToType<T>());
+            }
+            return list;
+        }
+        public static List<T> ToList<T>(IEnumerable<object> source, List<T> target, bool forbid_implicit)
+        {
+            var list = target ?? new List<T>();
+            if (forbid_implicit)
+            {
+                foreach (var item in source)
+                    list.Add(item.Cast<T>());
+            }
+            else
+            {
+                foreach (var item in source)
+                    list.Add(item.CastToType<T>());
+            }
+            return list;
+        }
+        public static T[] ToArray<T>(IEnumerable<object> source, T[] target, bool forbid_implicit)
+        {
+            if (target == null) return ToList<T>(source, null, forbid_implicit).ToArray();
+            var list = target;
+            if (forbid_implicit)
+            {
+                var i = 0;
+                foreach (var item in source)
+                    list[i++] = item.Cast<T>();
+            }
+            else
+            {
+                var i = 0;
+                foreach (var item in source)
+                    list[i++] = item.Cast<T>();
+            }
+            return list;
+        }
+
+
         private static MethodInfo
             GetTypedArrayMethod = typeof(CreatorCollection).GetMethod("GetTypedArray", BindingFlags.Static | BindingFlags.NonPublic),
             GetTypedListMethod = typeof(CreatorCollection).GetMethod("GetTypedList", BindingFlags.Static | BindingFlags.NonPublic),
@@ -126,21 +191,13 @@ namespace SLThree
         private int variable_index;
 #pragma warning disable IDE0051 // Удалите неиспользуемые закрытые члены
         private static T[] GetTypedArray<T>(IEnumerable<BaseExpression> expressions, T[] target, ExecutionContext context)
-            => context.ForbidImplicit
-            ? expressions.Select(x => x.GetValue(context).Cast<T>()).ToArray()
-            : expressions.Select(x => x.GetValue(context).CastToType<T>()).ToArray();
-        private static List<T> GetTypedList<T>(IEnumerable<BaseExpression> expressions, ExecutionContext context)
-            => context.ForbidImplicit
-            ? expressions.Select(x => x.GetValue(context).Cast<T>()).ToList()
-            : expressions.Select(x => x.GetValue(context).CastToType<T>()).ToList();
+            => ToArray(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
+        private static List<T> GetTypedList<T>(IEnumerable<BaseExpression> expressions, List<T> target, ExecutionContext context)
+            => ToList(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
         private static Stack<T> GetTypedStack<T>(IEnumerable<BaseExpression> expressions, Stack<T> target, ExecutionContext context)
-            => context.ForbidImplicit
-            ? new Stack<T>(expressions.Select(x => x.GetValue(context).Cast<T>()))
-            : new Stack<T>(expressions.Select(x => x.GetValue(context).CastToType<T>()).ToList());
+            => ToStack(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
         private static Queue<T> GetTypedQueue<T>(IEnumerable<BaseExpression> expressions, Queue<T> target, ExecutionContext context)
-            => context.ForbidImplicit
-            ? new Queue<T>(expressions.Select(x => x.GetValue(context).Cast<T>()))
-            : new Queue<T>(expressions.Select(x => x.GetValue(context).CastToType<T>()).ToList());
+            => ToQueue(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
 #pragma warning restore IDE0051 // Удалите неиспользуемые закрытые члены
 
         public override object Clone()
