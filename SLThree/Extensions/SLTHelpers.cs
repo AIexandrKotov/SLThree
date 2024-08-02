@@ -28,6 +28,8 @@ namespace SLThree.Extensions
             if (t == type_long) return "i64";
             if (t == type_double) return "f64";
             if (t == type_ulong) return "u64";
+            if (t == type_queue) return "queue";
+            if (t == type_stack) return "stack";
             if (t == type_list) return "list";
             if (t == type_dict) return "dict";
             if (t == type_array) return "array";
@@ -44,6 +46,8 @@ namespace SLThree.Extensions
                 var name = string.Empty;
                 if (generic_def == type_generic_list) name = "list";
                 else if (generic_def == type_generic_dict) name = "dict";
+                else if (generic_def == type_generic_stack) name = "stack";
+                else if (generic_def == type_generic_queue) name = "queue";
                 else if (t.Name.StartsWith("ValueTuple")) name = "tuple";
                 else if (t.FullName != null) name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
                 else name = t.Name.Substring(0, t.Name.IndexOf('`')).Split('.').Last();
@@ -75,6 +79,14 @@ namespace SLThree.Extensions
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_dict;
         }
+        public static bool IsStack(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_stack;
+        }
+        public static bool IsQueue(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_queue;
+        }
         private static Dictionary<Type, bool> is_tuple_cache = new Dictionary<Type, bool>()
         {
             { typeof(ITuple), true },
@@ -84,6 +96,8 @@ namespace SLThree.Extensions
             ? result
             : (is_tuple_cache[type] = type.GetInterfaces().Contains(type_tuple));
         private static Type type_generic_list = typeof(List<>);
+        private static Type type_generic_stack = typeof(Stack<>);
+        private static Type type_generic_queue = typeof(Queue<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
         private static Type type_void = typeof(void);
         public static Type ToType(this string s, bool throwError = false)
@@ -107,6 +121,10 @@ namespace SLThree.Extensions
                 case "context": return type_context;
                 case "list": return type_list;
                 case "list`1": return type_generic_list;
+                case "stack": return type_stack;
+                case "stack`1": return type_generic_stack;
+                case "queue": return type_queue;
+                case "queue`1": return type_generic_queue;
                 case "dict": return type_dict;
                 case "dict`2": return type_generic_dict;
                 case "tuple`1": return typeof(ValueTuple<>);
@@ -172,6 +190,8 @@ namespace SLThree.Extensions
         private static Type type_array = typeof(object[]);
         private static Type type_list = typeof(List<object>);
         private static Type type_dict = typeof(Dictionary<object, object>);
+        private static Type type_stack = typeof(Stack<object>);
+        private static Type type_queue = typeof(Queue<object>);
         private static Type type_tuple = typeof(ITuple);
 
         public static BaseExpression RaisePriority(this BaseExpression expression)
