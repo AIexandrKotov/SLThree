@@ -52,3 +52,4 @@ Bugfixes:
     - Generic supporting for 0.8 initializers (#131)
     - Arrays supporting in static typeof (#132)
     - Generic cloning policy is now lossless
+    - Indentation supporting in $-strings (#133)

@@ -812,7 +812,7 @@ interpolated_string <InterpolatedString> = "$\"" chars:interpolated_start exp:in
     new InterpolatedString(chars, exp, state)
 }
 
-interpolated_expression <ValueTuple<BaseExpression, string>> = ("{" expr:interpolation "}" s:interpolated_mid?) { new ValueTuple<BaseExpression, string>(expr, s.JoinIntoString("")) }
+interpolated_expression <ValueTuple<BaseExpression, string>> = ("{" _ expr:interpolation _ "}" s:interpolated_mid?) { new ValueTuple<BaseExpression, string>(expr, s.JoinIntoString("")) }
 
 interpolated_start = chars:interpolated_mid? { chars.JoinIntoString("") }
 
@@ -827,7 +827,7 @@ interpolation_escape
     = "{{" { "{{" }
     / "}}" { "}}" }
 
-interpolation
+interpolation <BaseExpression>
     = expression
 
 string_literal <StringLiteral> = "\"" chars:string_element* ("\"" / #ERROR{ "Expected '\"'" }) {
