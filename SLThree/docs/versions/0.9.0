@@ -26,16 +26,14 @@ Language:
       `new dict { 1: 2, 3: 4 }`
       `new dict<i64, i64> { 1: 2, 3: 4 }`
     - Array and list initializers new syntax:
+      `new array { 1, 2, 3, 4 }`
         - Also supports: stack, queue
-          `new array { 1, 2, 3, 4 }`
-          `new list<i64> { 1, 2, 3, 4 }`
     - Short initializers:
-        - Array
-        `new { 1, 2, 3 }`
-        - Dictionary
-        `new { 1: 2, 3: 4 }`
-        - Context without private context
-        `new {...}`
+        - Array: `new { 1, 2, 3 }`
+        - Dictionary: `new { 1: 2, 3: 4 }`
+        - Context without private context: `new {...}`
+    - Multiline interpolated strings $"""str{2}""";
+    - Multiline strings """str"""
     - Syntax sugar for overloading methods
     - Defining methods with default parameters
       `(x = 5, y = 10) => x + y;`

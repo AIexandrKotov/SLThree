@@ -733,7 +733,9 @@ literal <BaseExpression>
     / hex_num_literal
     / num_literal
 
+    / multiline_interpolated_string
     / interpolated_string
+    / multiline_string_literal
     / string_literal
     / char_literal
 
@@ -808,6 +810,22 @@ name_digit
 name_not_digit
     = first:.&{ first == "_" || char.IsLetter(first[0]) }
 
+
+multiline_interpolated_string <InterpolatedString> = "$\"\"\"" chars:multiline_interpolated_start exp:multiline_interpolated_expression* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
+    new InterpolatedString(chars, exp, state)
+}
+
+multiline_interpolated_expression <ValueTuple<BaseExpression, string>> = ("{" _ expr:interpolation _ "}" s:multiline_interpolated_mid?) { new ValueTuple<BaseExpression, string>(expr, s.JoinIntoString("")) }
+
+multiline_interpolated_start = chars:multiline_interpolated_mid? { chars.JoinIntoString("") }
+
+multiline_interpolated_mid = chars:multiline_interpolated_element+ { chars.JoinIntoString("") }
+
+multiline_interpolated_element
+    = interpolation_escape
+    / string_escape
+    / [^\\\t\"{}]
+
 interpolated_string <InterpolatedString> = "$\"" chars:interpolated_start exp:interpolated_expression* ("\"" / #ERROR{ "Expected '\"'" }) {
     new InterpolatedString(chars, exp, state)
 }
@@ -829,6 +847,10 @@ interpolation_escape
 
 interpolation <BaseExpression>
     = expression
+    
+multiline_string_literal <StringLiteral> = "\"\"\"" chars:string_element* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
+    new StringLiteral(string.Concat(chars), state)
+}
 
 string_literal <StringLiteral> = "\"" chars:string_element* ("\"" / #ERROR{ "Expected '\"'" }) {
     new StringLiteral(string.Concat(chars), state)
@@ -843,6 +865,10 @@ char_element
 
 char_escape
     = "\\\\'" { "'" }
+
+multiline_string_element
+    = string_escape
+    / [^\\\t\"]
 
 string_element
     = string_escape
