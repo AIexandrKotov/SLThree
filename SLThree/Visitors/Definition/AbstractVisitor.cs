@@ -73,6 +73,7 @@ namespace SLThree.Visitors
                 case IndexExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
                 case CreatorDictionary expr: VisitExpression(expr); return;
+                case CreatorCollection expr: VisitExpression(expr); return;
                 case CreatorUsing expr: VisitExpression(expr); return;
                 case ReflectionExpression expr: VisitExpression(expr); return;
                 case TypenameExpression expr: VisitExpression(expr); return;
@@ -85,6 +86,8 @@ namespace SLThree.Visitors
                 case FunctionArgument expr: VisitExpression(expr); return;
                 case ConstraintExpression expr: VisitExpression(expr); return;
                 case TemplateMethod.ConstraintDefinition expr: VisitConstraint(expr); return;
+
+                case BaseInstanceCreator expr: VisitExpression(expr); return;
             }
             Executables.Remove(expression);
         }
@@ -123,18 +126,18 @@ namespace SLThree.Visitors
         }
         public virtual void VisitExpression(CreatorDictionary expression)
         {
-            Executables.Add(expression);
-            VisitExpression(expression.Type);
-            Executables.Remove(expression);
-            if (expression.Name != null)
-                VisitExpression(expression.Name);
-            foreach (var x in expression.Arguments)
-                VisitExpression(x);
+            VisitExpression((BaseInstanceCreator)expression);
             foreach (var x in expression.Body)
             {
                 VisitExpression(x.Key);
                 VisitExpression(x.Value);
             }
+        }
+        public virtual void VisitExpression(CreatorCollection expression)
+        {
+            VisitExpression((BaseInstanceCreator)expression);
+            foreach (var x in expression.Body)
+                VisitExpression(x);
         }
         public virtual void VisitExpression(CreatorTuple expression)
         {
@@ -227,13 +230,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(CreatorInstance expression)
         {
-            Executables.Add(expression);
-            VisitExpression(expression.Type);
-            Executables.Remove(expression);
-            if (expression.Name != null)
-                VisitExpression(expression.Name);
-            foreach (var x in expression.Arguments)
-                VisitExpression(x);
+            VisitExpression((BaseInstanceCreator)expression);
             if (expression.CreatorContext != null)
                 VisitExpression(expression.CreatorContext);
         }
@@ -312,6 +309,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(TypenameExpression expression)
         {
+            VisitExpression(expression.Typename);
             if (expression.Generics != null)
             {
                 Executables.Add(expression);
@@ -492,6 +490,17 @@ namespace SLThree.Visitors
             if (expression.Name != null)
                 VisitExpression(expression.Name);
             VisitConstraint(expression.Body);
+        }
+
+        public virtual void VisitExpression(BaseInstanceCreator expression)
+        {
+            Executables.Add(expression);
+            VisitExpression(expression.Type);
+            Executables.Remove(expression);
+            if (expression.Name != null)
+                VisitExpression(expression.Name);
+            foreach (var x in expression.Arguments)
+                VisitExpression(x);
         }
     }
 }

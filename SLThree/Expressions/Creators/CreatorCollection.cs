@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SLThree
 {
-    public class CreatorCollection : BaseExpression
+    public class CreatorCollection : BaseInstanceCreator
     {
         /*
         ---Creating collections ---
@@ -19,9 +19,6 @@ namespace SLThree
         new T Name {,,};
         new T(args) Name {,,};
         */
-        public TypenameExpression Type;
-        public BaseExpression Name;
-        public BaseExpression[] Arguments;
         public BaseExpression[] Body;
         public static CreatorCollection CaseShort(BaseExpression[] body, SourceContext context)
             => new CreatorCollection(

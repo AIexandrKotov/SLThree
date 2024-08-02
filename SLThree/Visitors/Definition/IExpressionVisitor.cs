@@ -5,11 +5,13 @@
         void VisitExpression(BaseExpression expression);
 
         void VisitExpression(CreatorNewArray expression);
-        void VisitExpression(CreatorDictionary expression);
         void VisitExpression(CreatorRange expression);
         void VisitExpression(CreatorTuple expression);
         void VisitExpression(CreatorUsing expression);
         void VisitExpression(CreatorContext expression);
+        void VisitExpression(BaseInstanceCreator expression);
+        void VisitExpression(CreatorDictionary expression);
+        void VisitExpression(CreatorCollection expression);
         void VisitExpression(CreatorInstance expression);
 
         void VisitExpression(CastExpression expression);

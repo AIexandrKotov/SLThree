@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SLThree
 {
-    public class CreatorInstance : BaseExpression
+    public class CreatorInstance : BaseInstanceCreator
     {
         /*
         ---Creating instances---
@@ -152,9 +152,6 @@ namespace SLThree
             CreatorContext = creatorContext;
         }
 
-        public TypenameExpression Type;
-        public BaseExpression Name { get; set; }
-        public BaseExpression[] Arguments { get; set; }
         public CreatorContext CreatorContext { get; set; }
 
         public override string ExpressionToString()

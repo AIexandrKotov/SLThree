@@ -25,6 +25,17 @@ namespace SLThree
         {
             Typename = expression;
             Generics = generics;
+            PullTheType();
+        }
+
+        public TypenameExpression(BaseExpression expression, SourceContext context) : this(expression, null, context)
+        {
+
+        }
+
+        public void PullTheType()
+        {
+            is_array = false;
             type_str = Typename.ToString() + (Generics == null ? "" : $"`{Generics.Length}");
             if (type_str.StartsWith("array"))
             {
@@ -37,14 +48,10 @@ namespace SLThree
             }
         }
 
-        public TypenameExpression(BaseExpression expression, SourceContext context) : this(expression, null, context)
-        {
-
-        }
-
         public override string ExpressionToString()
         {
-            return $"{type_str}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
+            var gind = type_str.IndexOf('`');
+            return $"{(gind != -1 ? type_str.Remove(gind) : type_str)}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
         }
 
         public virtual Type GetStaticValue()

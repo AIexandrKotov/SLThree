@@ -9,7 +9,7 @@ using System.Text;
 namespace SLThree
 {
 
-    public class CreatorDictionary : BaseExpression
+    public class CreatorDictionary : BaseInstanceCreator
     {
         public class DictionaryEntry : BaseExpression
         {
@@ -85,9 +85,6 @@ namespace SLThree
             Body = body;
         }
 
-        public TypenameExpression Type;
-        public BaseExpression Name;
-        public BaseExpression[] Arguments;
         public DictionaryEntry[] Body;
 
         public override string ExpressionToString()
