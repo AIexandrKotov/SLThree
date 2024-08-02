@@ -183,11 +183,11 @@ binary_1 <BaseExpression> -memoize
 
 binary_0 <BaseExpression> -memoize
     = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, state) }
+    / "^*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, state), t, state) }
     / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, state), state) }
-    / "*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, state), t, state) }
     / "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, t, state) }
+    / "^*" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, state), null, state) }
     / "^" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, state), state) }
-    / "*" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, state), null, state) }
     / lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, state) }
     / left:binary_0 _ "::" _ right:name 
     _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,"," _> _ ">" {gen_args_i})? 
@@ -208,9 +208,11 @@ unary <BaseExpression>
     / "-" _ left:binary_min { new UnaryRem(left, state) }
     / "~" _ left:binary_min { new UnaryBitNot(left, state) }
     / "!" _ left:binary_min { new UnaryNot(left, state) }
+    / "*" _ left:binary_min { new DereferenceExpression(left, state) }
+    / "&" _ left:binary_min { new ReferenceExpression(left, state) }
+    / "^*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, state) }
+    / "^*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "^" _ left:binary_min { new UnaryChoose(left, state) }
-    / "*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, state) }
-    / "*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, state) }
     / "@" _ left:typename { new UnaryReflection(left, state) }
     / primary

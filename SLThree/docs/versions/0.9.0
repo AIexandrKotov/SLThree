@@ -34,6 +34,11 @@ Language:
         - Context without private context: `new {...}`
     - Multiline interpolated strings $"""str{2}""";
     - Multiline strings """str"""
+    - Contextual reference and dereference: `&T`, `*T`
+      Reference links the expression to the context
+      Dereferencing executes expression in it
+    - New get chooser syntax:
+      `*[1, 2, 3]` -> `^*[1, 2, 3]`
     - Syntax sugar for overloading methods
     - Defining methods with default parameters
       `(x = 5, y = 10) => x + y;`

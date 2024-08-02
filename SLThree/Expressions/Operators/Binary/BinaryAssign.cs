@@ -80,6 +80,10 @@ namespace SLThree
                 tuple.SetValue(context, right);
                 return right;
             }
+            else if (Left is DereferenceExpression dereference)
+            {
+                return dereference.SetValue(context, right);
+            }
             throw new OperatorError("=", Left?.GetType(), right?.GetType(), Left.SourceContext);
         }
 
@@ -123,6 +127,11 @@ namespace SLThree
             else if (Left is CreatorTuple tuple)
             {
                 tuple.SetValue(context, right);
+                return right;
+            }
+            else if (Left is DereferenceExpression dereference)
+            {
+                dereference.SetValue(context, right);
                 return right;
             }
             throw new OperatorError("=", Left?.GetType(), right?.GetType(), Left.SourceContext);
