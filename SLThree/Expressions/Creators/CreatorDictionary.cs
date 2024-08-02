@@ -8,6 +8,7 @@ using System.Text;
 
 namespace SLThree
 {
+
     public class CreatorDictionary : BaseExpression
     {
         public class DictionaryEntry : BaseExpression
@@ -32,12 +33,20 @@ namespace SLThree
 
         /*
         ---Creating dictionaries---
+        new {:};
         new T {:};
         new T(args) {:};
         ---With name assignation
         new T Name {:};
         new T(args) Name {:};
         */
+        public static CreatorDictionary CaseShort(DictionaryEntry[] body, SourceContext context)
+            => new CreatorDictionary(
+                null,
+                null,
+                new BaseExpression[0],
+                body,
+                context);
         public static CreatorDictionary CaseTypeBody(TypenameExpression type, DictionaryEntry[] body, SourceContext context)
             => new CreatorDictionary(
                 type,
@@ -64,22 +73,22 @@ namespace SLThree
                 type,
                 name,
                 args,
-                new DictionaryEntry[0],
+                body,
                 context);
 
 
         public CreatorDictionary(TypenameExpression type, BaseExpression name, BaseExpression[] args, DictionaryEntry[] body, SourceContext context) : base(context)
         {
-            Type = type;
+            Type = type ?? new TypenameExpression(new NameExpression("dict", context), context);
             Name = name;
             Arguments = args;
             Body = body;
         }
 
         public TypenameExpression Type;
-        public BaseExpression Name { get; set; }
-        public BaseExpression[] Arguments { get; set; }
-        public DictionaryEntry[] Body { get; set; }
+        public BaseExpression Name;
+        public BaseExpression[] Arguments;
+        public DictionaryEntry[] Body;
 
         public override string ExpressionToString()
         {
@@ -108,7 +117,7 @@ namespace SLThree
             instance = Activator.CreateInstance(type, Arguments.ConvertAll(x => x.GetValue(context)));
             if (Name != null)
                 BinaryAssign.AssignToValue(context, Name, instance, ref counted_invoked, ref is_name_expr, ref variable_index);
-            return GetTypedDictionaryMethod.MakeGenericMethod(type.GetGenericArguments()).Invoke(null, new object[] { Body, instance, context }); ;
+            return GetTypedDictionaryMethod.MakeGenericMethod(type.GetGenericArguments()).Invoke(null, new object[] { Body, instance, context });
         }
 
         public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(IEnumerable<(object, object)> source, Dictionary<TKey, TElement> target, bool forbid_implicit)

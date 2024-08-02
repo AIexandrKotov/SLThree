@@ -18,19 +18,22 @@ namespace SLThree
         context: TBase {}
         context {}
         */
+
         public BaseExpression Name { get; set; }
         public BaseExpression[] Ancestors { get; set; }
         public CreatorContextBody CreatorBody { get; set; }
         public bool IsFreeCreator { get; set; }
+        public bool GeneratePrivate { get; set; }
 
         public bool HasName => Name != null;
 
-        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, SourceContext context) : base(context)
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, SourceContext context, bool generatePrivate = true) : base(context)
         {
             Name = name;
             Ancestors = ancestors;
             CreatorBody = body;
             IsFreeCreator = is_free_creator;
+            GeneratePrivate = generatePrivate;
         }
         public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
             : this(name, ancestors, body, true, context) { }
@@ -38,8 +41,8 @@ namespace SLThree
             : this(name, new BaseExpression[0], body, true, context) { }
         public CreatorContext(BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
             : this(null, ancestors, body, true, context) { }
-        public CreatorContext(CreatorContextBody body, SourceContext context)
-            : this(null, new BaseExpression[0], body, true, context) { }
+        public CreatorContext(CreatorContextBody body, SourceContext context, bool generatePrivate = true)
+            : this(null, new BaseExpression[0], body, true, context, generatePrivate) { }
         public CreatorContext(BaseExpression name, BaseExpression[] ancestors, SourceContext context)
             : this(name, ancestors, null, true, context) { }
         public CreatorContext(BaseExpression name, SourceContext context)
@@ -67,7 +70,7 @@ namespace SLThree
 
         public object GetValue(ExecutionContext target, ExecutionContext context)
         {
-            var ret = new ExecutionContext(target);
+            var ret = new ExecutionContext(target, GeneratePrivate);
             for (var i = 0; i < Ancestors.Length; i++)
                 ret.implement(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
             CreatorBody?.GetValue(ret, context);
@@ -83,6 +86,6 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context) => GetValue(context, context);
 
-        public override object Clone() => new CreatorContext(Name.CloneCast(), Ancestors.CloneArray(), CreatorBody.CloneCast(), IsFreeCreator, SourceContext.CloneCast());
+        public override object Clone() => new CreatorContext(Name.CloneCast(), Ancestors.CloneArray(), CreatorBody.CloneCast(), IsFreeCreator, SourceContext.CloneCast(), GeneratePrivate);
     }
 }
