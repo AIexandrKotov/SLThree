@@ -7,9 +7,9 @@ namespace SLThree
 {
     public class ForeachLoopStatement : BaseStatement
     {
-        public BaseExpression Left { get; set; }
-        public BaseExpression Iterator { get; set; }
-        public BaseStatement[] LoopBody { get; set; }
+        public BaseExpression Left;
+        public BaseExpression Iterator;
+        public BaseStatement[] LoopBody;
 
         public ForeachLoopStatement() : base() { }
         public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(context)

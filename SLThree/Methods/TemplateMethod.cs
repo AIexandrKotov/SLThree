@@ -998,16 +998,73 @@ namespace SLThree
 
             public override ref BaseExpression GetPlacer() => ref Concrete.Expressions[ArgumentPosition];
         }
+        public class NameExpressionTypeGeneric : ExprGenericInfo<NameExpression>
+        {
+            public NameExpressionTypeGeneric(NameExpression concrete, int position) : base(concrete, position) { }
 
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.TypeHint = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.TypeHint = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
+
+        public class ExpressionStatementGeneric : SameBehaviourCodeGenericInfo<ExpressionStatement>
+        {
+            public ExpressionStatementGeneric(ExpressionStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
+        }
         public class ReturnStatementGeneric : SameBehaviourCodeGenericInfo<ReturnStatement>
         {
             public ReturnStatementGeneric(ReturnStatement concrete, int position) : base(concrete, position) { }
             public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
         }
-        public class ExpressionStatementGeneric : SameBehaviourCodeGenericInfo<ExpressionStatement>
+        public class WhileLoopStatementGeneric : SameBehaviourCodeGenericInfo<WhileLoopStatement>
         {
-            public ExpressionStatementGeneric(ExpressionStatement concrete, int position) : base(concrete, position) { }
-            public override ref BaseExpression GetPlacer() => ref Concrete.Expression;
+            public WhileLoopStatementGeneric(WhileLoopStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Condition;
+        }
+        public class ForeachLoopStatementGeneric : SameBehaviourCodeGenericInfo<ForeachLoopStatement>
+        {
+            public bool IsEnumerable;
+            public ForeachLoopStatementGeneric(ForeachLoopStatement concrete, int position, bool is_enumerable) : base(concrete, position)
+            {
+                IsEnumerable = is_enumerable;
+            }
+            public override ref BaseExpression GetPlacer()
+            {
+                if (IsEnumerable) return ref Concrete.Iterator;
+                return ref Concrete.Left;
+            }
+        }
+        public class ThrowStatementGeneric : SameBehaviourCodeGenericInfo<ThrowStatement>
+        {
+            public ThrowStatementGeneric(ThrowStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.ThrowExpression;
+        }
+        public class TryStatementGeneric : SameBehaviourCodeGenericInfo<TryStatement>
+        {
+            public TryStatementGeneric(TryStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.CatchVariable;
         }
 
         public class OwnParameterNameGeneric : GenericInfo
@@ -1205,6 +1262,19 @@ namespace SLThree
 
             public List<GenericInfo> Infos = new List<GenericInfo>();
 
+            public override void VisitExpression(NameExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (expression.TypeHint?.Typename is NameExpression name && name.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
+                        Infos.Add(new NameExpressionTypeGeneric(expression, i));
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
             public override void VisitExpression(TypenameExpression expression)
             {
                 var count = Infos.Count;
@@ -1237,30 +1307,6 @@ namespace SLThree
 
                 for (var i = 0; i < onbasevisit.Count; i++)
                     base.VisitExpression(expression.Generics[i]);
-            }
-
-            public override void VisitStatement(ExpressionStatement statement)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if (statement is ExpressionStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
-                    {
-                        Infos.Add(new ExpressionStatementGeneric(expr, i));
-                    }
-                }
-                base.VisitStatement(statement);
-            }
-
-            public override void VisitStatement(ReturnStatement statement)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if (statement is ReturnStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
-                    {
-                        Infos.Add(new ReturnStatementGeneric(expr, i));
-                    }
-                }
-                base.VisitStatement(statement);
             }
 
             public override void VisitExpression(MemberAccess expression)
@@ -1499,6 +1545,82 @@ namespace SLThree
                     }
                 }
                 base.VisitExpression(expression);
+            }
+
+            public override void VisitStatement(ExpressionStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement is ExpressionStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new ExpressionStatementGeneric(expr, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(ReturnStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement is ReturnStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new ReturnStatementGeneric(expr, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(ThrowStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement.ThrowExpression is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new ThrowStatementGeneric(statement, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(TryStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement.CatchVariable is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new TryStatementGeneric(statement, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(WhileLoopStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement.Condition is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new WhileLoopStatementGeneric(statement, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(ForeachLoopStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (statement.Left is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new ForeachLoopStatementGeneric(statement, i, false));
+                    }
+                    if (statement.Iterator is NameExpression name2 && name2.Name == Generics[i])
+                    {
+                        Infos.Add(new ForeachLoopStatementGeneric(statement, i, true));
+                    }
+                }
+                base.VisitStatement(statement);
             }
 
             public override void Visit(Method method)

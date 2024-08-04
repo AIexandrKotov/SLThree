@@ -6,8 +6,8 @@ namespace SLThree
 {
     public class WhileLoopStatement : BaseStatement
     {
-        public BaseExpression Condition { get; set; }
-        public BaseStatement[] LoopBody { get; set; }
+        public BaseExpression Condition;
+        public BaseStatement[] LoopBody;
 
         public WhileLoopStatement() : base() { }
         public WhileLoopStatement(BaseExpression condition, StatementList cycleBody, Cursor cursor) : base(cursor)
