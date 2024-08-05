@@ -113,6 +113,8 @@ expression <BaseExpression>
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / left:binary_7 _ "-->" _ right:(binary_9 / block_expression) { new BinaryGetRuntimeValue(left, right, state) }
+    / left:binary_7 _ "->" _ right:(binary_9 / block_expression) { new BinaryGetValue(left, right, state) }
     / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
     / block_expression
     / condition_expression
