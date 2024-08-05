@@ -211,8 +211,6 @@ unary <BaseExpression>
     / "-" _ left:binary_min { new UnaryRem(left, state) }
     / "~" _ left:binary_min { new UnaryBitNot(left, state) }
     / "!" _ left:binary_min { new UnaryNot(left, state) }
-    / "*" _ left:binary_min { new DereferenceExpression(left, state) }
-    / "&" _ left:binary_min { new ReferenceExpression(left, state) }
     / "^*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, state) }
     / "^*" _ left:binary_min { new UnaryGetChooser(left, null, state) }
     / "^" _ left:binary_min { new UnaryChoose(left, state) }
@@ -269,7 +267,8 @@ primary <BaseExpression> -memoize
     / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
-    / "$" d:[0-9_]+ { new Macros.MacrosElement(int.Parse(d.JoinIntoString("").Replace("_", ""), CultureInfo.InvariantCulture), state) }
+    / "*" _ left:(primary/block_expression) { new DereferenceExpression(left, state) }
+    / "&" _ left:(primary/block_expression) { new ReferenceExpression(left, state) }
     / "$" x:block_statement { new MacrosDefinition(x, state) }
     / "$(" _ x:expression _ ")" { new MacrosDefinition(x, state) }
     / "(" _ x:expression _ ")" { x.RaisePriority() }
