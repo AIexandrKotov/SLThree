@@ -247,8 +247,8 @@ match_expression <BaseExpression>
     _ "}" { new MatchExpression(expr, matches, state) }
 
 match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
-    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:expression<1,,"," _> { exprs })
-      _ "==>" _ right:statement
+    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:binary_8<1,,"," _> { exprs })
+      _ "=>" _ right:statement
     { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
 
 withoutinvokation_primary <BaseExpression> -memoize
