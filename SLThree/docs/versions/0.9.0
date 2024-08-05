@@ -15,13 +15,16 @@ Language:
            f<as value : (2 + 2)>();
            f<as expr : (2 + 2)>();
            f<as value = (2 + 2)>();`
-        - New entity for code generation - Macros
-          Macros clearly store the context in which they were created
-          `$(2 + 2)`, `${using linq;}`
-          Assignation by variable reference macros
-          `a = 2; ra = $(a); ra $= 4; a == 4;`
-          This reference can also be passed as generic parameter
     - Blocks `{...}` is expressions now
+    - Contextual reference and dereference: `&T`, `*T`
+      Reference links the expression to the context
+      Dereferencing executes referenced expression in it
+    - Defining methods with default parameters
+      `(x = 5, y = 10) => x + y;`
+    - `params` modificator:
+      `params f(args) => args;`
+      `args(1, 2, 3); //[1, 2, 3]`
+    - Calling methods with a variable number of arguments
     - Dictionary initializers new syntax:
       `new dict { 1: 2, 3: 4 }`
       `new dict<i64, i64> { 1: 2, 3: 4 }`
@@ -34,20 +37,16 @@ Language:
         - Context without private context: `new {...}`
     - Multiline interpolated strings $"""str{2}""";
     - Multiline strings """str"""
-    - Contextual reference and dereference: `&T`, `*T`
-      Reference links the expression to the context
-      Dereferencing executes expression in it
+    - Changed match expression arrow `==>` -> `=>`
     - New get chooser syntax:
       `*[1, 2, 3]` -> `^*[1, 2, 3]`
-    - Syntax sugar for overloading methods
-    - Defining methods with default parameters
-      `(x = 5, y = 10) => x + y;`
-    - `params` modificator:
-      `params f(args) => args;`
-      `args(1, 2, 3); //[1, 2, 3]`
-    - Calling methods with a variable number of arguments
+    - Expressions and code initilizers:
+      `${ return; }`, `$(2 + 2)` like `(2 + 2) as is`
+    - In-Context invokator operator `->`: `ctx->expression`
+        - Runtime analog `-->`: `ctx-->$(expression)`
     - Syntax for creating methods from generics:
       `_is<T>(a) => a is T; isi64 = _is<i64>;`
+    - Syntax sugar for overloading methods
     - Null-coalescing augmented assign operator `??=`
 Bugfixes:
     - Ignoring deffered code in static (#129)

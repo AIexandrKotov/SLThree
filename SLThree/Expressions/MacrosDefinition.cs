@@ -22,7 +22,7 @@ namespace SLThree
         public override object GetValue(ExecutionContext context)
         {
             var nex = Executable is ICloneable cloneable ? (ExecutionContext.IExecutable)cloneable.Clone() : Executable;
-            return new Macros(nex, context);
+            return nex;
         }
 
         public override object Clone()
