@@ -1241,16 +1241,17 @@ namespace SLThree
             {
                 if (contraints.Any(x => !PredefinedConstraints[position].HasFlag(x)))
                     throw new ContraitConstraint(Generics[position], contraints.First(x => !PredefinedConstraints[position].HasFlag(x)), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
-                else GainConstraint(position, contraints.Aggregate((x, y) => x | y), executable);
+                GainConstraint(position, contraints.Aggregate((x, y) => x | y), executable);
             }
             private void CheckAnyAllow(int position, ExecutionContext.IExecutable executable, params GenericMakingConstraint[] contraints)
             {
                 if (!contraints.Any(x => PredefinedConstraints[position].HasFlag(x)))
                     throw new ContraitConstraint(Generics[position], contraints.Aggregate((x, y) => x | y), executable, GainedConstraints.Where(x => x.Item1 == position).Select(x => (x.Item2, x.Item3, x.Item4)));
+                GainConstraint(position, contraints.Aggregate((x, y) => x | y) & PredefinedConstraints[position], executable);
             }
             private void GainConstraint(int position, GenericMakingConstraint constraint, ExecutionContext.IExecutable executable)
             {
-                for (var (i, j) = ((int)PredefinedConstraints[position], (int)constraint); j > 0; i >>= 1, j >>= 1)
+                for (var (i, j) = ((int)PredefinedConstraints[position], (int)constraint); j > 0 || i > 0; i >>= 1, j >>= 1)
                 {
                     if ((i & 0b1) > (j & 0b1))
                     {
@@ -1356,7 +1357,7 @@ namespace SLThree
                     }
                     if (expression is BinaryIs && expression.Right is TypenameExpression name2 && name2.Typename.ToString() == Generics[i])
                     {
-                        CheckAllAllow(i, expression.Right, GenericMakingConstraint.AllowTypes);
+                        CheckAnyAllow(i, expression.Right, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
                         Infos.Add(new BinaryOperatorGeneric(expression, i, true));
                     }
                     if (expression.Right is NameExpression name3 && name3.Name == Generics[i])
