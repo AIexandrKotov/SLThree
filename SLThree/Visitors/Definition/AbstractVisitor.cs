@@ -70,6 +70,8 @@ namespace SLThree.Visitors
                 case InvokeTemplateExpression.GenericMakingDefinition expr: VisitExpression(expr); return;
                 case MakeGenericExpression expr: VisitExpression(expr); return;
                 case MakeTemplateExpression expr: VisitExpression(expr); return;
+                case ReferenceExpression expr: VisitExpression(expr); return;
+                case DereferenceExpression expr: VisitExpression(expr); return;
                 case InterpolatedString expr: VisitExpression(expr); return;
                 case IndexExpression expr: VisitExpression(expr); return;
                 case CreatorTuple expr: VisitExpression(expr); return;
@@ -507,6 +509,39 @@ namespace SLThree.Visitors
         public virtual void VisitStatement(CreatorContextBody statement)
         {
             VisitStatement(statement as StatementList);
+        }
+
+        public void VisitExpression(MakeGenericExpression expression)
+        {
+            VisitExpression(expression.Left);
+            Executables.Add(expression);
+            foreach (var x in expression.GenericArguments)
+            {
+                VisitExpression(x);
+            }
+            Executables.Remove(expression);
+        }
+
+        public void VisitExpression(MakeTemplateExpression expression)
+        {
+            VisitExpression(expression.Left);
+            Executables.Add(expression);
+            foreach (var x in expression.GenericArguments)
+            {
+                VisitExpression(x.Item1);
+                VisitExpression(x.Item2);
+            }
+            Executables.Remove(expression);
+        }
+
+        public void VisitExpression(ReferenceExpression expression)
+        {
+            VisitExpression(expression.Expression);
+        }
+
+        public void VisitExpression(DereferenceExpression expression)
+        {
+            VisitExpression(expression.Expression);
         }
     }
 }

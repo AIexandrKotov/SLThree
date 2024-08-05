@@ -21,6 +21,8 @@
         void VisitExpression(InvokeExpression expression);
         void VisitExpression(InvokeGenericExpression expression);
         void VisitExpression(InvokeTemplateExpression expression);
+        void VisitExpression(MakeGenericExpression expression);
+        void VisitExpression(MakeTemplateExpression expression);
         void VisitExpression(FunctionDefinition expression);
         void VisitExpression(MemberAccess expression);
         void VisitExpression(NameExpression expression);
@@ -37,6 +39,8 @@
         void VisitExpression(UnaryOperator expression);
         void VisitExpression(BinaryOperator expression);
         void VisitExpression(TernaryOperator expression);
+        void VisitExpression(ReferenceExpression expression);
+        void VisitExpression(DereferenceExpression expression);
 
         void VisitExpression(FunctionArgument expression);
         void VisitExpression(InvokeTemplateExpression.GenericMakingDefinition expression);
