@@ -14,6 +14,17 @@ namespace SLThree.Visitors
             Level -= 1;
         }
 
+        public override void VisitConstraint(TemplateMethod.ConstraintDefinition constraint)
+        {
+            WriteTab();
+            Writeln(constraint.GetType().Name);
+            WriteTab();
+            WriteFiels(constraint);
+            Level += 1;
+            base.VisitConstraint(constraint);
+            Level -= 1;
+        }
+
         public override void VisitStatement(BaseStatement statement)
         {
             WriteTab();
@@ -82,9 +93,7 @@ namespace SLThree.Visitors
         public override void Visit(Method method)
         {
             WriteTab();
-            Writeln("\"REPRESENTATION OF METHOD\";");
-            WriteTab();
-            Writeln(method.ToString());
+            Writeln($"\"REPRESENTATION OF {method}\";");
             base.Visit(method);
         }
     }

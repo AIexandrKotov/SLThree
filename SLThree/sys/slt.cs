@@ -18,9 +18,10 @@ namespace SLThree.sys
 
         public static object clone(ICloneable clone) => clone.Clone();
 
-        public static string repr(object o) => TreeViewer.GetView(o);
+        public static string dev_repr(object o) => TreeViewer.GetView(o);
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());
-        public static string xml_repr(object o) => XmlViewer.GetView(o);
+        public static string repr(object o, long max_depth) => XmlViewer.GetView(o, max_depth);
+        public static string repr(object o) => XmlViewer.GetView(o, 1);
 
         public static Method make_generic(GenericMethod method, IList<object> generic_args) => method.MakeGenericMethod(generic_args.Select(x => (Type)x).ToArray());
         public static Method make_generic<T1>(GenericMethod method) => method.MakeGenericMethod(new Type[] { typeof(T1) });
