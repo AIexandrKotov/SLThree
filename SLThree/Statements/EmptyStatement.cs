@@ -2,7 +2,7 @@
 
 namespace SLThree
 {
-    public class EmptyStatement : BaseStatement
+    internal class EmptyStatement : BaseStatement
     {
         public EmptyStatement(SourceContext context) : base(context) { }
 

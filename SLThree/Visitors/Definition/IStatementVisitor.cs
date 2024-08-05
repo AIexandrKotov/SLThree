@@ -13,5 +13,6 @@
         void VisitStatement(ThrowStatement statement);
         void VisitStatement(TryStatement statement);
         void VisitStatement(WhileLoopStatement statement);
+        void VisitStatement(CreatorContextBody statement);
     }
 }

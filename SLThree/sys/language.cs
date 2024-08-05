@@ -35,15 +35,44 @@ namespace SLThree.sys
             }
         }
 
+        private static string CurrentSearchOpt = "all";
+        private static Dictionary<string, Func<Type, bool>> Searchs = new Dictionary<string, Func<Type, bool>>()
+        {
+            { "all", x => true },
+            { "pubs", x => x.IsPublic || x.IsNestedPublic },
+            { "privs", x => !(x.IsPublic || x.IsNestedPublic)},
+        };
+
+        public enum VisitorResult
+        {
+            Not,
+            Defined,
+            Noticed,
+        }
+
         public static class VisitorInfoBuilder
         {
-
-            public static IEnumerable<(string, bool[])> ResearchTypes(Type interface_type, string visit_method_name, IEnumerable<Type> target_types, IEnumerable<Type> visitors)
+            public static IEnumerable<(string, VisitorResult[])> ResearchTypes(Type interface_type, string visit_method_name, IEnumerable<Type> target_types, IEnumerable<Type> visitors)
             {
-                foreach (var target in target_types)
+                Func<Type, bool> predicate;
+                if (Searchs.TryGetValue(CurrentSearchOpt, out var result))
+                    predicate = result;
+                else predicate = x => true;
+
+                foreach (var target in target_types.Where(predicate))
                 {
                     var AVdefine = interface_type.GetMethods().Any(x => x.Name == visit_method_name && x.GetParameters()[0].ParameterType == target);
-                    yield return (target.Name, Enumerable.Concat(Enumerable.Repeat(AVdefine, 1), visitors.Select(t => t.GetMethods().Any(x => x.Name == visit_method_name && x.GetParameters()[0].ParameterType == target && x.DeclaringType != typeof(AbstractVisitor)))).ToArray());
+                    yield return (target.Name, 
+                        Enumerable.Concat(Enumerable.Repeat(AVdefine ? VisitorResult.Defined : VisitorResult.Not, 1),
+                        visitors.Select(
+                            t => t.GetMethods()
+                                  .Any(x => x.Name == visit_method_name 
+                                            && x.GetParameters()[0].ParameterType == target
+                                            && x.DeclaringType != typeof(AbstractVisitor))
+                                 ? VisitorResult.Defined
+                                 : (t.GetCustomAttributes<VisitorNoticeAttribute>().Select(x => (x.MethodName, x.MethodArg)).Contains((visit_method_name, target)) ? VisitorResult.Noticed : VisitorResult.Not)
+                        )
+                    ).ToArray());
                 }
             }
 
@@ -69,7 +98,7 @@ namespace SLThree.sys
                 return (statements.ToArray(), expressions.ToArray(), constraints.ToArray());
             }
 
-            public static IEnumerable<(string, ConsoleColor, bool[])> ResearchAllTypes(IEnumerable<Type> visitors)
+            public static IEnumerable<(string, ConsoleColor, VisitorResult[])> ResearchAllTypes(IEnumerable<Type> visitors)
             {
                 foreach (var x in ResearchTypes(typeof(IStatementVisitor), "VisitStatement", Statements, visitors))
                     yield return (x.Item1, ConsoleColor.Magenta, x.Item2);
@@ -79,6 +108,8 @@ namespace SLThree.sys
                     yield return (x.Item1, ConsoleColor.Yellow, x.Item2);
             }
         }
+
+        public static void set_search(string s) => CurrentSearchOpt = s;
 
         public static void show(params Type[] targets)
         {
@@ -93,8 +124,18 @@ namespace SLThree.sys
             var max = infos.Max(x => x.Item1.Length);
             columnnames[0] = columnnames[0].PadRight(max);
 
-            var defs = new Dictionary<bool, string> { { false, "not" }, { true, "defined" } };
-            var colors = new Dictionary<bool, ConsoleColor> { { false, ConsoleColor.Red }, { true, ConsoleColor.Green } };
+            var defs = new Dictionary<VisitorResult, string>
+            {
+                { VisitorResult.Not, "not" },
+                { VisitorResult.Defined, "defined" },
+                { VisitorResult.Noticed, "noticed" },
+            };
+            var colors = new Dictionary<VisitorResult, ConsoleColor>
+            {
+                { VisitorResult.Not, ConsoleColor.Red },
+                { VisitorResult.Defined, ConsoleColor.Green },
+                { VisitorResult.Noticed, ConsoleColor.Cyan },
+            };
             Console.ResetColor();
 
 
@@ -119,7 +160,7 @@ namespace SLThree.sys
 
         public static void show()
         {
-            show(typeof(TreeViewer), typeof(XmlViewer), typeof(NETGenerator));
+            show(typeof(TreeViewer), typeof(XmlViewer), typeof(TemplateMethod.GenericFinder), typeof(NETGenerator));
         }
 
         public static void temp()

@@ -16,10 +16,11 @@ namespace SLThree.Visitors
                 case null: return;
                 case BaseExpression expression: VisitExpression(expression); return;
                 case BaseStatement statement: VisitStatement(statement); return;
-                case ExecutionContext context: Visit(context); return;
                 case TemplateMethod method: Visit(method); return;
                 case GenericMethod method: Visit(method); return;
                 case Method method: Visit(method); return;
+                case ContextWrap context: Visit(context.Context); return;
+                case ExecutionContext context: Visit(context); return;
             }
         }
 
@@ -501,6 +502,11 @@ namespace SLThree.Visitors
                 VisitExpression(expression.Name);
             foreach (var x in expression.Arguments)
                 VisitExpression(x);
+        }
+
+        public virtual void VisitStatement(CreatorContextBody statement)
+        {
+            VisitStatement(statement as StatementList);
         }
     }
 }

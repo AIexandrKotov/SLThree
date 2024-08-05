@@ -1213,6 +1213,9 @@ namespace SLThree
 
         #endregion
 
+        [VisitorNotice("VisitStatement", typeof(BreakStatement))]
+        [VisitorNotice("VisitStatement", typeof(ContinueStatement))]
+        [VisitorNotice("VisitStatement", typeof(CreatorContextBody))]
         public class GenericFinder : AbstractVisitor
         {
             public string[] Generics;
