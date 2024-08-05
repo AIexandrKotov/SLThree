@@ -119,6 +119,8 @@ binary_9 <BaseExpression> -memoize
     / condition_expression
     / match_expression
     / method_definition_expression
+    / "*" _ left:block_expression { new DereferenceExpression(left, state) }
+    / "&" _ left:block_expression { new ReferenceExpression(left, state) }
     / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, state) }
     / left:arg_name _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
     / left:binary_7 _ "=" _ right:binary_9 { new BinaryAssign(left, right, state) }
