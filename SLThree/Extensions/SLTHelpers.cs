@@ -170,29 +170,30 @@ namespace SLThree.Extensions
                 yield return s = s.Substring(0, ind) + "+" + s.Substring(ind + 1, s.Length - ind - 1);
             }
         }
-        private static Type type_bool = typeof(bool);
-        private static Type type_string = typeof(string);
-        private static Type type_object = typeof(object);
+        private static Type 
+            type_bool = typeof(bool),
+            type_string = typeof(string),
+            type_object = typeof(object),
 
-        private static Type type_byte = typeof(byte);
-        private static Type type_sbyte = typeof(sbyte);
-        private static Type type_ushort = typeof(ushort);
-        private static Type type_short = typeof(short);
-        private static Type type_uint = typeof(uint);
-        private static Type type_int = typeof(int);
-        private static Type type_ulong = typeof(ulong);
-        private static Type type_long = typeof(long);
-        private static Type type_char = typeof(char);
-        private static Type type_double = typeof(double);
-        private static Type type_float = typeof(float);
-        private static Type type_context = typeof(ContextWrap);
+            type_byte = typeof(byte),
+            type_sbyte = typeof(sbyte),
+            type_ushort = typeof(ushort),
+            type_short = typeof(short),
+            type_uint = typeof(uint),
+            type_int = typeof(int),
+            type_ulong = typeof(ulong),
+            type_long = typeof(long),
+            type_char = typeof(char),
+            type_double = typeof(double),
+            type_float = typeof(float),
+            type_context = typeof(ContextWrap),
 
-        private static Type type_array = typeof(object[]);
-        private static Type type_list = typeof(List<object>);
-        private static Type type_dict = typeof(Dictionary<object, object>);
-        private static Type type_stack = typeof(Stack<object>);
-        private static Type type_queue = typeof(Queue<object>);
-        private static Type type_tuple = typeof(ITuple);
+            type_array = typeof(object[]),
+            type_list = typeof(List<object>),
+            type_dict = typeof(Dictionary<object, object>),
+            type_stack = typeof(Stack<object>),
+            type_queue = typeof(Queue<object>),
+            type_tuple = typeof(ITuple);
 
         public static BaseExpression RaisePriority(this BaseExpression expression)
         {
@@ -219,7 +220,6 @@ namespace SLThree.Extensions
                 return o.ToString();
             var type = o.GetType();
             if (type == casting_type) return o;
-            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             if (casting_type.IsEnum)
             {
                 if (type == type_string) return Enum.Parse(casting_type, (string)o);
@@ -232,6 +232,7 @@ namespace SLThree.Extensions
                 if (type == type_ulong) return Enum.ToObject(casting_type, (ulong)o);
                 if (type == type_long) return Enum.ToObject(casting_type, (long)o);
             }
+            if (o is IConvertible) return Convert.ChangeType(o, casting_type);
             return o;
         }
 
