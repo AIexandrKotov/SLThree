@@ -8,8 +8,8 @@ namespace SLThree
 {
     public class InterpolatedString : BaseExpression
     {
-        public string Value { get; set; }
-        public BaseExpression[] Expressions { get; set; }
+        public string Value;
+        public BaseExpression[] Expressions;
 
         public InterpolatedString() : base() { }
         public InterpolatedString(string value, IList<(BaseExpression, string)> other, Cursor cursor) : base(cursor)

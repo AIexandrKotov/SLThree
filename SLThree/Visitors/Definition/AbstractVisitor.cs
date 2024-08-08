@@ -204,7 +204,8 @@ namespace SLThree.Visitors
         }
         public virtual void VisitExpression(FunctionDefinition expression)
         {
-            VisitExpression(expression.FunctionName);
+            if (expression.FunctionName != null)
+                VisitExpression(expression.FunctionName);
             foreach (var x in expression.GenericArguments)
             {
                 VisitExpression(x.Item1);
@@ -511,7 +512,7 @@ namespace SLThree.Visitors
             VisitStatement(statement as StatementList);
         }
 
-        public void VisitExpression(MakeGenericExpression expression)
+        public virtual void VisitExpression(MakeGenericExpression expression)
         {
             VisitExpression(expression.Left);
             Executables.Add(expression);
@@ -522,7 +523,7 @@ namespace SLThree.Visitors
             Executables.Remove(expression);
         }
 
-        public void VisitExpression(MakeTemplateExpression expression)
+        public virtual void VisitExpression(MakeTemplateExpression expression)
         {
             VisitExpression(expression.Left);
             Executables.Add(expression);
@@ -534,14 +535,25 @@ namespace SLThree.Visitors
             Executables.Remove(expression);
         }
 
-        public void VisitExpression(ReferenceExpression expression)
+        public virtual void VisitExpression(ReferenceExpression expression)
         {
             VisitExpression(expression.Expression);
         }
 
-        public void VisitExpression(DereferenceExpression expression)
+        public virtual void VisitExpression(DereferenceExpression expression)
         {
             VisitExpression(expression.Expression);
+        }
+
+        public virtual void VisitExpression(CreatorDictionary.DictionaryEntry expression)
+        {
+            VisitExpression(expression.Key);
+            VisitExpression(expression.Value);
+        }
+
+        public virtual void VisitExpression(MacrosDefinition expression)
+        {
+            VisitAny(expression.Executable);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace SLThree.sys
             }
         }
 
-        private static string CurrentSearchOpt = "all";
+        private static string CurrentSearchOpt = "pubs";
         private static Dictionary<string, Func<Type, bool>> Searchs = new Dictionary<string, Func<Type, bool>>()
         {
             { "all", x => true },

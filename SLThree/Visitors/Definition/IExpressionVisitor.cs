@@ -11,6 +11,8 @@
         void VisitExpression(CreatorContext expression);
         void VisitExpression(BaseInstanceCreator expression);
         void VisitExpression(CreatorDictionary expression);
+        void VisitExpression(CreatorDictionary.DictionaryEntry expression);
+        void VisitExpression(MacrosDefinition expression);
         void VisitExpression(CreatorCollection expression);
         void VisitExpression(CreatorInstance expression);
 
