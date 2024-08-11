@@ -780,6 +780,38 @@ namespace SLThree
 
             public override ref BaseExpression GetPlacer() => ref Concrete.Arguments[ArgumentPosition].DefaultValue;
         }
+        public class FunctionDefinitionReturnTypePartGeneric : ExprGenericInfo<FunctionDefinition>
+        {
+            public FunctionDefinitionReturnTypePartGeneric(FunctionDefinition concrete, int position) : base(concrete, position)
+            {
+
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                Concrete.ReturnTypeHint = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.ReturnTypeHint = new TypenameExpression(name, name.SourceContext);
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+        }
         public class BaseInstanceCreatorNamePartGeneric : ExprGenericInfo<BaseInstanceCreator>
         {
             public BaseInstanceCreatorNamePartGeneric(BaseInstanceCreator concrete, int position) : base(concrete, position)
@@ -1667,12 +1699,19 @@ namespace SLThree
 
             public TemplateMethod Method;
 
+            public Stack<int[]> Shadowing = new Stack<int[]>(new int[][] { new int[0] });
             public List<GenericInfo> Infos = new List<GenericInfo>();
+
+            public bool IsShaded(int index)
+            {
+                return Shadowing.Peek().Contains(index);
+            }
 
             public override void VisitExpression(NameExpression expression)
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.TypeHint?.Typename is NameExpression name && name.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
@@ -1693,6 +1732,7 @@ namespace SLThree
 
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Generics != null)
                     {
                         Executables.Add(expression);
@@ -1725,6 +1765,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name1 && name1.Name == Generics[i])
                     {
                         Infos.Add(new CastExpressionLeftPartGeneric(expression, i));
@@ -1742,6 +1783,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Condition is NameExpression name1 && name1.Name == Generics[i])
                     {
                         Infos.Add(new ConditionExpressionGeneric(expression, i));
@@ -1754,6 +1796,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Condition is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new TernaryOperatorConditionPartGeneric(expression, i));
@@ -1774,6 +1817,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i]) 
                     {
                         Infos.Add(new BinaryOperatorGeneric(expression, i, false));
@@ -1795,6 +1839,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new UnaryOperatorGeneric(expression, i));
                 }
@@ -1805,6 +1850,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Expression is NameExpression name && name.Name == Generics[i])
                     {
                         StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
@@ -1823,6 +1869,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                     {
                         StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
@@ -1841,6 +1888,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                     {
                         StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
@@ -1867,6 +1915,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                     {
                         StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
@@ -1888,6 +1937,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Expression is NameExpression name && name.Name == Generics[i])
                     {
                         StealConstraint(i, GenericMakingConstraint.AllowTypes, expression);
@@ -1901,6 +1951,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Name is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new NameConstraintGeneric(expression, i));
                 }
@@ -1911,17 +1962,18 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.FunctionName is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new FunctionDefinitionNamePartGeneric(expression, i));
                     }
+                    if (expression.ReturnTypeHint?.Typename is NameExpression ret_type && ret_type.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
+                        Infos.Add(new FunctionDefinitionReturnTypePartGeneric(expression, i));
+                    }
                     for (var j = 0; j < expression.Arguments.Length; j++)
                     {
-                        if (expression.Arguments[j].Name is NameExpression arg_name && arg_name.Name == Generics[i])
-                        {
-                            CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames);
-                            Infos.Add(new FunctionDefinitionArgumentNamePartGeneric(expression, i, j));
-                        }
                         if (expression.Arguments[j].Name.TypeHint?.Typename is NameExpression arg_name3 && !expression.Arguments[j].Name.TypeHint.is_array && arg_name3.Name == Generics[i])
                         {
                             CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
@@ -1933,13 +1985,29 @@ namespace SLThree
                         }
                     }
                 }
+                var locked = expression.GenericArguments.Select(x => Array.FindIndex(Generics, y => y == x.Item1.Name)).ToArray();
+                Shadowing.Push(locked);
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    for (var j = 0; j < expression.Arguments.Length; j++)
+                    {
+                        if (expression.Arguments[j].Name is NameExpression arg_name && arg_name.Name == Generics[i])
+                        {
+                            CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames);
+                            Infos.Add(new FunctionDefinitionArgumentNamePartGeneric(expression, i, j));
+                        }
+                    }
+                }
                 base.VisitExpression(expression);
+                Shadowing.Pop();
             }
 
             public override void VisitExpression(BaseInstanceCreator expression)
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Type?.Typename is NameExpression name1 && name1.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.Type, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
@@ -1963,6 +2031,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     for (var j = 0; j < expression.Arguments.Length; j++)
                     {
                         if (expression.Body[j] is NameExpression name3 && name3.Name == Generics[i])
@@ -1976,6 +2045,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Name is NameExpression name && name.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.Name, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowExpressions);
@@ -1994,6 +2064,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.ArrayType?.Typename is NameExpression name && name.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.ArrayType, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
@@ -2011,6 +2082,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.RangeType?.Typename is NameExpression name && name.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.RangeType, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
@@ -2028,6 +2100,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     for (var j = 0; j < expression.Expressions.Length; j++)
                     {
                         if (expression.Expressions[j] is NameExpression name3 && name3.Name == Generics[i])
@@ -2041,6 +2114,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Type?.Typename is NameExpression name && name.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.Type, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
@@ -2054,6 +2128,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Alias is NameExpression name2 && name2.Name == Generics[i])
                     {
                         CheckAnyAllow(i, expression.Alias, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowExpressions);
@@ -2067,6 +2142,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Key is NameExpression name3 && name3.Name == Generics[i])
                         Infos.Add(new CreatorDictionaryEntryPartGeneric(expression, i, false));
                     if (expression.Value is NameExpression name4 && name4.Name == Generics[i])
@@ -2079,6 +2155,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Matching is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new MatchExpressionHeadPartGeneric(expression, i));
@@ -2101,6 +2178,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Right is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new StaticExpressionGeneric(expression, i));
                 }
@@ -2111,6 +2189,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Expression is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new ReferenceExpressionGeneric(expression, i));
                 }
@@ -2121,6 +2200,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Expression is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new DereferenceExpressionGeneric(expression, i));
                 }
@@ -2131,6 +2211,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Executable is NameExpression name && name.Name == Generics[i])
                         Infos.Add(new MacrosDefinitionGeneric(expression, i));
                 }
@@ -2141,6 +2222,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (expression.Left is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new ReflectionExpressionLeftPartGeneric(expression, i));
@@ -2174,6 +2256,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     for (var j = 0; j < expression.Expressions.Length; j++)
                     {
                         if (expression.Expressions[j] is NameExpression name3 && name3.Name == Generics[i])
@@ -2187,6 +2270,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement is ExpressionStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new ExpressionStatementGeneric(expr, i));
@@ -2199,6 +2283,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement is ReturnStatement expr && expr.Expression is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new ReturnStatementGeneric(expr, i));
@@ -2211,6 +2296,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement.ThrowExpression is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new ThrowStatementGeneric(statement, i));
@@ -2223,6 +2309,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement.CatchVariable is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new TryStatementGeneric(statement, i));
@@ -2235,6 +2322,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement.Condition is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new WhileLoopStatementGeneric(statement, i));
@@ -2247,6 +2335,7 @@ namespace SLThree
             {
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     if (statement.Left is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new ForeachLoopStatementGeneric(statement, i, false));
@@ -2278,6 +2367,7 @@ namespace SLThree
 
                 for (var i = 0; i < Generics.Length; i++)
                 {
+                    if (IsShaded(i)) continue;
                     for (var j = 0; j < method.ParamNames.Length; j++)
                         if (method.ParamNames[j] == Generics[i])
                         {
