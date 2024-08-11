@@ -108,7 +108,9 @@ expression_statement <ExpressionStatement>
     / expression _ { Panic<ExpressionStatement>(new SyntaxError("Expected `;`", state)) }
 
 expression <BaseExpression>
-    = binary_9
+    = "$[" _ attr:primary _ "]" _ expr:expression { CheckOnExprAttribute(attr, expr) }
+    / "[" _ attr:primary _ "]" _ expr:expression { CheckOnAttribute(attr, expr) }
+    / binary_9
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
@@ -701,6 +703,7 @@ method_modificator
     / "params"
     / "native"
     / "template"
+    / "attribute"
 
 typename <TypenameExpression>
     = t_node:typename_node _ "<" _ t_list:typename<1,,"," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }

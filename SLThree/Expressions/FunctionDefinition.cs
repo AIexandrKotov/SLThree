@@ -59,6 +59,15 @@ namespace SLThree
                 if (args[i].DefaultValue == null)
                     throw new LogicalError("Non-default parameter between default parameters", context);
 
+            if (Modificators.Contains("attribute"))
+            {
+                var old_args = Arguments;
+                Arguments = new FunctionArgument[Arguments.Length + 1];
+                Arguments[0] = new FunctionArgument(new NameExpression("target", SourceContext.CloneCast()), SourceContext.CloneCast());
+                old_args.CopyTo(Arguments, 1);
+                Modificators = Modificators.Where(x => x != "attribute").ToArray();
+            }
+
             is_abstract = Modificators.Contains("abstract");
             if (FunctionBody == null)
             {

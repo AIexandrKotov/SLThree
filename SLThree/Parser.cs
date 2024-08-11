@@ -277,6 +277,43 @@ namespace SLThree
             return expression;
         }
 
+        private BaseExpression CheckOnExprAttribute(BaseExpression attribute, BaseExpression expression)
+            => CheckOnAttribute(attribute, expression, true);
+        private BaseExpression CheckOnAttribute(BaseExpression attribute, BaseExpression expression, bool is_expression = false)
+        {
+            if (is_expression) expression = new MacrosDefinition(expression, expression.SourceContext.CloneCast());
+
+            if (attribute is InvokeExpression invokeExpression)
+            {
+                var xargs = new BaseExpression[invokeExpression.Arguments.Length + 1];
+                xargs[0] = expression;
+                invokeExpression.Arguments.CopyTo(xargs, 1);
+                invokeExpression.Arguments = xargs;
+                return invokeExpression;
+            }
+            else if (attribute is InvokeGenericExpression invokeGenericExpression)
+            {
+                var xargs = new BaseExpression[invokeGenericExpression.Arguments.Length + 1];
+                xargs[0] = expression;
+                invokeGenericExpression.Arguments.CopyTo(xargs, 1);
+                invokeGenericExpression.Arguments = xargs;
+                return invokeGenericExpression;
+            }
+            else if (attribute is InvokeTemplateExpression invokeTemplateExpression)
+            {
+                var xargs = new BaseExpression[invokeTemplateExpression.Arguments.Length + 1];
+                xargs[0] = expression;
+                invokeTemplateExpression.Arguments.CopyTo(xargs, 1);
+                invokeTemplateExpression.Arguments = xargs;
+                return invokeTemplateExpression;
+            }
+            if (attribute is MemberAccess
+                || attribute is Special
+                || attribute is NameExpression)
+                return new InvokeExpression(attribute, new BaseExpression[1] { expression }, attribute.SourceContext.CloneCast());
+            throw new LogicalError($"The \"{attribute.GetType().GetTypeString()}\" cannot be used as an attribute", attribute.SourceContext);
+        }
+
         private static T Panic<T>(SLTException exception)
         {
             throw exception;
