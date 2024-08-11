@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace SLThree
 {
     [DebuggerDisplay("{ToString()}        ([{GetType().Name}] at {SourceContext})")]
-    public abstract class BaseExpression : ExecutionContext.IExecutable, ICloneable
+    public abstract class BaseExpression : ExecutionContext.IExecutable
     {
         public bool PrioriryRaised { get; set; }
         public SourceContext SourceContext { get; set; }

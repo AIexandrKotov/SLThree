@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace SLThree
 {
     [DebuggerDisplay("{ToString()}        ([{GetType().Name}] at {SourceContext})")]
-    public abstract class BaseStatement : ExecutionContext.IExecutable, ICloneable
+    public abstract class BaseStatement : ExecutionContext.IExecutable
     {
         public SourceContext SourceContext { get; set; }
         public BaseStatement() { }

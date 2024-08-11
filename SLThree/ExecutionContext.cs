@@ -13,7 +13,7 @@ namespace SLThree
 #pragma warning disable IDE1006 // Стили именования
     public class ExecutionContext
     {
-        public interface IExecutable
+        public interface IExecutable : ICloneable
         {
             object GetValue(ExecutionContext context);
         }
