@@ -36,11 +36,11 @@ statement <BaseStatement>
     / expression_statement
     / ";" { new EmptyStatement(state) }
 
-termite_statement <TermiteStatement>
-    = "<>" _ st:statement { new TermiteStatement(st, state) }
+termite_statement <TermiteList>
+    = "<>" _ st:statement { new TermiteList(st, state) }
 
-termited_statement <TermiteStatement.Termited>
-    = "#" _ st:statement { new TermiteStatement.Termited(st, state) }
+termited_statement <Termited>
+    = "#" _ st:statement { new Termited(st, state) }
 
 return_statement <ReturnStatement>
     = "return" _ expr:expression _ ";" { new ReturnStatement(expr, state) }
