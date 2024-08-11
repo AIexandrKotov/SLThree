@@ -89,6 +89,7 @@ namespace SLThree.Visitors
                 case FunctionArgument expr: VisitExpression(expr); return;
                 case ConstraintExpression expr: VisitExpression(expr); return;
                 case TemplateMethod.ConstraintDefinition expr: VisitConstraint(expr); return;
+                case MacrosDefinition expr: VisitExpression(expr); return;
 
                 case BaseInstanceCreator expr: VisitExpression(expr); return;
             }
