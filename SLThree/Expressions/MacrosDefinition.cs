@@ -19,15 +19,11 @@ namespace SLThree
 
         public override string ExpressionToString() => "$" + (Executable is BaseStatement ? $"{{{Executable}}}" : $"({Executable})");
 
-        public override object GetValue(ExecutionContext context)
-        {
-            var nex = Executable is ICloneable cloneable ? (ExecutionContext.IExecutable)cloneable.Clone() : Executable;
-            return nex;
-        }
+        public override object GetValue(ExecutionContext context) => Executable.Clone();
 
         public override object Clone()
         {
-            return new MacrosDefinition(Executable is ICloneable cloneable ? (ExecutionContext.IExecutable)cloneable.Clone() : Executable, SourceContext.CloneCast());
+            return new MacrosDefinition(Executable.CloneCast(), SourceContext.CloneCast());
         }
     }
 }
