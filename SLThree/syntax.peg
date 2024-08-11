@@ -15,6 +15,8 @@ expr_statement_list <BlockExpression>
 
 statement <BaseStatement>
     = return_statement
+    / termite_statement
+    / termited_statement
     / overload_statement
     / break_statement
     / continue_statement
@@ -33,6 +35,12 @@ statement <BaseStatement>
     / block_statement
     / expression_statement
     / ";" { new EmptyStatement(state) }
+
+termite_statement <TermiteStatement>
+    = "<>" _ st:statement { new TermiteStatement(st, state) }
+
+termited_statement <TermiteStatement.Termited>
+    = "#" _ st:statement { new TermiteStatement.Termited(st, state) }
 
 return_statement <ReturnStatement>
     = "return" _ expr:expression _ ";" { new ReturnStatement(expr, state) }

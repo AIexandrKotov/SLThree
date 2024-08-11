@@ -4,10 +4,8 @@ using SLThree.sys;
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
-using static SLThree.TemplateMethod.GenericInfo;
 
 namespace SLThree
 {
@@ -1041,7 +1039,6 @@ namespace SLThree
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
         }
-
         public class CreatorUsingGeneric : ExprGenericInfo<CreatorUsing>
         {
             public CreatorUsingGeneric(CreatorUsing concrete, int position) : base(concrete, position)
