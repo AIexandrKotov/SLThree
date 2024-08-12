@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public class rec
+    public class sltbuilder
     {
         public abstract class AbstractBuilder
         {
@@ -137,7 +137,7 @@ namespace SLThree.sys
         public readonly Stack<AbstractBuilder> Executables = new Stack<AbstractBuilder>();
         public ExecutionContext.IExecutable result = null;
 
-        public rec @operator(string str)
+        public sltbuilder @operator(string str)
         {
             var ex = Executables.Peek();
             if (!(ex is ExprBuilder eb)) throw new ArgumentException("Inconvenient context for the operator");
@@ -145,7 +145,7 @@ namespace SLThree.sys
             return this;
         }
 
-        public rec build()
+        public sltbuilder build()
         {
             var b = Executables.Pop();
             var executable = b.BuildExecutable();
@@ -162,19 +162,19 @@ namespace SLThree.sys
             return this;
         }
 
-        public rec block()
+        public sltbuilder block()
         {
             Executables.Push(new CodeBuilder());
             return this;
         }
 
-        public rec expr()
+        public sltbuilder expr()
         {
             Executables.Push(new ExprBuilder());
             return this;
         }
 
-        public rec apply(ExecutionContext.IExecutable executable)
+        public sltbuilder apply(ExecutionContext.IExecutable executable)
         {
             var ex = Executables.Peek();
             switch (executable)
