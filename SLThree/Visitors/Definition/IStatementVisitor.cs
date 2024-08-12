@@ -14,5 +14,9 @@
         void VisitStatement(TryStatement statement);
         void VisitStatement(WhileLoopStatement statement);
         void VisitStatement(CreatorContextBody statement);
+        void VisitStatement(DoWhileLoopStatement statement);
+        void VisitStatement(FiniteLoopStatement statement);
+        void VisitStatement(InfiniteLoopStatement statement);
+        void VisitStatement(BaseLoopStatement statement);
     }
 }

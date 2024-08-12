@@ -333,6 +333,9 @@ namespace SLThree.Visitors
             {
                 case ForeachLoopStatement st: VisitStatement(st); return;
                 case WhileLoopStatement st: VisitStatement(st); return;
+                case DoWhileLoopStatement st: VisitStatement(st); return;
+                case FiniteLoopStatement st: VisitStatement(st); return;
+                case InfiniteLoopStatement st: VisitStatement(st); return;
                 case ExpressionStatement st: VisitStatement(st); return;
                 case ReturnStatement st: VisitStatement(st); return;
                 case StatementList st: VisitStatement(st); return;
@@ -340,6 +343,7 @@ namespace SLThree.Visitors
                 case ContinueStatement st: VisitStatement(st); return;
                 case TryStatement st: VisitStatement(st); return;
                 case ThrowStatement st: VisitStatement(st); return;
+                case BaseLoopStatement expr: VisitStatement(expr); return;
             }
             Executables.Remove(statement);
         }
@@ -348,13 +352,34 @@ namespace SLThree.Visitors
         {
             VisitExpression(statement.Left);
             VisitExpression(statement.Iterator);
-            foreach (var x in statement.LoopBody)
-                VisitStatement(x);
+            VisitStatement(statement as BaseLoopStatement);
         }
 
         public virtual void VisitStatement(WhileLoopStatement statement)
         {
             VisitExpression(statement.Condition);
+            VisitStatement(statement as BaseLoopStatement);
+        }
+
+        public virtual void VisitStatement(DoWhileLoopStatement statement)
+        {
+            VisitExpression(statement.Condition);
+            VisitStatement(statement as BaseLoopStatement);
+        }
+
+        public virtual void VisitStatement(FiniteLoopStatement statement)
+        {
+            VisitExpression(statement.Iterations);
+            VisitStatement(statement as BaseLoopStatement);
+        }
+
+        public virtual void VisitStatement(InfiniteLoopStatement statement)
+        {
+            VisitStatement(statement as BaseLoopStatement);
+        }
+
+        public virtual void VisitStatement(BaseLoopStatement statement)
+        {
             foreach (var x in statement.LoopBody)
                 VisitStatement(x);
         }

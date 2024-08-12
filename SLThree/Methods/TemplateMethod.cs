@@ -1073,7 +1073,6 @@ namespace SLThree
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
         }
-
         public class CreatorUsingGeneric : ExprGenericInfo<CreatorUsing>
         {
             public CreatorUsingGeneric(CreatorUsing concrete, int position) : base(concrete, position)
@@ -1470,6 +1469,16 @@ namespace SLThree
             public WhileLoopStatementGeneric(WhileLoopStatement concrete, int position) : base(concrete, position) { }
             public override ref BaseExpression GetPlacer() => ref Concrete.Condition;
         }
+        public class DoWhileLoopStatementGeneric : SameBehaviourCodeGenericInfo<DoWhileLoopStatement>
+        {
+            public DoWhileLoopStatementGeneric(DoWhileLoopStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Condition;
+        }
+        public class FiniteLoopStatementGeneric : SameBehaviourCodeGenericInfo<FiniteLoopStatement>
+        {
+            public FiniteLoopStatementGeneric(FiniteLoopStatement concrete, int position) : base(concrete, position) { }
+            public override ref BaseExpression GetPlacer() => ref Concrete.Iterations;
+        }
         public class ForeachLoopStatementGeneric : SameBehaviourCodeGenericInfo<ForeachLoopStatement>
         {
             public bool IsEnumerable;
@@ -1644,6 +1653,8 @@ namespace SLThree
         [VisitorNotice("VisitStatement", typeof(BreakStatement))]
         [VisitorNotice("VisitStatement", typeof(ContinueStatement))]
         [VisitorNotice("VisitStatement", typeof(CreatorContextBody))]
+        [VisitorNotice("VisitStatement", typeof(BaseLoopStatement))]
+        [VisitorNotice("VisitStatement", typeof(InfiniteLoopStatement))]
         [VisitorNotice("VisitStatement", typeof(StatementList))]
         [VisitorNotice("VisitExpression", typeof(BlockExpression))]
         [VisitorNotice("VisitExpression", typeof(CreatorInstance))]
@@ -2326,6 +2337,32 @@ namespace SLThree
                     if (statement.Condition is NameExpression name && name.Name == Generics[i])
                     {
                         Infos.Add(new WhileLoopStatementGeneric(statement, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(DoWhileLoopStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (statement.Condition is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new DoWhileLoopStatementGeneric(statement, i));
+                    }
+                }
+                base.VisitStatement(statement);
+            }
+
+            public override void VisitStatement(FiniteLoopStatement statement)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (statement.Iterations is NameExpression name && name.Name == Generics[i])
+                    {
+                        Infos.Add(new FiniteLoopStatementGeneric(statement, i));
                     }
                 }
                 base.VisitStatement(statement);

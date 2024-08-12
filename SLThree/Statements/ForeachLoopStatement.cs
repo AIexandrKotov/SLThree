@@ -5,19 +5,16 @@ using System.Linq;
 
 namespace SLThree
 {
-    public class ForeachLoopStatement : BaseStatement
+    public class ForeachLoopStatement : BaseLoopStatement
     {
         public BaseExpression Left;
         public BaseExpression Iterator;
-        public BaseStatement[] LoopBody;
 
         public ForeachLoopStatement() : base() { }
-        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(context)
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(cycleBody, context)
         {
             Left = left;
             Iterator = iterator;
-            LoopBody = cycleBody;
-            count = LoopBody.Length;
             is_name_expr = Left is NameExpression;
         }
         public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementList cycleBody, SourceContext context)
@@ -26,7 +23,6 @@ namespace SLThree
         private bool is_name_expr;
         private ExecutionContext last_context;
         private int variable_index;
-        private int count;
         public override object GetValue(ExecutionContext context)
         {
             var iterator = Iterator.GetValue(context).Cast<IEnumerable>();

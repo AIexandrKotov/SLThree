@@ -20,6 +20,9 @@ statement <BaseStatement>
     / continue_statement
     / foreach_statement
     / while_statement
+    / do_statement
+    / fin_loop_statement
+    / infin_loop_statement
     / try_statement
     / throw_statement
     / e:condition_statement { new ExpressionStatement(e, state) }
@@ -59,6 +62,19 @@ while_statement <WhileLoopStatement>
     = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), state) }
     / "while" _ "(" _ ")" _ statement? { Panic<WhileLoopStatement>(new SyntaxError("Empty loop head", state)) }
     / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+
+do_statement <DoWhileLoopStatement>
+    = "do" _ body:block_statement _ "while" _ "(" _ cond:expression _ ")" _ ";" { new DoWhileLoopStatement(cond, GetListStatement(body), state) }
+    / "do" _ body:block_statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError("Empty loop head", state)) }
+    / "do" _ body:block_statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+
+infin_loop_statement <InfiniteLoopStatement>
+    = "loop" _ body:block_statement { new InfiniteLoopStatement(GetListStatement(body), state) }
+    / "loop" _required_ body:statement { new InfiniteLoopStatement(GetListStatement(body), state) }
+
+fin_loop_statement <FiniteLoopStatement>
+    = "loop" _ "(" _ cond:expression _ ")" _ body:statement { new FiniteLoopStatement(cond, GetListStatement(body), state) }
+    / "loop" _ "(" _ ")" _ statement? { Panic<FiniteLoopStatement>(new SyntaxError("Empty loop head", state)) }
 
 foreach_statement <ForeachLoopStatement>
     = "foreach" _ "(" _ n:req_arg_name _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
@@ -795,7 +811,7 @@ num_literal <BaseExpression>
     / i64:([0-9_]+ ("i64")?)    { new LongLiteral   (long.Parse     (i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, state) }
     
 keyword
-    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "static"
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "static" / "do" / "loop"
     / "using" / "context" / "new" / "match"
     / "self" / "upper" / "this" / "global" / "super" / "private"
     / "try" / "catch" / "finally" / "throw"

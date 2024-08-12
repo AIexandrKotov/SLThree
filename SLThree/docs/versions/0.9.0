@@ -1,4 +1,4 @@
------- 0.9.0 Parameters Update ------ [~.~.~]
+------ 0.9.0 Massive Update ------ [~.~.~]
 Language:
     - New generic methods
         - For now need to add the `template` modificator
@@ -38,6 +38,12 @@ Language:
     - Multiline interpolated strings $"""str{2}""";
     - Multiline strings """str"""
     - Changed match expression arrow `==>` -> `=>`
+    - Do-while loop
+      `do {;} while (true);`
+    - Finite loop
+      `loop (10) (using console).writeln(i += 1);`
+    - Infinite loop
+      `loop (using console).writeln(i += 1);`
     - New get chooser syntax:
       `*[1, 2, 3]` -> `^*[1, 2, 3]`
     - Expressions and code initilizers:

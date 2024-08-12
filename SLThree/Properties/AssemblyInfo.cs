@@ -62,7 +62,7 @@ public static class SLTVersion
         }
     }
 
-    public static string Edition { get; } = "Parameters Update";
+    public static string Edition { get; } = "Massive Update";
 
     public static string GetTitle()
     {
