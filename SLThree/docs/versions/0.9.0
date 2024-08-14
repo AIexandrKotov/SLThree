@@ -54,6 +54,8 @@ Language:
       `_is<T>(a) => a is T; isi64 = _is<i64>;`
     - Syntax sugar for overloading methods
     - Null-coalescing augmented assign operator `??=`
+    - Now you can define variables in the method from the outside
+      via 'funcname.inside` and `funcname.defaults` contexts
 Bugfixes:
     - Ignoring deffered code in static (#129)
     - Ignoring indexed properties in wrappers (#130)

@@ -15,7 +15,6 @@ namespace SLThree
     {
         public const string DefaultMethodName = "$method";
 
-        private ExecutionContext cached_context;
         public string Name;
         public readonly string[] ParamNames;
         public readonly StatementList Statements;
@@ -36,7 +35,33 @@ namespace SLThree
 
         internal ContextWrap definitionplace;
         internal string contextName = "";
+
+        private ExecutionContext cached_context;
         private ExecutionContext default_values_invk_context;
+
+#pragma warning disable IDE1006 // Стили именования
+        public ContextWrap inside
+        {
+            get
+            {
+                if (Recursive) throw new RuntimeError("You can't take the context of a recursive method", null);
+                if (cached_context == null)
+                {
+                    var context = GetExecutionContext(Enumerable.Repeat<object>(null, ParamNames.Length).ToArray());
+                    return context.wrap;
+                }
+                return cached_context.wrap;
+            }
+        }
+        public ContextWrap defaults
+        {
+            get
+            {
+                if (WithoutDefaults) throw new RuntimeError("You cannot take the context of default values if they are not defined", null);
+                return default_values_invk_context.wrap;
+            }
+        }
+#pragma warning restore IDE1006 // Стили именования
 
         public ContextWrap @this
         {
