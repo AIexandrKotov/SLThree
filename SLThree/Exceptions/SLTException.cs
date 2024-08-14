@@ -8,10 +8,12 @@ namespace SLThree
     {
         public SourceContext Context { get; set; }
 
+        public static string AtContext(SourceContext context) => context == null ? "" : $" at {context}";
+
         public SLTException() { }
         public SLTException(SourceContext context) { Context = context; }
-        public SLTException(string message, SourceContext context) : base($"{message} at {context}") { Context = context; }
-        public SLTException(string message, Exception inner, SourceContext context) : base($"{message} at {context}", inner) { Context = context; }
+        public SLTException(string message, SourceContext context) : base($"{message}{AtContext(context)}") { Context = context; }
+        public SLTException(string message, Exception inner, SourceContext context) : base($"{message}{AtContext(context)}", inner) { Context = context; }
     }
 
     /// <summary>
