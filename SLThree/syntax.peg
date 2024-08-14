@@ -70,6 +70,7 @@ do_statement <DoWhileLoopStatement>
 
 infin_loop_statement <InfiniteLoopStatement>
     = "loop" _ body:block_statement { new InfiniteLoopStatement(GetListStatement(body), state) }
+    / "loop" _ ";" { new InfiniteLoopStatement(GetListStatement(new EmptyStatement(state)), state) }
     / "loop" _required_ body:statement { new InfiniteLoopStatement(GetListStatement(body), state) }
 
 fin_loop_statement <FiniteLoopStatement>
