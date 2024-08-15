@@ -173,6 +173,24 @@ namespace SLThree
 
             public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
+        public class ObjectConstraintDefinition : ConstraintDefinition
+        {
+            public Constraint Value;
+
+            public ObjectConstraintDefinition(Constraint left, SourceContext context) : base(context)
+            {
+                Value = left;
+            }
+
+            public override Constraint GetConstraint(string current_template, ExecutionContext context)
+            {
+                return Value;
+            }
+
+            public override string ExpressionToString() => Value.ToString();
+
+            public override object Clone() => new ObjectConstraintDefinition(Value.CloneCast(), SourceContext.CloneCast());
+        }
         #endregion
         public abstract class Constraint : ICloneable
         {
