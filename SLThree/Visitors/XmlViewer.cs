@@ -33,7 +33,14 @@ namespace SLThree.Visitors
         {
             XElement xd = new XElement("TypenameExpression");
             XElements.Push(xd);
-            xd.Add(new XAttribute("name", expression.Typename.ToString()));
+            if (expression is TypenameGenericPart tgp)
+            {
+                xd.Add(new XAttribute("name", tgp.Type.GetTypeString()));
+            }
+            else
+            {
+                xd.Add(new XAttribute("name", expression.Typename.ToString()));
+            }
             if (expression.Generics != null)
             {
                 foreach (var x in expression.Generics)
