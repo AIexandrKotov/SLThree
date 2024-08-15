@@ -163,15 +163,16 @@ binary_8 <BaseExpression>
     / binary_7
 
 binary_7 <BaseExpression> -memoize
-    = left:binary_7 _ "||" _ right:binary_6 { new BinaryOr(left, right, state) }
-    / binary_6
+    = left:binary_7 _ "||" _ right:binary_5 { new BinaryOr(left, right, state) }
+    / binary_5
 
 binary_6 <BaseExpression> -memoize
     = left:binary_6 _ "&&" _ right:binary_5 { new BinaryAnd(left, right, state) }
     / binary_5
 
 binary_5 <BaseExpression> -memoize
-    = left:binary_5 _ "&" _ right:binary_4 { new BinaryBitAnd(left, right, state) }
+    = left:binary_5 _ "&&" _ right:binary_4 { new BinaryAnd(left, right, state) }
+    / left:binary_5 _ "&" _ right:binary_4 { new BinaryBitAnd(left, right, state) }
     / left:binary_5 _ "^" _ right:binary_4 { new BinaryBitXor(left, right, state) }
     / left:binary_5 _ "|" _ right:binary_4 { new BinaryBitOr(left, right, state) }
     / binary_4
