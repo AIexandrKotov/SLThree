@@ -313,16 +313,16 @@ constraint_expression <ConstraintExpression>
 generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
     = old_generic_invokation
     / constraint_generic_invokation
-    / maki:generic_making _ ":" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state)) }
+    / maki:generic_making _ ":" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, new MacrosDefinition(expr, state)) }
     / maki:generic_making _ "=" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
     / ":" _ expr:block_or_primary { 
         new ValueTuple<BaseExpression, BaseExpression>(
-            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
-        new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state))
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("runtime", state), state), 
+            new MacrosDefinition(expr, state))
     }
     / "=" _ expr:block_or_primary { 
         new ValueTuple<BaseExpression, BaseExpression>(
-            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("runtime", state), state), 
         expr)
     }
 
