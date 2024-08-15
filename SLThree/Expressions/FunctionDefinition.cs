@@ -64,7 +64,7 @@ namespace SLThree
             {
                 if (is_abstract)
                 {
-                    FunctionBody = new StatementList(new BaseStatement[] { new ThrowStatement(new StaticExpression(new AbstractInvokation(SourceContext)), context) }, context);
+                    FunctionBody = new StatementList(new BaseStatement[] { new ThrowStatement(new ObjectLiteral(new AbstractInvokation(SourceContext)), context) }, context);
                 }
                 else throw new LogicalError("Abstract method without abstract modifier", context);
             }

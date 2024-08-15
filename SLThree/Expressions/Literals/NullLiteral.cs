@@ -5,7 +5,7 @@ namespace SLThree
     public class NullLiteral : Literal<object>
     {
         public NullLiteral() : base() { }
-        public NullLiteral(SourceContext context) : base(null, context) { }
+        public NullLiteral(SourceContext context) : base(null, "null", context) { }
 
         public override string ExpressionToString() => "null";
 

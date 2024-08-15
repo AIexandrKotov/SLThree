@@ -463,7 +463,7 @@ namespace SLThree
 
             public override void MakeValue(object any)
             {
-                GetPlacer() = new StaticExpression(any);
+                GetPlacer() = new ObjectLiteral(any, Concrete.SourceContext);
             }
 
             public override void MakeType(TypenameExpression type)
@@ -494,7 +494,7 @@ namespace SLThree
 
             public override void MakeValue(object any)
             {
-                GetPlacer() = new StaticExpression(any);
+                GetPlacer() = new ObjectLiteral(any, Concrete.SourceContext);
             }
             
             public override void MakeType(TypenameExpression type)
@@ -1201,7 +1201,7 @@ namespace SLThree
 
             public override void MakeValue(object any)
             {
-                Concrete.Executable = new StaticExpression(any);
+                Concrete.Executable = new ObjectLiteral(any, Concrete.SourceContext.CloneCast());
             }
 
             public override void MakeType(TypenameExpression type)
@@ -1623,7 +1623,7 @@ namespace SLThree
 
             public override void MakeValue(object any)
             {
-                Owner.DefaultValues[ArgumentPosition] = new StaticExpression(any);
+                Owner.DefaultValues[ArgumentPosition] = new ObjectLiteral(any);
             }
 
             public override void MakeType(TypenameExpression type)

@@ -33,8 +33,8 @@ namespace SLThree.sys
         {
             return statement.Statements.Length > 0
                 && statement.Statements[0] is ThrowStatement @throw
-                && @throw.ThrowExpression is StaticExpression expression
-                && expression.IsArtificial && expression.Object is AbstractInvokation;
+                && @throw.ThrowExpression is ObjectLiteral expression
+                && expression.Value is AbstractInvokation;
         }
 
         public static readonly List<Assembly> registred;

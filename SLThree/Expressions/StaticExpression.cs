@@ -6,24 +6,16 @@ namespace SLThree
     {
         public BaseExpression Right;
 
-        public StaticExpression(object obj) : base(new SourceContext())
-        {
-            artificial = true;
-            this.obj = obj;
-            done = true;
-        }
         public StaticExpression(BaseExpression right, SourceContext context) : base(context)
         {
             Right = right;
         }
 
-        public override string ExpressionToString() => $"static {Right ?? obj}";
+        public override string ExpressionToString() => $"static {Right}";
 
         private bool done;
         private object obj;
-        private bool artificial;
         
-        public bool IsArtificial => artificial;
         public object Object => obj;
 
         public override object GetValue(ExecutionContext context)
@@ -35,7 +27,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return artificial ? new StaticExpression(obj) : new StaticExpression(Right.CloneCast(), SourceContext.CloneCast());
+            return new StaticExpression(Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

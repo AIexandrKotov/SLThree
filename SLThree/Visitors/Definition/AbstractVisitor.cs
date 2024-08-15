@@ -471,8 +471,7 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(StaticExpression expression)
         {
-            if (!expression.IsArtificial)
-                VisitExpression(expression.Right);
+            VisitExpression(expression.Right);
         }
 
         public virtual void VisitExpression(BlockExpression expression)
