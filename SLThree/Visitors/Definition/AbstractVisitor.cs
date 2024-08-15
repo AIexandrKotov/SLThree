@@ -515,7 +515,8 @@ namespace SLThree.Visitors
 
         public virtual void VisitExpression(ConstraintExpression expression)
         {
-            VisitExpression(expression.Target);
+            if (!expression.DefaultTarget)
+                VisitExpression(expression.Target);
             if (expression.Name != null)
                 VisitExpression(expression.Name);
             VisitConstraint(expression.Body);
