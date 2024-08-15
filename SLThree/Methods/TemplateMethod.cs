@@ -173,7 +173,7 @@ namespace SLThree
 
             public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
-        public class ObjectConstraintDefinition : ConstraintDefinition
+        internal class ObjectConstraintDefinition : ConstraintDefinition
         {
             public Constraint Value;
 
@@ -303,6 +303,19 @@ namespace SLThree
             public override object Clone() => new CodeConstraint(SourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowCode;
         }
+        public class ConstraintConstraint : Constraint
+        {
+            public ConstraintConstraint(SourceContext context) : base(context) { }
+            public override string ConstraintToString() => $"constraint";
+
+            public override bool Applicable(GenericMaking making, object target)
+            {
+                return making.HasFlag(GenericMaking.AsConstraint);
+            }
+
+            public override object Clone() => new ConstraintConstraint(SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowConstraints;
+        }
         public class CombineConstraint : Constraint
         {
             public Constraint Left;
@@ -428,12 +441,18 @@ namespace SLThree
                     return new BlockExpression(sl.Statements, sl.SourceContext);
                 return new BlockExpression(new BaseStatement[1] { statement }, statement.SourceContext);
             }
+            public Constraint AsConstraint(object any)
+            {
+                if (any is Constraint constraint) return constraint;
+                throw new RuntimeError($"{any} is not constraint", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
+            }
 
             public abstract void MakeValue(object any);
             public abstract void MakeType(TypenameExpression type);
             public abstract void MakeName(NameExpression name);
             public abstract void MakeExpression(BaseExpression expression);
             public abstract void MakeCode(BaseStatement statement);
+            public abstract void MakeConstraint(Constraint constraint);
             public void Make(GenericMaking making, object any)
             {
                 switch (making)
@@ -452,6 +471,9 @@ namespace SLThree
                         return;
                     case GenericMaking.AsCode:
                         MakeCode(AsStatement(any));
+                        return;
+                    case GenericMaking.AsConstraint:
+                        MakeConstraint(AsConstraint(any));
                         return;
                 }
             }
@@ -503,6 +525,11 @@ namespace SLThree
             {
                 GetPlacer() = AsStatementList(statement);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                GetPlacer() = new ObjectLiteral(constraint);
+            }
         }
         public abstract class SameBehaviourCodeGenericInfo<T> : CodeGenericInfo<T> where T : BaseStatement
         {
@@ -534,6 +561,11 @@ namespace SLThree
             {
                 GetPlacer() = AsStatementList(statement);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                GetPlacer() = new ObjectLiteral(constraint);
+            }
         }
         #endregion
 
@@ -550,6 +582,7 @@ namespace SLThree
             public override void MakeName(NameExpression name) => Concrete.PullTheType();
             public override void MakeExpression(BaseExpression expression) => Concrete.PullTheType();
             public override void MakeCode(BaseStatement statement) => Concrete.PullTheType();
+            public override void MakeConstraint(Constraint constraint) => Concrete.PullTheType();
         }
         public class TypenameGenericArgGeneric : GenericInfo<TypenameExpression>
         {
@@ -583,6 +616,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class InvokeExpressionNamePartGeneric : SameBehaviourExprGenericInfo<InvokeExpression>
         {
@@ -591,6 +629,11 @@ namespace SLThree
             public override void MakeType(TypenameExpression type)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
 
             public override ref BaseExpression GetPlacer() => ref Concrete.Left;
@@ -679,6 +722,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class ConditionExpressionGeneric : SameBehaviourExprGenericInfo<ConditionExpression>
         {
@@ -719,6 +767,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class FunctionDefinitionArgumentNamePartGeneric : ExprGenericInfo<FunctionDefinition>
         {
@@ -753,6 +806,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class FunctionDefinitionArgumentTypePartGeneric : ExprGenericInfo<FunctionDefinition>
         {
@@ -785,6 +843,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class FunctionDefinitionArgumentDefaultValuePartGeneric : SameBehaviourExprGenericInfo<FunctionDefinition>
@@ -829,6 +892,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class BaseInstanceCreatorNamePartGeneric : ExprGenericInfo<BaseInstanceCreator>
         {
@@ -860,6 +928,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class BaseInstanceCreatorTypePartGeneric : ExprGenericInfo<BaseInstanceCreator>
         {
@@ -890,6 +963,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class BaseInstanceCreatorArgPartGeneric : SameBehaviourExprGenericInfo<BaseInstanceCreator>
@@ -933,6 +1011,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class CreatorContextAncestorPartGeneric : SameBehaviourExprGenericInfo<CreatorContext>
         {
@@ -974,6 +1057,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class CreatorNewArraySizePartGeneric : SameBehaviourExprGenericInfo<CreatorNewArray>
         {
@@ -1012,6 +1100,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class CreatorRangeBoundPartGeneric : SameBehaviourExprGenericInfo<CreatorRange>
@@ -1090,6 +1183,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class CreatorUsingGeneric : ExprGenericInfo<CreatorUsing>
         {
@@ -1121,6 +1219,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class UsingExpressionAliasPartGeneric : ExprGenericInfo<UsingExpression>
         {
@@ -1151,6 +1254,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class StaticExpressionGeneric : SameBehaviourExprGenericInfo<StaticExpression>
@@ -1241,6 +1349,11 @@ namespace SLThree
             {
                 Concrete.Executable = AsStatementList(statement);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class InvokeGenericExpressionNamePartGeneric : SameBehaviourExprGenericInfo<InvokeGenericExpression>
         {
@@ -1295,6 +1408,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class MakeGenericExpressionNamePartGeneric : SameBehaviourExprGenericInfo<MakeGenericExpression>
         {
@@ -1338,6 +1456,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class MatchExpressionHeadPartGeneric : SameBehaviourExprGenericInfo<MatchExpression>
@@ -1394,6 +1517,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class ReflectionExpressionArgumentPartGeneric : ExprGenericInfo<ReflectionExpression>
         {
@@ -1427,6 +1555,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
+            }
         }
         public class ReflectionExpressionGenericArgumentPartGeneric : ExprGenericInfo<ReflectionExpression>
         {
@@ -1459,6 +1592,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsConstraint, Concrete, this);
             }
         }
         public class InterpolatedStringGeneric : SameBehaviourExprGenericInfo<InterpolatedString>
@@ -1521,6 +1659,125 @@ namespace SLThree
             public override ref BaseExpression GetPlacer() => ref Concrete.CatchVariable;
         }
 
+        public class NameConstraintDefinitionGeneric : ExprGenericInfo<NameConstraintDefinition>
+        {
+            public NameConstraintDefinitionGeneric(NameConstraintDefinition concrete, int position) : base(concrete, position)
+            {
+
+            }
+
+            public override void MakeValue(object any)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsValue, Concrete, this);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.Name = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                Concrete.Name = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+            }
+        }
+        public class CombineConstraintDefinitionGeneric : ExprGenericInfo<CombineConstraintDefinition>
+        {
+            public bool IsRight;
+            public CombineConstraintDefinitionGeneric(CombineConstraintDefinition concrete, int position, bool is_right) : base(concrete, position)
+            {
+                IsRight = is_right;
+            }
+
+            public override void MakeValue(object any)
+            {
+                if (IsRight) Concrete.Right = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+                Concrete.Left = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                if (IsRight) Concrete.Left = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+                Concrete.Left = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                if (IsRight) Concrete.Right = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+                Concrete.Left = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+            }
+        }
+        public class IntersectionConstraintDefinitionGeneric : ExprGenericInfo<IntersectionConstraintDefinition>
+        {
+            public bool IsRight;
+            public IntersectionConstraintDefinitionGeneric(IntersectionConstraintDefinition concrete, int position, bool is_right) : base(concrete, position)
+            {
+                IsRight = is_right;
+            }
+
+            public override void MakeValue(object any)
+            {
+                if (IsRight) Concrete.Right = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+                Concrete.Left = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                if (IsRight) Concrete.Left = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+                Concrete.Left = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                if (IsRight) Concrete.Right = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+                Concrete.Left = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+            }
+        }
 
         public class OwnParameterNameGeneric : GenericInfo
         {
@@ -1556,6 +1813,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericParameterName(GenericMaking.AsCode, Owner.OriginalParamNames[ArgumentPosition]);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericParameterName(GenericMaking.AsConstraint, Owner.OriginalParamNames[ArgumentPosition]);
             }
         }
         public class OwnParameterTypeGeneric : GenericInfo
@@ -1593,6 +1855,11 @@ namespace SLThree
             {
                 throw new UnavailableGenericParameterType(GenericMaking.AsCode, Owner.OriginalParamNames[ArgumentPosition]);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericParameterType(GenericMaking.AsConstraint, Owner.OriginalParamNames[ArgumentPosition]);
+            }
         }
         public class OwnReturnTypeGeneric : GenericInfo
         {
@@ -1626,6 +1893,11 @@ namespace SLThree
             public override void MakeCode(BaseStatement statement)
             {
                 throw new UnavailableGenericResultType(GenericMaking.AsCode);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                throw new UnavailableGenericResultType(GenericMaking.AsConstraint);
             }
         }
         public class OwnDefaultValueGeneric : GenericInfo
@@ -1663,6 +1935,11 @@ namespace SLThree
             {
                 Owner.DefaultValues[ArgumentPosition] = AsStatementList(statement);
             }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                Owner.DefaultValues[ArgumentPosition] = new ObjectLiteral(constraint);
+            }
         }
         #endregion
 
@@ -1680,6 +1957,7 @@ namespace SLThree
         [VisitorNotice("VisitExpression", typeof(FunctionArgument))]
         [VisitorNotice("VisitExpression", typeof(Literal))]
         [VisitorNotice("VisitExpression", typeof(Special))]
+        [VisitorNotice("VisitConstraint", typeof(FunctionConstraintDefinition))]
         public class GenericFinder : AbstractVisitor
         {
             public string[] Generics;
@@ -1734,6 +2012,58 @@ namespace SLThree
             public bool IsShaded(int index)
             {
                 return Shadowing.Peek().Contains(index);
+            }
+
+            public override void VisitConstraint(NameConstraintDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (expression.Name is NameExpression name && name.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new NameConstraintDefinitionGeneric(expression, i));
+                    }
+                }
+                base.VisitConstraint(expression);
+            }
+
+            public override void VisitConstraint(IntersectionConstraintDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (expression.Left is NameConstraintDefinition name1 && name1.Name is NameExpression name2 && name2.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new IntersectionConstraintDefinitionGeneric(expression, i, false));
+                    }
+                    if (expression.Right is NameConstraintDefinition name3 && name3.Name is NameExpression name4 && name4.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new IntersectionConstraintDefinitionGeneric(expression, i, true));
+                    }
+                }
+                base.VisitConstraint(expression);
+            }
+
+            public override void VisitConstraint(CombineConstraintDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (expression.Left is NameConstraintDefinition name1 && name1.Name is NameExpression name2 && name2.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new CombineConstraintDefinitionGeneric(expression, i, false));
+                    }
+                    if (expression.Right is NameConstraintDefinition name3 && name3.Name is NameExpression name4 && name4.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new CombineConstraintDefinitionGeneric(expression, i, true));
+                    }
+                }
+                base.VisitConstraint(expression);
             }
 
             public override void VisitExpression(NameExpression expression)
@@ -1974,17 +2304,6 @@ namespace SLThree
                     }
                 }
                 base.VisitExpression(expression);
-            }
-
-            public override void VisitConstraint(NameConstraintDefinition expression)
-            {
-                for (var i = 0; i < Generics.Length; i++)
-                {
-                    if (IsShaded(i)) continue;
-                    if (expression.Name is NameExpression name && name.Name == Generics[i])
-                        Infos.Add(new NameConstraintGeneric(expression, i));
-                }
-                base.VisitConstraint(expression);
             }
 
             public override void VisitExpression(FunctionDefinition expression)
@@ -2482,9 +2801,10 @@ namespace SLThree
             AllowTypes = 0x2,
             AllowExpressions = 0x4,
             AllowCode = 0x8,
-            AllowValues = 0x10,
+            AllowConstraints = 0x10,
+            AllowValues = 0x20,
 
-            AllowAll = AllowNames | AllowTypes | AllowExpressions | AllowCode | AllowValues,
+            AllowAll = AllowNames | AllowTypes | AllowExpressions | AllowCode | AllowConstraints | AllowValues,
         }
         public enum GenericMaking
         {
@@ -2493,9 +2813,10 @@ namespace SLThree
             AsName = 2,
             AsExpression = 3,
             AsCode = 4,
+            AsConstraint = 5,
 
-            Constraint = 5,
-            Runtime = 6,
+            Constraint = 6,
+            Runtime = 7,
         }
         public static GenericMaking GetMakingBasedOnConstraint(GenericMakingConstraint constraint)
         {

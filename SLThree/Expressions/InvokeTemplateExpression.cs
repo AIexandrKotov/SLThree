@@ -37,8 +37,10 @@ namespace SLThree
                         case "code":
                             return TemplateMethod.GenericMaking.AsCode;
                         case "constraint":
-                            return TemplateMethod.GenericMaking.Constraint;
+                            return TemplateMethod.GenericMaking.AsConstraint;
                         case "runtime":
+                            return TemplateMethod.GenericMaking.Constraint;
+                        case "runtime2":
                             return TemplateMethod.GenericMaking.Runtime;
                     }
                 }

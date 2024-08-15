@@ -312,6 +312,7 @@ constraint_expression <ConstraintExpression>
 
 generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
     = old_generic_invokation
+    / constraint_generic_invokation
     / maki:generic_making _ ":" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, new CastExpression(expr, new TypenameExpression(new NameExpression("is", state), state), state)) }
     / maki:generic_making _ "=" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
     / ":" _ expr:block_or_primary { 
@@ -331,6 +332,15 @@ old_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
         expr) }
     / "as" _required_ "type" _ "=" _ expr:block_expression { new ValueTuple<BaseExpression, BaseExpression>(
             new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", state), state), 
+        expr) }
+
+constraint_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = "as" _required_ "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), new ConstraintExpression(x, null, c, state)) }
+    / "as" _required_ "constraint" _ ":" _ c:constraint { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), new ConstraintExpression(null, c, state)) }
+    / "as" _required_ "constraint" _ "=" _ expr:block_expression { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", state), state), 
         expr) }
 
 block_or_primary <BaseExpression>

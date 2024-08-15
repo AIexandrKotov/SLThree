@@ -88,7 +88,7 @@ namespace SLThree.sys
                 var types = SLThree.GetTypes();
                 var statements = types.Where(x => GetAncestors(x).Contains(typeof(BaseStatement)));
                 var expressions = types.Where(x => GetAncestors(x).Contains(typeof(BaseExpression)));
-                var constraints = types.Where(x => GetAncestorsInclude(x).Contains(typeof(TemplateMethod.ConstraintDefinition)));
+                var constraints = types.Where(x => GetAncestors(x).Contains(typeof(TemplateMethod.ConstraintDefinition)));
                 expressions = expressions.Where(x => !GetAncestors(x).Contains(typeof(Literal)));
                 expressions = expressions.Where(x => !GetAncestors(x).Contains(typeof(Special)));
                 expressions = expressions.Where(x => !GetAncestors(x).Contains(typeof(BinaryOperator)));
