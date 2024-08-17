@@ -2425,7 +2425,7 @@ namespace SLThree
                 if (Infos.Count > count)
                     Infos.Add(new TypenamePullerGeneric(expression, 0));
 
-                var onbasevisit = new List<TypenameExpression>();
+                var onbasevisit = new HashSet<TypenameExpression>();
 
                 for (var i = 0; i < Generics.Length; i++)
                 {
@@ -2449,8 +2449,8 @@ namespace SLThree
                     }
                 }
 
-                for (var i = 0; i < onbasevisit.Count; i++)
-                    base.VisitExpression(expression.Generics[i]);
+                foreach (var x in onbasevisit)
+                    base.VisitExpression(x);
             }
 
             public override void VisitExpression(MemberAccess expression)
