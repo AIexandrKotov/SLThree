@@ -91,6 +91,15 @@ namespace SLThree
 
                 throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
             }
+            else if (o is ContextWrap wrap)
+            {
+                if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is TemplateMethod constructor)
+                {
+                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    return wrap.Context.CreateInstanceTemplate(context, constructor, generic_args, args).wrap;
+                }
+                throw new RuntimeError($"Template constructor not found", SourceContext);
+            }
 
             throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to making generic", SourceContext);
         }

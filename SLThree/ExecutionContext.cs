@@ -114,6 +114,52 @@ namespace SLThree
 
         }
 
+        public ExecutionContext CreateInstanceTemplate(ExecutionContext definitioncontext, TemplateMethod constructor, (TemplateMethod.GenericMaking, object)[] generic_args, object[] args)
+        {
+            var ret = new ExecutionContext(definitioncontext);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            constructor.@this = ret.wrap;
+            constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
+            return ret;
+        }
+        public ExecutionContext CreateInstanceTemplate((TemplateMethod.GenericMaking, object)[] generic_args, object[] args, SourceContext sourceContext)
+        {
+            var ret = new ExecutionContext(super.Context);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            if (LocalVariables.GetValue("constructor").Item1 is TemplateMethod constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length)
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.@this = ret.wrap;
+                constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
+            }
+            return ret;
+        }
+        public ExecutionContext CreateInstanceGeneric(ExecutionContext definitioncontext, GenericMethod constructor, Type[] generic_args, object[] args)
+        {
+            var ret = new ExecutionContext(definitioncontext);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            constructor.@this = ret.wrap;
+            constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
+            return ret;
+        }
+        public ExecutionContext CreateInstanceGeneric(Type[] generic_args, object[] args, SourceContext sourceContext)
+        {
+            var ret = new ExecutionContext(super.Context);
+            ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
+            ret.parent = wrap;
+            if (LocalVariables.GetValue("constructor").Item1 is GenericMethod constructor)
+            {
+                if (constructor.ParamNames.Length != args.Length)
+                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                constructor.@this = ret.wrap;
+                constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
+            }
+            return ret;
+        }
         public ExecutionContext CreateInstance(ExecutionContext definitioncontext, Method constructor, object[] args)
         {
             var ret = new ExecutionContext(definitioncontext);
@@ -137,6 +183,7 @@ namespace SLThree
             }
             return ret;
         }
+
         public void Implementation(ExecutionContext ret, Method constructor, object[] args)
         {
             constructor.@this = ret.wrap;
