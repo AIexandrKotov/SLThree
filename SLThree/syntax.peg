@@ -211,8 +211,8 @@ binary_0 <BaseExpression> -memoize
     / "^" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, state), state) }
     / lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, state) }
     / left:binary_0 _ "::" _ right:name 
-    _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,"," _> _ ">" {gen_args_i})? 
-    _ args:    (<IList<TypenameExpression>> "(" _ args_i    :typename<0,,"," _> _ ")" {args_i    })? {
+    _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,_ "," _> _ ">" {gen_args_i})? 
+    _ args:    (<IList<TypenameExpression>> "(" _ args_i    :typename<0,,_ "," _> _ ")" {args_i    })? {
         new ReflectionExpression(left, right, GetOptional(gen_args)?.ToArray(), GetOptional(args)?.ToArray(), state)
     }
     / left:binary_min { left }
@@ -263,27 +263,27 @@ match_expression <BaseExpression>
     _ "}" { new MatchExpression(expr, matches, state) }
 
 match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
-    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:binary_8<1,,"," _> { exprs })
+    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:binary_8<1,,_ "," _> { exprs })
       _ "=>" _ right:statement
     { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
 
 withoutinvokation_primary <BaseExpression> -memoize
-    = left:withoutinvokation_primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
-    / left:withoutinvokation_primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
+    = left:withoutinvokation_primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
+    / left:withoutinvokation_primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
     / left:withoutinvokation_primary _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, state) }
     / onlyname_access
 
 primary <BaseExpression> -memoize
-    = left:primary _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
-    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
-    / left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
-    / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
-    / left:primary _ "." _ "?" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, state) }
-    / left:primary _ "."? _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, state) }
-    / left:primary _ "." _ "?" _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
-    / left:primary _ "."? _ "[" _ args:expression<1,,"," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
-    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
-    / left:primary _ "."? _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
+    = left:primary _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
+    / left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, state) }
+    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
+    / left:primary _ "." _ "?" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, state) }
+    / left:primary _ "."? _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, state) }
+    / left:primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
+    / left:primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
+    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, state) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, state) }
     / "*" _ left:(primary/block_expression) { new DereferenceExpression(left, state) }
     / "&" _ left:(primary/block_expression) { new ReferenceExpression(left, state) }
@@ -297,8 +297,8 @@ primary <BaseExpression> -memoize
     / instance_expression
     / context_expression
     / constraint_expression
-    / "(" _ args:req_arg_name<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
-    / "(" _ args:expression<1,,"," _> _ ("," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "(" _ args:req_arg_name<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
+    / "(" _ args:expression<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / special
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
@@ -368,7 +368,7 @@ constraint_primary <TemplateMethod.ConstraintDefinition>
 new_context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context Name: TBase
-    = "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> { 
+    = "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> { 
         new CreatorContext(name, ancestors.ToArray(), state)
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
@@ -378,7 +378,7 @@ new_context_expression <BaseExpression>
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context: TBase
-    / "new" _required_ "context" _ ":" _ ancestors:primary<1,,"," _> { 
+    / "new" _required_ "context" _ ":" _ ancestors:primary<1,,_ "," _> { 
         new CreatorContext(ancestors.ToArray(), state)
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
@@ -390,7 +390,7 @@ new_context_expression <BaseExpression>
 context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        context Name: TBase {}
-    = "context" _required_ name:primary _ ":" _ ancestors:primary<1,,"," _> 
+    = "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         new CreatorContext(name, ancestors.ToArray(), body, state)
     }
@@ -402,7 +402,7 @@ context_expression <BaseExpression>
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        context: TBase {}
-    / "context" _ ":" _ ancestors:primary<1,,"," _> 
+    / "context" _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         new CreatorContext(ancestors.ToArray(), body, state)
     }
@@ -419,25 +419,25 @@ context_body <CreatorContextBody>
 collection_expression <BaseExpression>
 //--------CREATOR--DICTIONARY------------------------------------------------
 //        new T(args) Name {};
-    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
     _ body:dictionary_body { 
         CreatorDictionary.NamedCaseTypeArgsBody(t, name, args.ToArray(), body.ToArray(), state)
     }
 //--------CREATOR--COLLECTION------------------------------------------------
 //        new T(args) Name {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
     _ body:collection_body { 
         CreatorCollection.NamedCaseTypeArgsBody(t, name, args.ToArray(), body.ToArray(), state)
     }
 //--------CREATOR--DICTIONARY------------------------------------------------
 //        new T(args) {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
     _ body:dictionary_body { 
         CreatorDictionary.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), state)
     }
 //--------CREATOR--COLLECTION------------------------------------------------
 //        new T(args) {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
     _ body:collection_body { 
         CreatorCollection.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), state)
     }
@@ -470,10 +470,10 @@ collection_expression <BaseExpression>
     }
 
 collection_body <IList<BaseExpression>>
-    = "{" _ entries:expression<1,,"," _> _ ("," _)? "}" { entries }
+    = "{" _ entries:expression<1,,_ "," _> _ (_ "," _)? "}" { entries }
 
 dictionary_body <IList<CreatorDictionary.DictionaryEntry>>
-    = "{" _ entries:dictionary_entry<1,,"," _> _ ("," _)? "}" { entries }
+    = "{" _ entries:dictionary_entry<1,,_ "," _> _ (_ "," _)? "}" { entries }
 
 dictionary_entry <CreatorDictionary.DictionaryEntry>
     = left:expression _ ":" _ right:expression { new CreatorDictionary.DictionaryEntry(left, right, state) } 
@@ -481,76 +481,76 @@ dictionary_entry <CreatorDictionary.DictionaryEntry>
 instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase {};
-    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> 
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase;
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> { 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.NamedCaseTypeArgsInheritance(t, name, args.ToArray(), ancestors.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args): TBase {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
-    _ ":" _ ancestors:primary<1,,"," _> 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.CaseTypeArgsBodyInheritance(t, args.ToArray(), ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args): TBase;
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
-    _ ":" _ ancestors:primary<1,,"," _> { 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.CaseTypeArgsInheritance(t, args.ToArray(), ancestors.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase {}; 
     / "new" _required_ t:typename _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase;
     / "new" _required_ t:typename _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> { 
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.NamedCaseTypeInheritance(t, name, ancestors.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T: TBase {}; 
     / "new" _required_ t:typename 
-    _ ":" _ ancestors:primary<1,,"," _> 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.CaseTypeBodyInheritance(t, ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T: TBase;
     / "new" _required_ t:typename 
-    _ ":" _ ancestors:primary<1,,"," _> { 
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.CaseTypeInheritance(t, ancestors.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name;
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary { 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary { 
         CreatorInstance.NamedCaseTypeArgs(t, name, args.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
     _ body:context_body { 
         CreatorInstance.CaseTypeArgsBody(t, args.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args);
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")"  { 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")"  { 
         CreatorInstance.CaseTypeArgs(t, args.ToArray(), state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
@@ -597,41 +597,41 @@ instance_expression <BaseExpression>
 block_instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase {};
-    = "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> 
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args): TBase {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
-    _ ":" _ ancestors:primary<1,,"," _> 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.CaseTypeArgsBodyInheritance(t, args.ToArray(), ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase {}; 
     / "new" _required_ t:typename _ name:primary
-    _ ":" _ ancestors:primary<1,,"," _> 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T: TBase {}; 
     / "new" _required_ t:typename 
-    _ ":" _ ancestors:primary<1,,"," _> 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.CaseTypeBodyInheritance(t, ancestors.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, state)
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,"," _> _ ")" 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
     _ body:context_body { 
         CreatorInstance.CaseTypeArgsBody(t, args.ToArray(), body, state)
     }
@@ -649,10 +649,10 @@ block_instance_expression <BaseExpression>
     }
 
 access_right <BaseExpression> -memoize
-    = left:name _ "<" _ gen_args:generic_invokation<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), state) }
-    / left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
-    / left:name _ "<" _ gen_args:typename<1,,"," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), state) }
-    / left:name _ "(" _ args:expression<0,,"," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
+    = left:name _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), state) }
+    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), state) }
+    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), state) }
+    / left:name _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), state) }
     / right:access_right { right }
     / right:name { right }
 
@@ -667,7 +667,7 @@ method_definition_expression <FunctionDefinition>
     = method_definition_statement1
     / mods_name:method_mods_name?
       generics:method_generic_part? 
-      "(" _ args:func_arg<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
       {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), GetListStatement(new ReturnStatement(value, state)), GetOptional(ret), state)
@@ -688,7 +688,7 @@ abstract_method_expression <FunctionDefinition>
     = "abstract" _required_
       name:withoutinvokation_primary _
       generics:method_generic_part?
-      "(" _ args:func_arg<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})?
       {
           new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), null, GetOptional(ret), state)
@@ -696,7 +696,7 @@ abstract_method_expression <FunctionDefinition>
 method_definition_statement1 <FunctionDefinition>
     = mods_name:method_mods_name?
       generics:method_generic_part? 
-      "(" _ args:func_arg<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
           new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), state)
       }
@@ -704,14 +704,14 @@ method_definition_statement1 <FunctionDefinition>
 
 method_definition_nswm <FunctionDefinition>
     = generics:method_generic_part? 
-      "(" _ args:func_arg<0,,"," _> _ ")" 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
       ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
       body:block_statement {
           new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), state)
       }
 
 method_generic_part <IList<ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>>
-    = "<" _ generic_args:generic_arg<1,,"," _> _ ">" _ { generic_args }
+    = "<" _ generic_args:generic_arg<1,,_ "," _> _ ">" _ { generic_args }
 
 generic_arg <ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>
     = generic_name:name _ ":" _ cnstr:constraint { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, cnstr) }
@@ -731,7 +731,7 @@ method_modificator
     / "template"
 
 typename <TypenameExpression>
-    = t_node:typename_node _ "<" _ t_list:typename<1,,"," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }
+    = t_node:typename_node _ "<" _ t_list:typename<1,,_ "," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), state) }
     / t_node:typename_node { new TypenameExpression(t_node, state) }
 
 typename_node <BaseExpression> -memoize

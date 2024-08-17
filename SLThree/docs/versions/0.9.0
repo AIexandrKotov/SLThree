@@ -63,3 +63,4 @@ Bugfixes:
     - Arrays supporting in static typeof (#132)
     - Generic cloning policy is now lossless
     - Indentation supporting in $-strings (#133)
+    - Whitespace after comma fix (#135)
