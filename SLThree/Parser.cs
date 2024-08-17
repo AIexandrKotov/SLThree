@@ -27,10 +27,17 @@ namespace SLThree
             var ret = this.Parse("#SLT# " + s, filename);
             return ret;
         }
-        public ExecutionContext RunScript(string s, string filename = null, ExecutionContext context = null)
+
+        private ExecutionContext InitPreseted(ExecutionContext preset) {
+            var ret = new ExecutionContext(false, false);
+            if (preset != null) ret.implement(preset);
+            return ret;
+        }
+
+        public ExecutionContext RunScript(string s, string filename = null, ExecutionContext context = null, ExecutionContext preset = null)
         {
             var parsed = ParseScript(s, filename);
-            var ret = context ?? new ExecutionContext();
+            var ret = context ?? InitPreseted(preset);
             parsed.GetValue(ret);
             return ret;
         }

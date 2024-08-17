@@ -16,5 +16,9 @@ namespace SLThree.Embedding
         {
             return Parser.This.RunScript(code, null, context);
         }
+        public static ExecutionContext RunPreset(this string code, ExecutionContext preset)
+        {
+            return Parser.This.RunScript(code, null, null, preset);
+        }
     }
 }

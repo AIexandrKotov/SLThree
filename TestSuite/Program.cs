@@ -123,19 +123,25 @@ namespace TestSuite
             }
         }
 
+        public static ExecutionContext TestContext = InitTestContext();
+        public static ExecutionContext InitTestContext()
+        {
+            var context = new ExecutionContext();
+            context.LocalVariables.SetValue("ASSERT", ((Action<ContextWrap, BaseExpression>)Assert).Method);
+            context.LocalVariables.SetValue("ASSERT_THROW", ((Action<ContextWrap, BaseExpression, Type, string>)AssertThrow).Method);
+            context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
+            context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
+
+            return context;
+        }
+
         public static bool ExecTest(string filename)
         {
             current_assert_id = 1;
             current_assert = true;
             try
             {
-                var context = new ExecutionContext();
-                context.LocalVariables.SetValue("ASSERT", ((Action<ContextWrap, BaseExpression>)Assert).Method);
-                context.LocalVariables.SetValue("ASSERT_THROW", ((Action<ContextWrap, BaseExpression, Type, string>)AssertThrow).Method);
-                context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
-                context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
-
-                Parser.This.RunScript(File.ReadAllText(filename), filename, context);
+                Parser.This.RunScript(File.ReadAllText(filename), filename, null, preset: TestContext);
                 return current_assert;
             }
             catch (SLTException e)
