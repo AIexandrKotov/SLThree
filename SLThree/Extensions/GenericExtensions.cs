@@ -50,6 +50,7 @@ namespace SLThree.Extensions
         }
 
         public static TOut Cast<TIn, TOut>(this TIn o) where TOut : TIn => (TOut)o;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Cast<T>(this object o) => (T)o;
         public static T? TryCast<T>(this object o) where T : struct => o is T t ? t : default;
         public static T TryCastRef<T>(this object o) where T : class => o is T t ? t : null;

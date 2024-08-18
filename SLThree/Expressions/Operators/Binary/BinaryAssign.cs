@@ -1,4 +1,5 @@
-﻿using SLThree.Extensions.Cloning;
+﻿using SLThree.Extensions;
+using SLThree.Extensions.Cloning;
 using System.Runtime.CompilerServices;
 
 namespace SLThree
@@ -114,24 +115,24 @@ namespace SLThree
                 counted_invoked = context;
                 return right;
             }
-            else if (Left is MemberAccess memberAccess)
+            else if (Left is MemberAccess)
             {
-                memberAccess.SetValue(context, ref right);
+                Left.Cast<MemberAccess>().SetValue(context, ref right);
                 return right;
             }
-            else if (Left is IndexExpression indexExpression)
+            else if (Left is IndexExpression)
             {
-                indexExpression.SetValue(context, right);
+                Left.Cast<IndexExpression>().SetValue(context, right);
                 return right;
             }
-            else if (Left is CreatorTuple tuple)
+            else if (Left is CreatorTuple)
             {
-                tuple.SetValue(context, right);
+                Left.Cast<CreatorTuple>().SetValue(context, right);
                 return right;
             }
-            else if (Left is DereferenceExpression dereference)
+            else if (Left is DereferenceExpression)
             {
-                dereference.SetValue(context, right);
+                Left.Cast<DereferenceExpression>().SetValue(context, right);
                 return right;
             }
             throw new OperatorError("=", Left?.GetType(), right?.GetType(), Left.SourceContext);
