@@ -115,6 +115,18 @@ namespace SLThree
         {
             return GetValue(context, GenericArguments.ConvertAll(x => ((TemplateMethod.GenericMaking)x.Item1.GetValue(context), x.Item2.GetValue(context))), Arguments.ConvertAll(x => x.GetValue(context)));
         }
+        public object GetValue(ExecutionContext context, object obj)
+        {
+            var key = Left.Cast<NameExpression>().Name;
+            var generic_args = GenericArguments.ConvertAll(x => ((TemplateMethod.GenericMaking)x.Item1.GetValue(context), x.Item2.GetValue(context)));
+
+            if (obj != null)
+            {
+                return InvokeForObj(context, generic_args, Arguments.ConvertAll(x => x.GetValue(context)), MemberAccess.GetNameExprValue(context, obj, Left as NameExpression));
+            }
+
+            throw new MethodNotFound(Left, SourceContext);
+        }
 
         public override object Clone()
         {

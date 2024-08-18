@@ -137,6 +137,12 @@ namespace SLThree
                             invokeGenericExpression.GenericArguments.ConvertAll(x => (Type)x.GetValue(context)),
                             invokeGenericExpression.Arguments.ConvertAll(x => x.GetValue(context)));
                     }
+                    else if (Right is InvokeTemplateExpression invokeTemplateExpression)
+                    {
+                        return invokeTemplateExpression.GetValue(pred.Context,
+                            invokeTemplateExpression.GenericArguments.ConvertAll(x => (x.Item1.GetValue(context).Cast<TemplateMethod.GenericMaking>(), x.Item2.GetValue(context))),
+                            invokeTemplateExpression.Arguments.ConvertAll(x => x.GetValue(context)));
+                    }
                 }
                 var has_access = left is ClassAccess access;
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
@@ -164,6 +170,10 @@ namespace SLThree
                 else if (Right is InvokeGenericExpression invokeGenericExpression)
                 {
                     return invokeGenericExpression.GetValue(context, left);
+                }
+                else if (Right is InvokeTemplateExpression invokeTemplateExpression)
+                {
+                    return invokeTemplateExpression.GetValue(context, left);
                 }
             }
             else if (null_conditional) return null;
