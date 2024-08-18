@@ -44,6 +44,7 @@ Language:
       `loop (10) (using console).writeln(i += 1);`
     - Infinite loop
       `loop (using console).writeln(i += 1);`
+    - Enumerable-slices `[ [Lower]..[=][Upper] ]`
     - New get chooser syntax:
       `*[1, 2, 3]` -> `^*[1, 2, 3]`
     - Expressions and code initilizers:
@@ -56,6 +57,8 @@ Language:
     - Null-coalescing augmented assign operator `??=`
     - Now you can define variables in the method from the outside
       via 'funcname.inside` and `funcname.defaults` contexts
+    - Dividing ranges into `..` and `..=` (including last)
+    - Errors localization
 Bugfixes:
     - Ignoring deffered code in static (#129)
     - Ignoring indexed properties in wrappers (#130)

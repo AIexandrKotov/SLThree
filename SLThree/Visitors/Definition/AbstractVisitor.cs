@@ -474,6 +474,15 @@ namespace SLThree.Visitors
             VisitExpression(expression.Right);
         }
 
+        public virtual void VisitExpression(SliceExpression expression)
+        {
+            VisitExpression(expression.Left);
+            if (expression.LowerBound != null)
+                VisitExpression(expression.LowerBound);
+            if (expression.UpperBound != null)
+                VisitExpression(expression.UpperBound);
+        }
+
         public virtual void VisitExpression(BlockExpression expression)
         {
             for (var i = 0; i < expression.Statements.Length; i++)

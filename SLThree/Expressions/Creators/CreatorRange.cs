@@ -302,7 +302,7 @@ namespace SLThree
             }
         }
 
-        public override string ExpressionToString() => $"{(RangeType == null ? "" : $"<{RangeType}>")}{LowerBound}..{(Excluding?"=":"")}{UpperBound}";
+        public override string ExpressionToString() => $"{(RangeType == null ? "" : $"<{RangeType}>")}{LowerBound}..{(Excluding?"":"=")}{UpperBound}";
 
         public override object Clone()
         {

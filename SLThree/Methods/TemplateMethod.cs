@@ -1942,6 +1942,31 @@ namespace SLThree
                 Concrete.Body = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
             }
         }
+        public class SliceExpressionLeftPartGeneric : SameBehaviourExprGenericInfo<SliceExpression>
+        {
+            public SliceExpressionLeftPartGeneric(SliceExpression concrete, int position) : base(concrete, position)
+            {
+            }
+
+            public override ref BaseExpression GetPlacer()
+            {
+                return ref Concrete.Left;
+            }
+        }
+        public class SliceExpressionBoundPartGeneric : SameBehaviourExprGenericInfo<SliceExpression>
+        {
+            public bool IsUpper;
+            public SliceExpressionBoundPartGeneric(SliceExpression concrete, int position, bool isUpper) : base(concrete, position)
+            {
+                IsUpper = isUpper;
+            }
+
+            public override ref BaseExpression GetPlacer()
+            {
+                if (IsUpper) return ref Concrete.UpperBound;
+                return ref Concrete.LowerBound;
+            }
+        }
 
         public class ExpressionStatementGeneric : SameBehaviourCodeGenericInfo<ExpressionStatement>
         {
@@ -3040,6 +3065,21 @@ namespace SLThree
                         CheckAnyAllow(i, expression.Target, GenericMakingConstraint.AllowNames);
                         Infos.Add(new ConstraintExpressionTargetPartGeneric(expression, i));
                     }
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(SliceExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (expression.Left is NameExpression name && name.Name == Generics[i])
+                        Infos.Add(new SliceExpressionLeftPartGeneric(expression, i));
+                    if (expression.LowerBound is NameExpression name2 && name2.Name == Generics[i])
+                        Infos.Add(new SliceExpressionBoundPartGeneric(expression, i, false));
+                    if (expression.UpperBound is NameExpression name3 && name3.Name == Generics[i])
+                        Infos.Add(new SliceExpressionBoundPartGeneric(expression, i, true));
                 }
                 base.VisitExpression(expression);
             }

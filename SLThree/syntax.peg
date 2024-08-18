@@ -279,6 +279,7 @@ primary <BaseExpression> -memoize
     / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, state) }
     / left:primary _ "." _ "?" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, state) }
     / left:primary _ "."? _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, state) }
+    / left:primary _ "[" _ lower:unary? _ ".." excl:"="? _ upper:unary? _ "]" { new SliceExpression(left, GetOptional(lower), GetOptional(upper), GetOptional(excl) == null, state) }
     / left:primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, state) }
     / left:primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, state) }
     / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, state) }
