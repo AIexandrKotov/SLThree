@@ -80,14 +80,14 @@ namespace SLThree
         {
             var left = Left.GetValue(context);
 
-            if (counted_contextwrapcache)
+            if (counted_contextwrapcache && left is ContextWrap)
             {
                 if (is_super) return (left as ContextWrap).Context.super;
                 else if (is_parent) return (left as ContextWrap).Context.parent;
                 else if (is_upper) return (left as ContextWrap).Context.PreviousContext;
                 else return (left as ContextWrap).Context.LocalVariables.GetValue(variable_name).Item1;
             }
-            else if (counted_contextwrapcache2)
+            else if (counted_contextwrapcache2 && left is ContextWrap)
             {
                 if (is_unwrap) return (left as ContextWrap).Context;
                 else return (Right as InvokeExpression).GetValue((left as ContextWrap).Context, (Right as InvokeExpression).Arguments.ConvertAll(x => x.GetValue(context)));
