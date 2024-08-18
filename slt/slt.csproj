@@ -15,6 +15,8 @@
 
   <ItemGroup>
     <None Remove="docs\help" />
+    <None Remove="docs\locales\en.dat" />
+    <None Remove="docs\locales\ru.dat" />
     <None Remove="docs\repl-help" />
     <None Remove="docs\versions\1.0.0" />
     <None Remove="docs\versions\1.1.0" />
@@ -28,6 +30,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="docs\help" />
+    <EmbeddedResource Include="docs\locales\en.dat" />
+    <EmbeddedResource Include="docs\locales\ru.dat" />
     <EmbeddedResource Include="docs\repl-help" />
     <EmbeddedResource Include="docs\versions\1.0.0" />
     <EmbeddedResource Include="docs\versions\1.1.0" />

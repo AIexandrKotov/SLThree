@@ -1,13 +1,13 @@
-﻿----- slt.exe exec arguments -----
-    <filename> [-r]        - runs file and show result
-    -e --encoding <E>      - uses encoding E for reading file
+﻿----- slt.exe {Head} -----
+    <filename> [-r]        - {Args0}
+    -e --encoding <E>      - {UseEnc}
 
-    -r --repl or 0 args    - start REPL
-    -s --specification     - outs SLT specification
-    -v --version           - outs info of current version
-    -v --version <V>       - outs difference of version V
-    -d --diff <INT>        - outs diffs of INT last versions
-    -d --diff <STR>        - outs diffs by STR
-    -V --repl-version <V>  - outs difference of version V
-    -D --repl-diff <INT>   - outs diffs of INT last REPL versions
-    -D --repl-diff <STR>   - outs diffs by STR in REPL versions
+    -r --repl or 0 args    - {StartREPL}
+    -s --specification     - {Spec}
+    -v --version           - {Version}
+    -v --version <V>       - {VersionX}
+    -d --diff <INT>        - {DiffI}
+    -d --diff <STR>        - {DiffS}
+    -V --repl-version <V>  - {ReplVersionX}
+    -D --repl-diff <INT>   - {ReplDiffI}
+    -D --repl-diff <STR>   - {ReplDiffS}

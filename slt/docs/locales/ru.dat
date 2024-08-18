@@ -1,0 +1,65 @@
+﻿REPL_DirsNotSupported="{0}" является директории. REPL не поддерживает запуск директорий
+REPL_FileNotFound=Файл "{0}" не найден.
+
+REPL_CLASSES=КЛАССЫ
+REPL_METHODS=МЕТОДЫ
+REPL_VARS=ПЕРЕМЕННЫЕ
+
+REPL_TURNED_True=включен
+REPL_TURNED_False=выключен
+REPL_PERFOMANCE=Измерение прозводительности {0}
+REPL_BIGEXCEPTION=Подробные исключения {0}
+
+REPL_ISNOTCONTEXT=`{0}` не контекст
+REPL_CTXCLEARED=Контекст очищен
+REPL_NULLSDELETED={0} нулевых ссылок было удалено
+REPL_EmptyCommand=Пустая REPL-команда
+REPL_DoesNothing=Ваша команда ничего не сделала
+REPL_LocaleNotFound=Локализация "{0}" не найдена
+
+REPL_MadeBy=Создал
+REPL_Using=с использованием
+REPL_Get=Вывести
+REPL_Commands=команды REPL'а
+REPL_With=с помощью
+
+REPL_COMP1=Вычислено за {0} мс
+REPL_COMP2=(Разбор: {0} мс, Выполнение: {1} мс)
+
+REPL_SP_ClosingFound=Лишняя закрывающая скобка
+REPL_SP_WrongBracket=Неправильная закрывающая ско
+
+RC.Head=Чтобы ввести REPL комманду, начинайте ввод с
+RC.QuitREPL=Закрыть REPL
+RC.OutLocals=Вывести локальные переменные
+RC.l_ForGlobal=для глобального контекста
+RC.l_WithTypes=с типами
+RC.l_AsTableWidth=как таблицу с мин. отступами
+RC.l_ForContext=для контекста CNT
+RC.ClearContext=Очистить контекст
+RC.r_OnlyNull=очистить только null'ы
+RC.Exex=Включить/выключить подробные исключения
+RC.Perf=Включить/выключить измерение производительности
+RC.File=Запустить файл в нынешнем контексте
+RC.f_Encoding=Прочитать с кодировкой ENC
+RC.f_InContext=Запустить в контексте CNT
+RC.f_ShowResult=Вывести результат
+RC.SetLocale=Сменить локализацию на STR
+RC.ClearConsole=Очистить консоль
+RC.OutHelp=Вывести этот текст
+RC.OutUtilityHelp=Вывести подобный текст для аргументов запуска
+RC.Allows=также поддерживает
+RC.OfCA=из аргументов запуска
+
+EA.Head=аргументы запуска
+EA.Args0=запускает файл и выводит результат
+EA.UseEnc=использует кодировку E для чтения файла
+EA.StartREPL=запускает REPL
+EA.Spec=выводит спецификацию SLThree
+EA.Version=Выводит информацию о текущей версии
+EA.VersionX=Выводит список изменений для версии V
+EA.DiffI=Выводит список изменений INT последний версий
+EA.DiffS=Выводит список изменений до STR версии
+EA.ReplVersionX=Выводит список изменений для версии V REPL'а
+EA.ReplDiffI=Выводит список изменений INT последний версий REPL'а
+EA.ReplDiffS=Выводит список изменений до STR версии REPL'а

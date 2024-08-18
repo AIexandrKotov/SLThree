@@ -1,20 +1,21 @@
-﻿To put in REPL Commands begin with >
-    -q --quit              - Quit REPL
-    -l --locals            - Outs local variables
-         --global              - for global context
-         --typed               - with types
-         --table [width]       - as table with minimum column width
-         --context <CNT>       - for CNT context
-    -r --reset             - Clear context
-         --onlynull            - clear only null-value variables
-    -e --exex              - Turn on/off extended exceptions
-    -p --perfomance        - Turn on/off measure perfomance
-    -f --run-file <STR>    - Runs file in current context
-         -e --encoding <ENC>   - File will be read in ENC encoding
-         --in <CNT>            - Runs file in CNT context
-         --show                - Result of running will be shown
+﻿{Head} >
+    -q --quit              - {QuitREPL}
+    -l --locals            - {OutLocals}
+         --global              - {l_ForGlobal}
+         --typed               - {l_WithTypes}
+         --table [width]       - {l_AsTableWidth}
+         --context <CNT>       - {l_ForContext}
+    -r --reset             - {ClearContext}
+         --onlynull            - {r_OnlyNull}
+    -e --exex              - {Exex}
+    -p --perfomance        - {Perf}
+    -f --run-file <STR>    - {File}
+         -e --encoding <ENC>   - {f_Encoding}
+         --in <CNT>            - {f_InContext}
+         --show                - {f_ShowResult}
+    --setlocale <STR>      - {SetLocale}
 
-    -c --clear     - Clear console
-    -h --help      - Outs this text
-    -H --conhelp   - Outs same text of console args
-    allows -s -d -D -v -V of console arguments
+    -c --clear     - {ClearConsole}
+    -h --help      - {OutHelp}
+    -H --conhelp   - {OutUtilityHelp}
+    {Allows} -s -d -D -v -V {OfCA}

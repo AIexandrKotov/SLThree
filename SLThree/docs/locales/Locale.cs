@@ -78,7 +78,6 @@ namespace SLThree
             SetLocaleBasedOnCulture();
         }
 
-        
         public static void SetLocaleBasedOnCulture(string culture = null)
         {
             culture = culture ?? Thread.CurrentThread.CurrentCulture.Name;

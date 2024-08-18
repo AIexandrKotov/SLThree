@@ -1,0 +1,65 @@
+﻿REPL_DirsNotSupported="{0}" is directory. For now REPL does not support directories!
+REPL_FileNotFound=File "{0}" not found.
+
+REPL_CLASSES=CLASSES
+REPL_METHODS=METHODS
+REPL_VARS=VARIABLES
+
+REPL_TURNED_True=turned on
+REPL_TURNED_False=turned off
+REPL_PERFOMANCE=Perfomance measuring is {0}
+REPL_BIGEXCEPTION=Showing extended exceptions is {0}
+
+REPL_ISNOTCONTEXT=`{0}` is not context
+REPL_CTXCLEARED=Context cleared
+REPL_NULLSDELETED={0} nulls deleted from context
+REPL_EmptyCommand=Empty REPL Command
+REPL_DoesNothing=Your request does nothing
+REPL_LocaleNotFound=Locale "{0}" not found
+
+REPL_MadeBy=Made by
+REPL_Using=using
+REPL_Get=Get
+REPL_Commands=REPL commands
+REPL_With=with
+
+REPL_COMP1=Computed in {0} ms
+REPL_COMP2=(Parse: {0} ms, Exec: {1} ms)
+
+REPL_SP_ClosingFound=Closing bracket found
+REPL_SP_WrongBracket=Wrong closing bracket
+
+RC.Head=To put in REPL Commands begin with
+RC.QuitREPL=Quit REPL
+RC.OutLocals=Outs local variables
+RC.l_ForGlobal=for global context
+RC.l_WithTypes=with types
+RC.l_AsTableWidth=as table with minimum column width
+RC.l_ForContext=for CNT context
+RC.ClearContext=Clear context
+RC.r_OnlyNull=clear only null-value variables
+RC.Exex=Turn on/off extended exceptions
+RC.Perf=Turn on/off measure perfomance
+RC.File=Runs file in current context
+RC.f_Encoding=File will be read in ENC encoding
+RC.f_InContext=Runs file in CNT context
+RC.f_ShowResult=Result of running will be shown
+RC.SetLocale=Changes the current locale to STR
+RC.ClearConsole=Clear console
+RC.OutHelp=Outs this text
+RC.OutUtilityHelp=Outs same text of console args
+RC.Allows=allows
+RC.OfCA=of console arguments
+
+EA.Head=run arguments
+EA.Args0=runs file and shows result
+EA.UseEnc=uses encoding E for reading file
+EA.StartREPL=start REPL
+EA.Spec=outs SLT specification
+EA.Version=outs info of current version
+EA.VersionX=outs changelog of version V
+EA.DiffI=outs diffs of INT last versions
+EA.DiffS=outs diffs by STR
+EA.ReplVersionX=outs difference of version V
+EA.ReplDiffI=outs diffs of INT last REPL versions
+EA.ReplDiffS=outs diffs by STR in REPL versions

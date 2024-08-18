@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -75,8 +76,8 @@ namespace slt
                     }
                     else if (IsClosingBracket(s[i]))
                     {
-                        if (Brackets.Count == 0) throw new FormatException("Closing bracket found");
-                        if (GetClosingBracket(Brackets.Peek()) != s[i]) throw new FormatException("Wrong closing bracket");
+                        if (Brackets.Count == 0) throw new FormatException(Locale.Current["REPL_SP_ClosingFound"]);
+                        if (GetClosingBracket(Brackets.Peek()) != s[i]) throw new FormatException(Locale.Current["REPL_SP_WrongBracket"]);
                         Brackets.Pop();
                         continue;
                     }

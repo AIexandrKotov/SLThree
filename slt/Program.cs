@@ -1,8 +1,10 @@
 ﻿using slt.sys;
 using SLThree;
 using SLThree.Extensions;
+using SLThree.sys;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -30,6 +32,7 @@ namespace slt
 #endif
             InitSLThreeAssemblyInfo();
             SupportingFeatures();
+            AppendInitialLocales();
         }
 
         #region Arguments
@@ -226,17 +229,44 @@ namespace slt
             Console.ResetColor();
         }
 
+        private static string LocaleHelpTemplate(string locale_name, Dictionary<string, string> helps, string prefix, string[] get_doc)
+        {
+            locale_name = locale_name ?? Locale.Current.Identifier;
+            if (helps.TryGetValue(locale_name, out var localized_help))
+                return localized_help;
+            var locale = Locale.RegistredLocales[locale_name];
+
+            var rcs = Locale.Default.Strings.Where(x => x.Key.StartsWith(prefix));
+            var names = rcs.Select((x, i) => (x.Key.Substring(prefix.Length), i)).ToDictionary(x => x.Item1, x => x.i);
+            var locals = new LocalVariablesContainer(names.Count, names);
+            rcs.Select(x => locale[x.Key]).ToArray().CopyTo(locals.Variables, 0);
+
+            var doc = $"$\"\"\"{get_doc.JoinIntoString("\n")}\"\"\"";
+            var ret = Parser.This.ParseExpression(doc).GetValue(new ExecutionContext(false, false, locals)).Cast<string>();
+            return helps[locale_name] = ret;
+        }
+        private static Dictionary<string, string> Helps = new Dictionary<string, string>();
+        private static Dictionary<string, string> REPLHelps = new Dictionary<string, string>();
+        public static string GetLocaleHelp(string locale_name = null)
+        {
+            return LocaleHelpTemplate(locale_name, Helps, "EA.", DocsIntergration.Help);
+        }
+        public static string GetLocaleREPLHelp(string locale_name = null)
+        {
+            return LocaleHelpTemplate(locale_name, REPLHelps, "RC.", DocsIntergration.REPLHelp);
+        }
+
         public static void OutREPLHelp()
         {
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(DocsIntergration.REPLHelp.JoinIntoString("\n"));
+            Console.WriteLine(GetLocaleREPLHelp());
             Console.ResetColor();
         }
 
         public static void OutHelp()
         {
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(DocsIntergration.Help.JoinIntoString("\n"));
+            Console.WriteLine(GetLocaleHelp());
             Console.ResetColor();
         }
         #endregion
@@ -341,36 +371,18 @@ namespace slt
         #endregion
 
         #region Compiler and Interpreter
-        public static ExecutionContext InvokeFile(string filename, ExecutionContext context, Encoding encoding = null, bool show_result = true)
+        public static ExecutionContext InvokeFile(string filename, ExecutionContext context = null, Encoding encoding = null, bool show_result = true)
         {
             var parser = new SLThree.Parser();
-            var executionContext = context;
+            var executionContext = context ?? GetNewREPLContext();
             try
             {
                 var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
                 var o = st.GetValue(executionContext);
                 if (show_result) OutAsOutput(o, st);
             }
-            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
-            catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
-            catch (Exception e)
-            {
-                OutException(e);
-            }
-            return executionContext;
-        }
-        public static ExecutionContext InvokeFile(string filename, Encoding encoding = null, bool show_result = true)
-        {
-            var parser = new SLThree.Parser();
-            var executionContext = GetNewREPLContext();
-            try
-            {
-                var st = parser.ParseScript(File.ReadAllText(filename, encoding ?? Encoding.UTF8), filename);
-                var o = st.GetValue(executionContext);
-                if (show_result) OutAsOutput(o, st);
-            }
-            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException($"\"{filename}\" is directory. For now REPL does not support directories!"); }
-            catch (FileNotFoundException) { OutAsException($"File \"{filename}\" not found."); }
+            catch (UnauthorizedAccessException) when (Directory.Exists(filename)) { OutAsException(string.Format(Locale.Current["REPL_DirsNotSupported"], filename)); }
+            catch (FileNotFoundException) { OutAsException(string.Format(Locale.Current["REPL_FileNotFound"], filename)); }
             catch (Exception e)
             {
                 OutException(e);
@@ -397,6 +409,33 @@ namespace slt
             SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
         }
 
+        private static void AppendInitialLocales()
+        {
+            var ass = Assembly.GetExecutingAssembly();
+            var repl_locales = ass
+                .GetManifestResourceNames()
+                .Where(x => x.StartsWith("slt.docs.locales."))
+                .Select(
+                    x => {
+                        using (var stream = ass.GetManifestResourceStream(x))
+                        {
+                            return
+                            (Path.GetFileNameWithoutExtension(x).Replace("slt.docs.locales.", ""),
+                            stream.ReadStrings().Where(str => !string.IsNullOrWhiteSpace(str)).Select(str => Locale.SplitByFirst(str, '=')));
+                        }
+                    }
+                )
+                .ToDictionary(x => x.Item1, x => x.Item2);
+            foreach (var x in Locale.RegistredLocales)
+            {
+                if (repl_locales.TryGetValue(x.Key, out var locale))
+                {
+                    foreach (var str in locale)
+                        while (!x.Value.Strings.TryAdd(str.Key, str.Value)) ;
+                }
+            }
+        }
+
         #region REPL Commands
 
         //table -1 - not table, table -2 - auto table, >0 - auto with minimum
@@ -414,7 +453,7 @@ namespace slt
             }
 
             if (local_usings.Count == 0) return;
-            OutAsWarning($"--- CLASSES ---");
+            OutAsWarning($"--- {Locale.Current["REPL_CLASSES"]} ---");
             var max_variable_name = table;
             if (table < 0) max_variable_name = 0;
             if (local_usings.Count > 0 && table != -1)
@@ -467,7 +506,7 @@ namespace slt
                     return default;
                 });
             if (local_methods.Count == 0) return;
-            OutAsWarning($"--- METHODS ---");
+            OutAsWarning($"--- {Locale.Current["REPL_METHODS"]} ---");
             var max_ret_type = table;
             var max_method_name = table;
             var max_generics = table;
@@ -568,7 +607,7 @@ namespace slt
                 .Where(x => x.Value == null || !(x.Value is MethodInfo || x.Value is Method || x.Value is ClassAccess))
                 .ToDictionary(x => x.Key, x => x.Value);
             if (local_variables.Count == 0) return;
-            OutAsWarning($"--- VARIABLES ---");
+            OutAsWarning($"--- {Locale.Current["REPL_VARS"]} ---");
             var max_variable_name = table;
             var max_variable_type = table;
             if (table < 0)
@@ -748,13 +787,13 @@ namespace slt
             if (wrds.HasArgument("-p", ShortREPLCommands))
             {
                 REPLPerfomance = !REPLPerfomance;
-                OutAsWarning($"Counting perfomance is {REPLPerfomance}");
+                OutAsWarning(string.Format(Locale.Current["REPL_PERFOMANCE"], Locale.Current[$"REPL_TURNED_{REPLPerfomance}"]));
                 any_executed = true;
             }
             if (wrds.HasArgument("-e", ShortREPLCommands))
             {
                 out_extended_exceptions = !out_extended_exceptions;
-                OutAsWarning($"Showing extended exceptions is {out_extended_exceptions}");
+                OutAsWarning(string.Format(Locale.Current["REPL_BIGEXCEPTION"], Locale.Current[$"REPL_TURNED_{out_extended_exceptions}"]));
                 any_executed = true;
             }
             if (wrds.TryGetArgument("-f", out var runfile_path, null, ShortREPLCommands))
@@ -785,7 +824,7 @@ namespace slt
                 }
                 else
                 {
-                    OutAsException($"`{runfile_incontext}` is not context");
+                    OutAsException(string.Format(Locale.Current["REPL_ISNOTCONTEXT"], runfile_incontext));
                 }
                 any_executed = true;
             }
@@ -798,14 +837,15 @@ namespace slt
                     var old = REPLContext.LocalVariables.NamedIdentificators.Count;
                     REPLContext.LocalVariables.ClearNulls();
                     var @new = REPLContext.LocalVariables.NamedIdentificators.Count;
-                    OutAsWarning($"{old - @new} nulls deleted from context");
+                    OutAsWarning(string.Format(Locale.Current["REPL_NULLSDELETED"], old - @new));
+                    any_executed = true;
                 }
                 else
                 {
                     REPLContext = GetNewREPLContext();
-                    OutAsWarning("Context cleared");
+                    OutAsWarning(string.Format(Locale.Current["REPL_CTXCLEARED"]));
+                    any_executed = true;
                 }
-                any_executed = true;
             }
 
             if (wrds.HasArgument("-s", ShortREPLCommands))
@@ -821,6 +861,13 @@ namespace slt
             else if (wrds.HasArgument("-v", ShortREPLCommands))
             {
                 OutCurrentVersion();
+                any_executed = true;
+            }
+            if (wrds.TryGetArgument("--setlocale", out var locale_name, null))
+            {
+                if (Locale.RegistredLocales.TryGetValue(locale_name, out var locale))
+                    Locale.Current = locale;
+                else OutAsException(string.Format(Locale.Current["REPL_LocaleNotFound"], locale_name));
                 any_executed = true;
             }
             if (wrds.TryGetArgument("-V", out var repl_version, null, ShortREPLCommands))
@@ -852,10 +899,10 @@ namespace slt
         }
         public static void REPLCommand(string command)
         {
-            if (string.IsNullOrWhiteSpace(command)) OutAsWarning("Empty REPL Command");
+            if (string.IsNullOrWhiteSpace(command)) OutAsWarning(Locale.Current["REPL_EmptyCommand"]);
             else if (!ExtendedCommands(command.Substring(1)))
             {
-                OutAsWarning("Your request does nothing do");
+                OutAsWarning(Locale.Current["REPL_DoesNothing"]);
             }
         }
         #endregion
@@ -908,20 +955,20 @@ namespace slt
             Console.Title = $"{REPLVersion.FullName}";
             REPLShortVersion();
 
-            Console.Write("Made by ");
+            Console.Write($"{Locale.Current["REPL_MadeBy"]} ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.Write("Alexandr Kotov ");
             Console.ResetColor();
-            Console.Write("using ");
+            Console.Write($"{Locale.Current["REPL_Using"]} ");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Pegasus");
             Console.ResetColor();
 
-            Console.Write("Get ");
+            Console.Write($"{Locale.Current["REPL_Get"]} ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("REPL commands ");
+            Console.Write($"{Locale.Current["REPL_Commands"]} ");
             Console.ResetColor();
-            Console.Write("with ");
+            Console.Write($"{Locale.Current["REPL_With"]} ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">-h");
             Console.ResetColor();
@@ -1001,8 +1048,7 @@ namespace slt
                         if (REPLPerfomance)
                         {
                             Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine($"Computed in {(ExecutingStopwatch.Elapsed + ParsingStopwatch.Elapsed).TotalMilliseconds} ms " +
-                                $"(Parse: {ParsingStopwatch.Elapsed.TotalMilliseconds} ms, Exec: {ExecutingStopwatch.Elapsed.TotalMilliseconds} ms)");
+                            Console.WriteLine(string.Format(Locale.Current["REPL_COMP1"], (ExecutingStopwatch.Elapsed + ParsingStopwatch.Elapsed).TotalMilliseconds) + " " + string.Format(Locale.Current["REPL_COMP2"], ParsingStopwatch.Elapsed.TotalMilliseconds, ExecutingStopwatch.Elapsed.TotalMilliseconds));
                             Console.ResetColor();
                         }
                     }
@@ -1029,10 +1075,10 @@ namespace slt
                 var encoding = GetEncoding(GetArgument("-e"));
                 if (HasArgument("-r"))
                 {
-                    var context = InvokeFile(args[0], encoding, true);
+                    var context = InvokeFile(args[0], null, encoding, true);
                     StartREPL(context);
                 }
-                else InvokeFile(args[0], encoding, true);
+                else InvokeFile(args[0], null, encoding, true);
             }
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
             if (TryGetArgument("-v", out var version)) OutVersion(version);
