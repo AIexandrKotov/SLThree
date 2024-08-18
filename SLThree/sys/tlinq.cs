@@ -15,19 +15,18 @@ namespace SLThree.sys
     {
         internal static class sum_helper
         {
-            public static Type EnumerableType = typeof(Enumerable);
             public static Dictionary<Type, Delegate> methods = new Dictionary<Type, Delegate>()
             {
-                { typeof(int), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<int>) }).CreateDelegate(typeof(Func<IEnumerable<int>, int>)) },
-                { typeof(long), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<long>) }).CreateDelegate(typeof(Func<IEnumerable<long>, long>)) },
-                { typeof(float), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<float>) }).CreateDelegate(typeof(Func<IEnumerable<float>, float>)) },
-                { typeof(double), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<double>) }).CreateDelegate(typeof(Func<IEnumerable<double>, double>)) },
-                { typeof(decimal), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<decimal>) }).CreateDelegate(typeof(Func<IEnumerable<decimal>, decimal>)) },
-                { typeof(int?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<int?>) }).CreateDelegate(typeof(Func<IEnumerable<int?>, int?>)) },
-                { typeof(long?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<long?>) }).CreateDelegate(typeof(Func<IEnumerable<long?>, long?>)) },
-                { typeof(float?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<float?>) }).CreateDelegate(typeof(Func<IEnumerable<float?>, float?>)) },
-                { typeof(double?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<double?>) }).CreateDelegate(typeof(Func<IEnumerable<double?>, double?>)) },
-                { typeof(decimal?), EnumerableType.GetMethod("Sum", new Type[]{ typeof(IEnumerable<decimal?>) }).CreateDelegate(typeof(Func<IEnumerable<decimal?>, decimal?>)) },
+                { typeof(int), (Func<IEnumerable<int>, int>)Enumerable.Sum },
+                { typeof(long), (Func<IEnumerable<long>, long>)Enumerable.Sum },
+                { typeof(float), (Func<IEnumerable<float>, float>) Enumerable.Sum },
+                { typeof(double), (Func<IEnumerable<double>, double>) Enumerable.Sum },
+                { typeof(decimal), (Func<IEnumerable<decimal>, decimal>) Enumerable.Sum },
+                { typeof(int?), (Func<IEnumerable<int?>, int?>)Enumerable.Sum },
+                { typeof(long?), (Func<IEnumerable<long?>, long?>) Enumerable.Sum },
+                { typeof(float?), (Func<IEnumerable<float?>, float?>) Enumerable.Sum },
+                { typeof(double?), (Func<IEnumerable<double?>, double?>) Enumerable.Sum },
+                { typeof(decimal?), (Func<IEnumerable<decimal?>, decimal?>) Enumerable.Sum },
             };
         }
         internal static class sum_helper<T>
@@ -55,19 +54,18 @@ namespace SLThree.sys
             => sum_helper<TOut>.Sum(values, x => (TOut)method.GetValue(context.Context, new object[1] { x }));
         internal static class average_helper
         {
-            public static Type EnumerableType = typeof(Enumerable);
             public static Dictionary<Type, (int, Delegate)> methods = new Dictionary<Type, (int, Delegate)>()
             {
-                { typeof(int), (1, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<int>)}).CreateDelegate(typeof(Func<IEnumerable<int>, double>))) },
-                { typeof(int?), (2, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<int?>)}).CreateDelegate(typeof(Func<IEnumerable<int?>, double?>))) },
-                { typeof(long), (1, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<long>) }).CreateDelegate(typeof(Func<IEnumerable<long>, double>))) },
-                { typeof(long?), (2, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<long?>)}).CreateDelegate(typeof(Func<IEnumerable<long?>, double?>))) },
-                { typeof(float), (3, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<float>) }).CreateDelegate(typeof(Func<IEnumerable<float>, float>))) },
-                { typeof(float?), (4, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<float?>)}).CreateDelegate(typeof(Func<IEnumerable<float?>, float?>))) },
-                { typeof(double), (1, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<double>) }).CreateDelegate(typeof(Func<IEnumerable<double>, double>))) },
-                { typeof(double?), (2, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<double?>)}).CreateDelegate(typeof(Func<IEnumerable<double?>, double?>))) },
-                { typeof(decimal), (5, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<decimal>) }).CreateDelegate(typeof(Func<IEnumerable<decimal>, decimal>))) },
-                { typeof(decimal?), (6, EnumerableType.GetMethod("Average", new Type[]{typeof(IEnumerable<decimal?>)}).CreateDelegate(typeof(Func<IEnumerable<decimal?>, decimal?>))) },
+                { typeof(int), (1, (Func<IEnumerable<int>, double>)Enumerable.Average) },
+                { typeof(long), (1, (Func<IEnumerable<long>, double>)Enumerable.Average) },
+                { typeof(float), (3, (Func<IEnumerable<float>, float>)Enumerable.Average) },
+                { typeof(double), (1, (Func<IEnumerable<double>, double>)Enumerable.Average) },
+                { typeof(decimal), (5, (Func<IEnumerable<decimal>, decimal>)Enumerable.Average) },
+                { typeof(int?), (2, (Func<IEnumerable<int?>, double?>)Enumerable.Average) },
+                { typeof(long?), (2, (Func<IEnumerable<long?>, double?>)Enumerable.Average) },
+                { typeof(float?), (4, (Func<IEnumerable<float?>, float?>)Enumerable.Average) },
+                { typeof(double?), (2, (Func<IEnumerable<double?>, double?>)Enumerable.Average) },
+                { typeof(decimal?), (6, (Func<IEnumerable<decimal?>, decimal?>)Enumerable.Average) },
             };
         }
         internal static class average_helper<T>
