@@ -33,19 +33,19 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
+                throw new MethodNotFound(Left, SourceContext);
             }
 
             if (o is Method method)
             {
-                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new WrongCallArgumentsCount(SourceContext);
                 return method.GetValue(context, args);
             }
             else if (o is ContextWrap wrap)
             {
                 if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is Method constructor)
                 {
-                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new WrongConstructorCallArgumentsCount(SourceContext);
                     return wrap.Context.CreateInstance(context, constructor, args).wrap;
                 }
             }
@@ -67,7 +67,7 @@ namespace SLThree
                     ?.Invoke(o, args);
             }
 
-            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
+            throw new InvokeNotAllow(o.GetType(), SourceContext);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,7 +99,7 @@ namespace SLThree
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
-                if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
+                if (founded == null) throw new MethodNotFound(key, Arguments.Length, SourceContext);
                 return founded.Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)

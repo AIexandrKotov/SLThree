@@ -44,7 +44,7 @@ namespace SLThree
         {
             get
             {
-                if (Recursive) throw new RuntimeError("You can't take the context of a recursive method", null);
+                if (Recursive) throw new RecursiveInsideNotSupported(null);
                 if (cached_context == null)
                 {
                     var context = GetExecutionContext(Enumerable.Repeat<object>(null, ParamNames.Length).ToArray());
@@ -57,7 +57,7 @@ namespace SLThree
         {
             get
             {
-                if (WithoutDefaults) throw new RuntimeError("You cannot take the context of default values if they are not defined", null);
+                if (WithoutDefaults) throw new DefaultValuesNotDefined(null);
                 return default_values_invk_context.wrap;
             }
         }
@@ -73,7 +73,7 @@ namespace SLThree
         }
 
         internal protected Method() { }
-        public Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values)
+        internal Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values)
         {
             Name = name;
             ParamNames = paramNames;

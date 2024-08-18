@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -1021,8 +1022,6 @@ namespace slt
 
         public static void Main(string[] args)
         {
-            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-us");
-
             args = RunArguments = Array.ConvertAll(args, x => x.StartsWith("-") && !x.StartsWith("--") ? x.ReplaceAll(ShortCommands) : x);
 
             if (args.Length > 0 && !args[0].StartsWith("-"))

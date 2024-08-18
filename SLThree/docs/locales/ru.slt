@@ -1,0 +1,56 @@
+﻿Locale_DefaultName=Russian
+Locale_Name=Русская
+Cultures=ru-RU
+
+STX_Empty_Loop_Head=Пустой заголовок цикла
+STX_Loop_Head=Заголовок цикла должен быть заключён в ( )
+STX_Foreach_Head=Заголовок foreach должен быть вида `x in y`
+STX_Expected_Semicolon=Ожидалась ';'
+STX_Keyword_Assign=Ключевое слово '{0}' нельзя использовать в присваивании
+STX_EmptyCondition=Пустое условие
+STX_Unclosed_{}=Незакрытый блок кода
+STX_Unclosed_[]=Незакрытые квадратные скобки
+STX_Unclosed_()=Незакрытые круглые скобки
+STX_Wrong_BLiteral=Неверное двоичное число
+STX_Wrong_OLiteral=Неверное восьмеричное число
+STX_Wrong_XLiteral=Неверное шестнадцатиричное число
+
+ERR_At=в
+ERR_Unexpected=Неожиданный символ '{0}'
+ERR_OPUnary=Операция {0} недоступна для {1}
+ERR_OPBinary=Операция {0} недоступна для {1} и {2}
+ERR_OPTernary=Операция {0} недоступна для {1}
+
+ERR_AbstractInvokation=Попытка вызвать абстрактный метод
+ERR_T_Make=Невозможно применить обобщение {0} в {1}
+ERR_T_MakeParamName=Невозможно применить обобщение {0} для имени параметра {1}
+ERR_T_MakeParamType=Невозможно применить обобщение {0} для типа параметра {1}
+ERR_T_MakeResultType=Невозможно применить обобщение {0} для возвращаемого значения
+ERR_T_MakeDefaultValue=Невозможно применить обобщение {0} для значения по-умолчанию параметра {1}
+ERR_T_ContraintNotSupported={0} не поддерживает ограничения наложенные на {1}
+ERR_T_AutoconstraintNote=Учтите, что следующие ограничения были наложены автоматически
+
+ERR_WrongArgs=Неправильное число аргументов при вызове метода
+ERR_CtorWrongArgs=Неправильное число аргументов при вызове конструктора
+ERR_CollectionIncorrectType=Инициализатор коллекции недоступен для {0}
+ERR_DictionaryIncorrectType=Инициализатор словаря недоступен для {0}
+ERR_RangeIncorrectType={0} недоступен в инициализаторе диапазона
+ERR_IsNotTuple=Значение справа должно быть кортежом
+ERR_IndexTargetWasNull=Цель индексатора `{0}` была null
+ERR_MethodNotFound=Метод `{0}` не найден
+ERR_MethodOverloadNotFound=Метод `{0}({1})` не найден
+ERR_InvokeNotAllow={0} недоступен для вызова
+ERR_MakeNotAllow={0} недоступен для подстановки обобщений
+ERR_NameNotFound=Name `{0}` не найден в {1}
+ERR_AssignToReadonly=`{0}` доступен только для чтения
+ERR_ReflectionNotFound=`{0}` не найден
+ERR_TypeNotFound=Тип "{0}" не найден
+ERR_UnconvertibleToType=Невозможно преобразовать {0} в тип
+ERR_GenericNotSupported=Обобщения недоступны в {0}
+ERR_RecursiveInsideNotAllowed=Вы не можете получить контекст рекурсивного метода
+ERR_DefaultValuesNotDefined=Вы не можете получить контекст значений по умолчанию, если они не описаны
+ERR_ConstraintNotFound=Ограничение {0} не найдено
+ERR_NotExpression={0} не является выражением
+ERR_NotCode={0} не является кодом
+ERR_NotConstraint={0} не является ограничением
+ERR_DoesntFitConstraint={0} {1} не удовлетворяет "{2}"

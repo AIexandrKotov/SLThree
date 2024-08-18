@@ -75,7 +75,7 @@ namespace SLThree
             {
                 static_type = type_str.ToType();
                 if (static_type == null)
-                    throw new RuntimeError($"Type \"{type_str}\" not found", SourceContext);
+                    throw new TypeNotFound(type_str, SourceContext);
                 if (Generics == null) return static_type;
                 return static_type.MakeGenericType(Generics.ConvertAll(x => Isolate(x.GetValue(context))));
             }
@@ -86,7 +86,7 @@ namespace SLThree
         {
             if (o is Type type) return type;
             if (o is ClassAccess access) return access.Name;
-            throw new RuntimeError($"{o?.GetType().GetTypeString() ?? "null"} unconvertible to Type", SourceContext);
+            throw new UnconvertibleToType(o?.GetType(), SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)

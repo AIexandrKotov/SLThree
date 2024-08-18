@@ -131,7 +131,7 @@ namespace SLThree
             if (LocalVariables.GetValue("constructor").Item1 is TemplateMethod constructor)
             {
                 if (constructor.ParamNames.Length != args.Length)
-                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                    throw new WrongConstructorCallArgumentsCount(sourceContext);
                 constructor.@this = ret.wrap;
                 constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
             }
@@ -154,7 +154,7 @@ namespace SLThree
             if (LocalVariables.GetValue("constructor").Item1 is GenericMethod constructor)
             {
                 if (constructor.ParamNames.Length != args.Length)
-                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                    throw new WrongConstructorCallArgumentsCount(sourceContext);
                 constructor.@this = ret.wrap;
                 constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
             }
@@ -177,7 +177,7 @@ namespace SLThree
             if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
             {
                 if (constructor.ParamNames.Length != args.Length)
-                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                    throw new WrongConstructorCallArgumentsCount(sourceContext);
                 constructor.@this = ret.wrap;
                 constructor.GetValue(ret, args);
             }
@@ -194,7 +194,7 @@ namespace SLThree
             if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
             {
                 if (constructor.ParamNames.Length != args.Length) 
-                    throw new RuntimeError("Call constructor with wrong arguments count", sourceContext);
+                    throw new WrongConstructorCallArgumentsCount(sourceContext);
                 constructor.@this = ret.wrap;
                 constructor.GetValue(ret, args);
             }

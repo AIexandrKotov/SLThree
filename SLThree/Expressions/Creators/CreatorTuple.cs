@@ -25,7 +25,7 @@ namespace SLThree
                 for (var i = 0; i < min; i++)
                     BinaryAssign.AssignToValue(context, Expressions[i], tuple[i], ref Caches[i].Item1, ref Caches[i].Item2, ref Caches[i].Item3);
             }
-            else throw new RuntimeError("Right value must be tuple", SourceContext);
+            else throw new IsNotTuple(SourceContext);
         }
 
         public override object GetValue(ExecutionContext context)

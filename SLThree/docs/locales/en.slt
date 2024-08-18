@@ -1,0 +1,56 @@
+﻿Locale_DefaultName=English
+Locale_Name=English
+
+
+STX_Empty_Loop_Head=Empty loop head
+STX_Loop_Head=Loop head must be in ( )
+STX_Foreach_Head=Foreach head must be like `x in y`
+STX_Expected_Semicolon=Expected ';'
+STX_Keyword_Assign=Keyword '{0}' is not a valid name
+STX_EmptyCondition=Empty condition
+STX_Unclosed_{}=Unclosed block
+STX_Unclosed_[]=Unclosed square brackets
+STX_Unclosed_()=Unclosed brackets
+STX_Wrong_BLiteral=Wrong binary literal
+STX_Wrong_OLiteral=Wrong octal literal
+STX_Wrong_XLiteral=Wrong hexadecimal literal
+
+ERR_At=at
+ERR_Unexpected=Unexpected char '{0}'
+ERR_OPUnary=Operator {0} not allow for {1}
+ERR_OPBinary=Operator {0} not allow for {1} and {2}
+ERR_OPTernary=Operator {0} not allow for {1}
+
+ERR_AbstractInvokation=Trying to invoke abstract method
+ERR_T_Make=It is impossible to make generic {0} in {1}
+ERR_T_MakeParamName=It is impossible to make generic {0} for {1} parameter name
+ERR_T_MakeParamType=It is impossible to make generic {0} for {1} parameter type
+ERR_T_MakeResultType=It is impossible to make generic {0} for result type
+ERR_T_MakeDefaultValue=It is impossible to make generic {0} for {1} parameter defaultvalue
+ERR_T_ContraintNotSupported={0} does not support constraints imposed on {1}
+ERR_T_AutoconstraintNote=Please note that the following constraints were added automatically
+
+ERR_WrongArgs=Call constructor with wrong arguments count
+ERR_CtorWrongArgs=Call constructor with wrong arguments count
+ERR_CollectionIncorrectType=The collection initializer cannot be used for the type {0}
+ERR_DictionaryIncorrectType=The dictionary initializer cannot be used for the type {0}
+ERR_RangeIncorrectType={0} is not supported range type
+ERR_IsNotTuple=Right value must be tuple
+ERR_IndexTargetWasNull=Index target `{0}` was null
+ERR_MethodNotFound=Method `{0}` not found
+ERR_MethodOverloadNotFound=Method `{0}({1})` not found
+ERR_InvokeNotAllow={0} is not allow to invoke
+ERR_MakeNotAllow={0} is not allow to make generic
+ERR_NameNotFound=Name `{0}` not found in {1}
+ERR_AssignToReadonly=`{0}` is readonly field
+ERR_ReflectionNotFound=`{0}` not found
+ERR_TypeNotFound=Type "{0}" not found
+ERR_UnconvertibleToType={0} unconvertible to Type
+ERR_GenericNotSupported=Generics not supported in {0}
+ERR_RecursiveInsideNotAllowed=You cannot take the context of a recursive method
+ERR_DefaultValuesNotDefined=You cannot take the context of default values if they are not defined
+ERR_ConstraintNotFound=Constraint {0} not found
+ERR_NotExpression={0} is not expression
+ERR_NotCode={0} is not code
+ERR_NotConstraint={0} is not constraint
+ERR_DoesntFitConstraint={0} {1} doesn't fit the "{2}"

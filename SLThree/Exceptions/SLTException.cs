@@ -8,7 +8,7 @@ namespace SLThree
     {
         public SourceContext Context { get; set; }
 
-        public static string AtContext(SourceContext context) => context == null ? "" : $" at {context}";
+        public static string AtContext(SourceContext context) => context == null ? "" : $" {Locale.Current["ERR_At"]} {context}";
 
         public SLTException() { }
         public SLTException(SourceContext context) { Context = context; }

@@ -33,7 +33,7 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
+                throw new MethodNotFound(Left, SourceContext);
             }
 
             if (o is Method method)
@@ -41,10 +41,10 @@ namespace SLThree
                 if (o is TemplateMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args);
 
-                throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
+                throw new RuntimeError("Generic invokation for SLThree methods is not supported", SourceContext);
             }
 
-            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to making generic", SourceContext);
+            throw new MakeNotAllow(o.GetType(), SourceContext);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

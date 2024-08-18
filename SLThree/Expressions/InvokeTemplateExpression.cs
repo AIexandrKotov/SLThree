@@ -80,28 +80,28 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
+                throw new MethodNotFound(Left, SourceContext);
             }
 
             if (o is Method method)
             {
-                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new WrongCallArgumentsCount(SourceContext);
                 if (o is TemplateMethod template_method)
                     return template_method.MakeGenericMethod(generic_args).GetValue(context, args);
 
-                throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
+                throw new RuntimeError("Generic invokation for SLThree methods is not supported", SourceContext);
             }
             else if (o is ContextWrap wrap)
             {
                 if (wrap.Context.LocalVariables.GetValue("constructor").Item1 is TemplateMethod constructor)
                 {
-                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new WrongConstructorCallArgumentsCount(SourceContext);
                     return wrap.Context.CreateInstanceTemplate(context, constructor, generic_args, args).wrap;
                 }
                 throw new RuntimeError($"Template constructor not found", SourceContext);
             }
 
-            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to making generic", SourceContext);
+            throw new InvokeNotAllow(o.GetType(), SourceContext);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

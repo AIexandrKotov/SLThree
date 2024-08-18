@@ -109,7 +109,7 @@ namespace SLThree
             if (type.IsQueue())
                 return GetTypedQueueMethod.MakeGenericMethod(element_type).Invoke(null, new object[] { Body, instance, context });
 
-            throw new RuntimeError($"The collection initializer cannot be used for the type {type.GetTypeString()}", SourceContext);
+            throw new CollectionIncorrectType(type, SourceContext);
         }
 
         public static Queue<T> ToQueue<T>(IEnumerable<object> source, Queue<T> target, bool forbid_implicit)

@@ -249,7 +249,7 @@ namespace SLThree
                         return new ByteRangeEnumerator(
                             LowerBound.GetValue(context).Cast<byte>(),
                             UpperBound.GetValue(context).Cast<byte>());
-                    throw new RuntimeError($"{type.GetTypeString()} is not supported range type", SourceContext);
+                    throw new RangeIncorrectType(type, SourceContext);
                 }
             }
             else
@@ -295,7 +295,7 @@ namespace SLThree
                         return new ByteRangeEnumerator(
                             LowerBound.GetValue(context).CastToType<byte>(),
                             UpperBound.GetValue(context).CastToType<byte>());
-                    throw new RuntimeError($"{type.GetTypeString()} is not supported range type", SourceContext);
+                    throw new RangeIncorrectType(type, SourceContext);
                 }
             }
         }

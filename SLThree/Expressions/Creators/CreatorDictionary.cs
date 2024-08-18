@@ -110,7 +110,7 @@ namespace SLThree
         {
             object instance;
             var type = Type.GetValue(context).Cast<Type>();
-            if (!type.IsDictionary()) throw new RuntimeError($"The dictionary initializer cannot be used for the type {type.GetTypeString()}", SourceContext);
+            if (!type.IsDictionary()) throw new DictionaryIncorrectType(type, SourceContext);
             instance = Activator.CreateInstance(type, Arguments.ConvertAll(x => x.GetValue(context)));
             if (Name != null)
                 BinaryAssign.AssignToValue(context, Name, instance, ref counted_invoked, ref is_name_expr, ref variable_index);

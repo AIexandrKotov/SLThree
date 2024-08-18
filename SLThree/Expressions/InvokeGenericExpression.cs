@@ -36,30 +36,30 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
+                throw new MethodNotFound(Left, SourceContext);
             }
 
             if (o is Method method)
             {
-                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new RuntimeError("Call with wrong arguments count", SourceContext);
+                if (args.Length < method.RequiredArguments || args.Length > method.MaximumArguments) throw new WrongCallArgumentsCount(SourceContext);
                 if (o is GenericMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args).GetValue(context, args);
                 if (o is TemplateMethod template_method)
                     return template_method.MakeGenericMethod(generic_args.ConvertAll(x => (TemplateMethod.GenericMaking.AsType, (object)x))).GetValue(context, args);
 
-                throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
+                throw new RuntimeError("Generic invokation for SLThree methods is not supported", SourceContext);
             }
             else if (o is ContextWrap wrap)
             {
                 var lv = wrap.Context.LocalVariables.GetValue("constructor").Item1;
                 if (lv is GenericMethod constructor)
                 {
-                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    if (args.Length < constructor.RequiredArguments || args.Length > constructor.MaximumArguments) throw new WrongConstructorCallArgumentsCount(SourceContext);
                     return wrap.Context.CreateInstanceGeneric(context, constructor, generic_args, args).wrap;
                 }
                 else if (lv is TemplateMethod constructor2)
                 {
-                    if (args.Length < constructor2.RequiredArguments || args.Length > constructor2.MaximumArguments) throw new RuntimeError("Call constructor with wrong arguments count", SourceContext);
+                    if (args.Length < constructor2.RequiredArguments || args.Length > constructor2.MaximumArguments) throw new WrongConstructorCallArgumentsCount(SourceContext);
                     return wrap.Context.CreateInstanceTemplate(context, constructor2, generic_args.ConvertAll(x => (TemplateMethod.GenericMaking.AsType, (object)x)), args).wrap;
                 }
                 throw new RuntimeError($"Generic constructor not found", SourceContext);
@@ -78,7 +78,7 @@ namespace SLThree
                     .Invoke(o, args);
             }
 
-            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
+            throw new InvokeNotAllow(o.GetType(), SourceContext);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,7 +111,7 @@ namespace SLThree
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
-                if (founded == null) throw new RuntimeError($"Method `{key}({Arguments.Select(x => "_").JoinIntoString(", ")})` not found", SourceContext);
+                if (founded == null) throw new MethodNotFound(key, Arguments.Length, SourceContext);
                 return founded.MakeGenericMethod(generic_args).Invoke(null, Arguments.ConvertAll(x => x.GetValue(context)));
             }
             else if (obj != null)

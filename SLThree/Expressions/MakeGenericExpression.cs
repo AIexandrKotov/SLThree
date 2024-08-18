@@ -33,7 +33,7 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"Method `{Left}` not found", SourceContext);
+                throw new MethodNotFound(Left, SourceContext);
             }
 
             if (o is Method method)
@@ -41,7 +41,7 @@ namespace SLThree
                 if (o is GenericMethod generic_method)
                     return generic_method.MakeGenericMethod(generic_args);
 
-                throw new NotSupportedException("Generic invokation for SLThree methods is not supported");
+                throw new RuntimeError("Generic invokation for SLThree methods is not supported", SourceContext);
             }
             else if (o is MethodInfo mi)
             {
@@ -56,7 +56,7 @@ namespace SLThree
                     ?.MakeGenericMethod(generic_args);
             }
 
-            throw new RuntimeError($"{o.GetType().GetTypeString()} is not allow to invoke", SourceContext);
+            throw new MakeNotAllow(o.GetType(), SourceContext);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,7 +88,7 @@ namespace SLThree
                 // в начало массива методов
                 founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static).FirstOrDefault(x => x.Name == key);
                 cached_1 = true;
-                if (founded == null) throw new RuntimeError($"Method `{key}` not found", SourceContext);
+                if (founded == null) throw new MethodNotFound(key, SourceContext);
                 return founded.MakeGenericMethod(generic_args);
             }
             else if (obj != null)

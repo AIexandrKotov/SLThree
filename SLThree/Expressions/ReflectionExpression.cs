@@ -58,7 +58,7 @@ namespace SLThree
                     return method;
                 }
             }
-            throw new RuntimeError($"{this} not found", SourceContext);
+            throw new ReflectionNotFound(this, SourceContext);
         }
 
         public override object Clone()

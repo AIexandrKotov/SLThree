@@ -40,33 +40,33 @@ statement <BaseStatement>
 return_statement <ReturnStatement>
     = "return" _ expr:expression _ ";" { new ReturnStatement(expr, state) }
     / "return" _ ";" { new ReturnStatement(state) }
-    / "return" (_ expr:expression)? _ { Panic<ReturnStatement>(new SyntaxError("Expected `;`", state)) }
+    / "return" (_ expr:expression)? _ { Panic<ReturnStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
 break_statement <BreakStatement>
     = "break" _ ";" { new BreakStatement(state) }
-    / "break" _ { Panic<BreakStatement>(new SyntaxError("Expected `;`", state)) }
+    / "break" _ { Panic<BreakStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
 continue_statement <ContinueStatement>
     = "continue" _ ";" { new ContinueStatement(state) }
-    / "continue" _ { Panic<ContinueStatement>(new SyntaxError("Expected `;`", state)) }
+    / "continue" _ { Panic<ContinueStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
 block_statement <StatementList>
     = "{" _ st:statement_list _ "}" { st }
-    / "{" _ st:statement_list _ { Panic<StatementList>(new SyntaxError("Unclosed block", state)) }
+    / "{" _ st:statement_list _ { Panic<StatementList>(new SyntaxError(Locale.Current["STX_Unclosed_{}"], state)) }
 
 block_expression <BlockExpression>
     = "{" _ st:expr_statement_list _ "}" { st }
-    / "{" _ st:expr_statement_list _ { Panic<BlockExpression>(new SyntaxError("Unclosed block", state)) }
+    / "{" _ st:expr_statement_list _ { Panic<BlockExpression>(new SyntaxError(Locale.Current["STX_Unclosed_{}"], state)) }
 
 while_statement <WhileLoopStatement>
     = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), state) }
-    / "while" _ "(" _ ")" _ statement? { Panic<WhileLoopStatement>(new SyntaxError("Empty loop head", state)) }
-    / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+    / "while" _ "(" _ ")" _ statement? { Panic<WhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
+    / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
 
 do_statement <DoWhileLoopStatement>
     = "do" _ body:block_statement _ "while" _ "(" _ cond:expression _ ")" _ ";" { new DoWhileLoopStatement(cond, GetListStatement(body), state) }
-    / "do" _ body:block_statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError("Empty loop head", state)) }
-    / "do" _ body:block_statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+    / "do" _ body:block_statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
+    / "do" _ body:block_statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
 
 infin_loop_statement <InfiniteLoopStatement>
     = "loop" _ body:block_statement { new InfiniteLoopStatement(GetListStatement(body), state) }
@@ -75,15 +75,14 @@ infin_loop_statement <InfiniteLoopStatement>
 
 fin_loop_statement <FiniteLoopStatement>
     = "loop" _ "(" _ cond:expression _ ")" _ body:statement { new FiniteLoopStatement(cond, GetListStatement(body), state) }
-    / "loop" _ "(" _ ")" _ statement? { Panic<FiniteLoopStatement>(new SyntaxError("Empty loop head", state)) }
+    / "loop" _ "(" _ ")" _ statement? { Panic<FiniteLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
 
 foreach_statement <ForeachLoopStatement>
-    = "foreach" _ "(" _ n:req_arg_name _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
-    / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
-    / "foreach" _ "(" _ n:expression _ "in" _ iter:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach body must be in { }", state)) }
-    / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Foreach head must be like `x in y`", state)) }
-    / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError("Empty loop head", state)) }
-    / "foreach" _required_ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError("Loop head must be in ( )", state)) }
+    = "foreach" _ "(" _ n:req_arg_name _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
+    / "foreach" _ "(" _ n:expression _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), state) }
+    / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Foreach_Body"], state)) }
+    / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
+    / "foreach" _required_ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
 
 try_statement <TryStatement>
     = "try" _ try_body:block_statement _ 
@@ -102,7 +101,7 @@ try_statement <TryStatement>
 
 throw_statement <ThrowStatement>
     = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, state) }
-    / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError("Expected `;`", state)) }
+    / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
 overload_statement <BaseStatement>
     // "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ body:block_statement _ other:overload_statement { new ExpressionStatement(Overload(args, body, other), state) }
@@ -122,13 +121,13 @@ expression_as_statement <BaseStatement>
 
 expression_statement <ExpressionStatement> 
     = value:expression _ ";" { new ExpressionStatement(value, state) }
-    / expression _ { Panic<ExpressionStatement>(new SyntaxError("Expected `;`", state)) }
+    / expression _ { Panic<ExpressionStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
 expression <BaseExpression>
     = binary_9
 
 binary_9 <BaseExpression> -memoize
-    = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError("Keywords is not a valid name", state)) }
+    = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=" / "??=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError(string.Format(Locale.Current["STX_Keyword_Assign"], left), state)) }
     / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
     / left:binary_7 _ "-->" _ right:(binary_9 / block_expression) { new BinaryGetRuntimeValue(left, right, state) }
     / left:binary_7 _ "->" _ right:(binary_9 / block_expression) { new BinaryGetValue(left, right, state) }
@@ -247,11 +246,11 @@ condition_statement <ConditionExpression>
     / "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
     / condition_expression_1
     / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], state), state) }
-    / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
+    / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError(Locale.Current["STX_EmptyCondition"], state)) }
 
 condition_expression <ConditionExpression>
     = condition_expression_1
-    / "if" _ "(" _ ")" _ statement? { Panic<ConditionExpression>(new SyntaxError("Empty condition", state)) }
+    / "if" _ "(" _ ")" _ statement? { Panic<ConditionExpression>(new SyntaxError(Locale.Current["STX_EmptyCondition"], state)) }
 
 condition_expression_1 <ConditionExpression>
     = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
@@ -301,8 +300,8 @@ primary <BaseExpression> -memoize
     / "(" _ args:expression<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), state) }
     / special
     / literal
-    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
-    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError("Unclosed brackets", state)) }
+    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_[]"], state)) }
+    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_()"], state)) }
 
 constraint_expression <ConstraintExpression>
     = "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, null, c, state) }
@@ -788,7 +787,7 @@ binary_num_literal <BaseExpression>
     / "0b" u32:([01_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 2), "0b"+u32, state) }
     / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), "0b"+u64, state) }
     / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), "0b"+i64, state) }
-    / "0b" .* { Panic<BaseExpression>(new SyntaxError("Wrong binary literal", state)) }
+    / "0b" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], state)) }
 
 octal_num_literal <BaseExpression>
     = "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), "0o"+i8, state) }
@@ -799,7 +798,7 @@ octal_num_literal <BaseExpression>
     / "0o" u32:([0-7_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 8), "0o"+u32, state) }
     / "0o" u64:([0-7_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 8), "0o"+u64, state) }
     / "0o" i64:([0-7_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 8), "0o"+i64, state) }
-    / "0o" .* { Panic<BaseExpression>(new SyntaxError("Wrong octal const", state)) }
+    / "0o" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_OLiteral"], state)) }
 
 hex_num_literal <BaseExpression>
     = "0x" i8:([0-9A-Fa-f_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), "0x"+i8, state) }
@@ -810,7 +809,7 @@ hex_num_literal <BaseExpression>
     / "0x" u32:([0-9A-Fa-f_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), "0x"+u32, state) }
     / "0x" u64:([0-9A-Fa-f_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), "0x"+u64, state) }
     / "0x" i64:([0-9A-Fa-f_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), "0x"+i64, state) }
-    / "0x" .* { Panic<BaseExpression>(new SyntaxError("Wrong hexadecimal literal", state)) }
+    / "0x" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_XLiteral"], state)) }
 
 num_literal <BaseExpression>
     = i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), i8, state) }

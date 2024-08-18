@@ -63,7 +63,7 @@ namespace SLThree
             if (o == null)
             {
                 if (null_conditional) return null;
-                throw new RuntimeError($"{Expression} was null", SourceContext);
+                throw new IndexTargetWasNull(Expression, SourceContext);
             }
 
             if (Mode == 0)

@@ -11,7 +11,7 @@ using static SLThree.TemplateMethod.GenericInfo;
 
 namespace SLThree
 {
-    public class TemplateMethod : Method
+    public sealed class TemplateMethod : Method
     {
         #region Constraints
 
@@ -88,7 +88,7 @@ namespace SLThree
                     }
                 }
                 else return new ConcrecteTypeConstraint((Type)this.Name.GetValue(context), SourceContext.CloneCast());
-                throw new RuntimeError($"Constraint {Name} not found", SourceContext);
+                throw new ConstraintNotFound(Name, SourceContext);
             }
             public override Constraint GetConstraint(string current_template, ExecutionContext context)
             {
@@ -427,13 +427,13 @@ namespace SLThree
             public BaseExpression AsExpression(object any)
             {
                 if (any is BaseExpression expr) return expr;
-                throw new RuntimeError($"{any} is not expression", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
+                throw new RuntimeError(string.Format(Locale.Current["ERR_NotExpression"], any?.GetType().GetTypeString() ?? "null"), ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
             }
             public BaseStatement AsStatement(object any)
             {
                 if (any is BaseStatement st1) return st1;
                 if (any is BlockExpression be) return new StatementList(be.Statements, be.SourceContext.CloneCast());
-                throw new RuntimeError($"{any} is not code", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
+                throw new RuntimeError(string.Format(Locale.Current["ERR_NotCode"], any?.GetType().GetTypeString() ?? "null"), ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
             }
             public BaseExpression AsStatementList(BaseStatement statement)
             {
@@ -444,7 +444,7 @@ namespace SLThree
             public Constraint AsConstraint(object any)
             {
                 if (any is Constraint constraint) return constraint;
-                throw new RuntimeError($"{any} is not constraint", ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
+                throw new RuntimeError(string.Format(Locale.Current["ERR_NotConstraint"], any?.GetType().GetTypeString() ?? "null"), ContraitConstraint.TakeContext(Placement as ExecutionContext.IExecutable));
             }
 
             public abstract void MakeValue(object any);
@@ -3288,7 +3288,7 @@ namespace SLThree
         {
             for (var i = 0; i < Generics.Length; i++)
                 if (!Generics[i].Item2.Applicable(args[i].Item1, args[i].Item2))
-                    throw new RuntimeError($"{args[i].Item2.GetType().GetTypeString()} {args[i].Item2} doesn't fit the \"{Generics[i].Item2}\"", Generics[i].Item2.SourceContext);
+                    throw new RuntimeError(string.Format(Locale.Current["ERR_DoesntFitConstraint"], args[i].Item2.GetType().GetTypeString(), args[i].Item2, Generics[i].Item2), Generics[i].Item2.SourceContext);
             var constraints = args.Select((x, i) => x.Item1 == GenericMaking.Constraint ? GetMakingBasedOnConstraint(MakingConstraints[i]) : x.Item1).ToArray();
             foreach (var x in GenericsInfo)
             {

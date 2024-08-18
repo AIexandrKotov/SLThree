@@ -70,7 +70,7 @@ namespace SLThree
                 if (left is IDictionary dict)
                     return dict[Right.Name];
 
-                throw new RuntimeError($"Name \"{Right.Name}\" not found in {type.GetTypeString()}", Right.SourceContext);
+                throw new NameNotFound(Right.Name, type, Right.SourceContext);
             }
 
             return null;
@@ -155,7 +155,7 @@ namespace SLThree
                     if (left is IDictionary dict)
                         return dict[nameExpression.Name];
 
-                    throw new RuntimeError($"Name \"{nameExpression.Name}\" not found in {type.GetTypeString()}", SourceContext);
+                    throw new NameNotFound(nameExpression.Name, type, SourceContext);
                 }
                 else if (Right is InvokeExpression invokeExpression)
                 {
@@ -214,7 +214,7 @@ namespace SLThree
                 var type = has_access ? (left as ClassAccess).Name : left.GetType();
                 if (field != null)
                 {
-                    if (field.IsInitOnly) throw new RuntimeError($"`{Right}` is readonly field", SourceContext);
+                    if (field.IsInitOnly) throw new AssignToReadonly(Right, SourceContext);
                     field.SetValue(left, value);
                     return;
                 }
@@ -228,7 +228,7 @@ namespace SLThree
                     field = type.GetField(nameExpression.Name);
                     if (field != null)
                     {
-                        if (field.IsInitOnly) throw new RuntimeError($"`{Right}` is readonly field", SourceContext);
+                        if (field.IsInitOnly) throw new AssignToReadonly(Right, SourceContext);
                         field.SetValue(left, value);
                         return;
                     }
@@ -243,7 +243,7 @@ namespace SLThree
                         dict[nameExpression.Name] = value;
                         return;
                     }
-                    throw new RuntimeError($"Name \"{nameExpression.Name}\" not found in \"{type.GetTypeString()}\"", SourceContext);
+                    throw new NameNotFound(nameExpression.Name, type, SourceContext);
                 }
             }
             else if (null_conditional) return;

@@ -73,5 +73,16 @@ namespace SLThree
 
             return sb.ToString();
         }
+
+        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+        public sealed class DocAttribute : Attribute
+        {
+            public readonly string Description;
+
+            public DocAttribute(string description)
+            {
+                Description = description;
+            }
+        }
     }
 }

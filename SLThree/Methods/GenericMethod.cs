@@ -15,7 +15,7 @@ using static SLThree.GenericMethod.GenericInfo;
 
 namespace SLThree
 {
-    public class GenericMethod : Method
+    public sealed class GenericMethod : Method
     {
         public abstract class GenericInfo
         {
@@ -44,7 +44,7 @@ namespace SLThree
                 {
                     return info.Invoke(new object[2] { expression, pos }) as GenericInfo;
                 }
-                else throw new RuntimeError($"Generics not supported in {type.GetTypeString()}", expression.SourceContext);
+                else throw new GenericNotSupported(expression, expression.SourceContext);
             }
 
             private interface IComplexedGenericInfo { }
