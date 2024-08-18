@@ -203,12 +203,12 @@ binary_1 <BaseExpression> -memoize
 
 binary_0 <BaseExpression> -memoize
     = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, state) }
-    / "^*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, state), t, state) }
-    / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, state), state) }
-    / "<" _ t:typename _ ">" _ lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, t, state) }
-    / "^*" _ lower:unary _ ".." _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, state), null, state) }
-    / "^" _ lower:unary _ ".." _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, state), state) }
-    / lower:unary _ ".." _ upper:unary { new CreatorRange(lower, upper, state) }
+    / "^*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, GetOptional(excl) == null, state), t, state) }
+    / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, GetOptional(excl) == null, state), state) }
+    / "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, t, GetOptional(excl) == null, state) }
+    / "^*" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, GetOptional(excl) == null, state), null, state) }
+    / "^" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, GetOptional(excl) == null, state), state) }
+    / lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, GetOptional(excl) == null, state) }
     / left:binary_0 _ "::" _ right:name 
     _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,_ "," _> _ ">" {gen_args_i})? 
     _ args:    (<IList<TypenameExpression>> "(" _ args_i    :typename<0,,_ "," _> _ ")" {args_i    })? {
