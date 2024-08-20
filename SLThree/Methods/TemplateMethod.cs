@@ -7,14 +7,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using static SLThree.TemplateMethod.GenericInfo;
 
 namespace SLThree
 {
     public sealed class TemplateMethod : Method
     {
         #region Constraints
-
+        
         #region Definitions
         public abstract class ConstraintDefinition : BaseExpression
         {

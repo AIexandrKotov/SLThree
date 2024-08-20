@@ -1,5 +1,4 @@
 ﻿using SLThree.Extensions.Cloning;
-using System.Linq;
 
 namespace SLThree
 {

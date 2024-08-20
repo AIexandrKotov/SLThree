@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SLThree.Embedding
+﻿namespace SLThree.Embedding
 {
     public static class EmbeddingExtensions
     {

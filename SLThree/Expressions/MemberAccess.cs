@@ -4,8 +4,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 
 namespace SLThree
 {

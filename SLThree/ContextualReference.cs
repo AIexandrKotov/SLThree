@@ -1,6 +1,4 @@
-﻿using SLThree.Extensions.Cloning;
-
-namespace SLThree
+﻿namespace SLThree
 {
     public class ContextualReference
     {

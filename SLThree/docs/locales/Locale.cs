@@ -1,15 +1,10 @@
-﻿using SLThree.sys;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using SLThree.Extensions;
-using System.Security.Cryptography;
-using SLThree.Embedding;
 using System.Threading;
 
 namespace SLThree
