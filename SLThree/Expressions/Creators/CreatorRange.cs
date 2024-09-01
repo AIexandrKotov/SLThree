@@ -42,7 +42,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"{Lower}..{Upper}";
+            public override string ToString() => $"{Lower}..={Upper}";
         }
         public struct LongRangeEnumerator : IEnumerable<long>
         {
@@ -62,7 +62,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<i64>{Lower}..{Upper}";
+            public override string ToString() => $"<i64>{Lower}..={Upper}";
         }
         public struct ULongRangeEnumerator : IEnumerable<ulong>
         {
@@ -82,7 +82,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<u64>{Lower}..{Upper}";
+            public override string ToString() => $"<u64>{Lower}..={Upper}";
         }
         public struct IntRangeEnumerator : IEnumerable<int>
         {
@@ -102,7 +102,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<i32>{Lower}..{Upper}";
+            public override string ToString() => $"<i32>{Lower}..={Upper}";
         }
         public struct UIntRangeEnumerator : IEnumerable<uint>
         {
@@ -122,7 +122,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<u32>{Lower}..{Upper}";
+            public override string ToString() => $"<u32>{Lower}..={Upper}";
         }
         public struct ShortRangeEnumerator : IEnumerable<short>
         {
@@ -142,7 +142,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<i16>{Lower}..{Upper}";
+            public override string ToString() => $"<i16>{Lower}..={Upper}";
         }
         public struct UShortRangeEnumerator : IEnumerable<ushort>
         {
@@ -162,7 +162,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<u16>{Lower}..{Upper}";
+            public override string ToString() => $"<u16>{Lower}..={Upper}";
         }
         public struct SByteRangeEnumerator : IEnumerable<sbyte>
         {
@@ -182,7 +182,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<i8>{Lower}..{Upper}";
+            public override string ToString() => $"<i8>{Lower}..={Upper}";
         }
         public struct ByteRangeEnumerator : IEnumerable<byte>
         {
@@ -202,7 +202,7 @@ namespace SLThree
                     yield return i;
             }
 
-            public override string ToString() => $"<u8>{Lower}..{Upper}";
+            public override string ToString() => $"<u8>{Lower}..={Upper}";
         }
         #endregion
 
