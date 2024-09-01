@@ -1,7 +1,9 @@
 f(x) {
-    overload(i64 x) => $"i64 = {x}";
-    overload(string x) => "is string";
-    return "overload not found";
+    return accord(x) {
+        (i64) => $"i64 = {x}";
+        (string) => "is string";
+        () => "overload not found";
+    };
 }
 
 ASSERT(self, (f(10) == "i64 = 10") as is);
