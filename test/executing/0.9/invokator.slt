@@ -1,0 +1,13 @@
+x = new context;
+x->(x, y) = (10, 20);
+x->(f() => this.x + this.y);
+
+ASSERT(self, (x.f() == 30) as is);
+
+x-->(new SLThree.BinaryAssign() {
+        Left = new SLThree.NameExpression { Name = "r"; };
+        Right = new SLThree.ObjectLiteral { Value = "XXX"; };
+    }
+);
+
+ASSERT(self, (x.r == "XXX"));

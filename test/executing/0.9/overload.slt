@@ -1,0 +1,9 @@
+f(x) {
+    overload(i64 x) => $"i64 = {x}";
+    overload(string x) => "is string";
+    return "overload not found";
+}
+
+ASSERT(self, (f(10) == "i64 = 10") as is);
+ASSERT(self, (f("") == "is string") as is);
+ASSERT(self, (f(2.5) == "overload not found") as is);

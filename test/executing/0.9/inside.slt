@@ -1,0 +1,4 @@
+f() => x;
+f.inside->x = 10;
+
+ASSERT(self, (f() == 10) as is);
