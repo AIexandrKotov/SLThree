@@ -47,7 +47,7 @@ namespace SLThree
             var i = skip;
             while (i-- > 0 && enumerator.MoveNext()) ;
             i = take;
-            while (i-- > 0 && enumerator.MoveNext())
+            while (i-- >= 0 && enumerator.MoveNext())
                 yield return enumerator.Current;
         }
 
