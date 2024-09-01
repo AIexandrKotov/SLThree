@@ -111,5 +111,10 @@ namespace SLThree
         {
             return Context.Equals(obj is ContextWrap wrap ? wrap.Context : null);
         }
+
+        public override int GetHashCode()
+        {
+            return -59922564 + EqualityComparer<ExecutionContext>.Default.GetHashCode(Context);
+        }
     }
 }

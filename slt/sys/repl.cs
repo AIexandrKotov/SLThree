@@ -4,7 +4,9 @@ using System.Text;
 namespace slt.sys
 {
 #pragma warning disable IDE1006 // Стили именования
+#pragma warning disable CS8981 // Имя типа содержит только строчные символы ASCII. Такие имена могут резервироваться для языка.
     public static class repl
+#pragma warning restore CS8981 // Имя типа содержит только строчные символы ASCII. Такие имена могут резервироваться для языка.
     {
         public static int count { get; set; } = 20;
         public static int max_output { get; set; } = 2500;
