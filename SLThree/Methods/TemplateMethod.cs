@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace SLThree
@@ -172,6 +173,29 @@ namespace SLThree
 
             public override object Clone() => new IntersectionConstraintDefinition(Left.CloneCast(), Right.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
         }
+        public class NotConstraintDefinition : ConstraintDefinition
+        {
+            public ConstraintDefinition Left;
+
+            public NotConstraintDefinition(ConstraintDefinition left, SourceContext context) : base(context)
+            {
+                Left = left;
+            }
+
+            public NotConstraintDefinition(ConstraintDefinition left, bool priority, SourceContext context) : base(priority, context)
+            {
+                Left = left;
+            }
+
+            public override Constraint GetConstraint(string current_template, ExecutionContext context)
+            {
+                return new NotConstraint(Left.GetConstraint(current_template, context), SourceContext.CloneCast());
+            }
+
+            public override string ExpressionToString() => $"!{Left}";
+
+            public override object Clone() => new NotConstraintDefinition(Left.CloneCast(), PrioriryRaised, SourceContext.CloneCast());
+        }
         internal class ObjectConstraintDefinition : ConstraintDefinition
         {
             public Constraint Value;
@@ -209,6 +233,11 @@ namespace SLThree
             public static GenericMakingConstraint IntersectionMakingConstraint(GenericMakingConstraint left, GenericMakingConstraint right)
             {
                 return left | right;
+            }
+            public static GenericMakingConstraint NotMakingConstraint(GenericMakingConstraint left)
+            {
+                const GenericMakingConstraint UndeniableConstraints = GenericMakingConstraint.AllowTypes;
+                return left;
             }
             public abstract object Clone();
         }
@@ -353,6 +382,23 @@ namespace SLThree
             public override string ConstraintToString() => $"{Left} | {Right}";
             public override object Clone() => new IntersectionConstraint(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => IntersectionMakingConstraint(Left.GetMakingConstraint(), Right.GetMakingConstraint());
+        }
+        public class NotConstraint : Constraint
+        {
+            public Constraint Left;
+
+            public NotConstraint(Constraint left, SourceContext context) : base(context)
+            {
+                Left = left;
+            }
+
+            public override bool Applicable(GenericMaking making, object target)
+            {
+                return !Left.Applicable(making, target);
+            }
+            public override string ConstraintToString() => $"!{Left}";
+            public override object Clone() => new NotConstraint(Left.CloneCast(), SourceContext.CloneCast());
+            public override GenericMakingConstraint GetMakingConstraint() => NotMakingConstraint(Left.GetMakingConstraint());
         }
         public class FunctionConstraint : Constraint
         {
@@ -1701,6 +1747,63 @@ namespace SLThree
 
             public override ref BaseExpression GetPlacer() => ref Concrete.Matches[casePosition1][casePosition2];
         }
+        public class AccordExpressionHeadPartGeneric : SameBehaviourExprGenericInfo<AccordExpression>
+        {
+            public int position;
+            public AccordExpressionHeadPartGeneric(AccordExpression concrete, int position, int accPosition) : base(concrete, position)
+            {
+                this.position = accPosition;
+            }
+
+            public override ref BaseExpression GetPlacer() => ref Concrete.HeadAccords[position];
+        }
+        public class AccordExpressionMatchesPartGeneric : ExprGenericInfo<AccordExpression>
+        {
+            public int casePosition1, casePosition2;
+            public bool isConstraint = false;
+            public AccordExpressionMatchesPartGeneric(AccordExpression concrete, int position, int casePosition1, int casePosition2, bool isConstraint) : base(concrete, position)
+            {
+                this.casePosition1 = casePosition1;
+                this.casePosition2 = casePosition2;
+                this.isConstraint = isConstraint;
+            }
+
+            public override void MakeValue(object any)
+            {
+                if (isConstraint) Concrete.Accordings[casePosition1][casePosition2].Item2 = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = new ObjectLiteral(any, Concrete.SourceContext);
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                if (isConstraint) throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = type;
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                if (isConstraint) Concrete.Accordings[casePosition1][casePosition2].Item2 = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = name;
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                if (isConstraint) throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = expression;
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                if (isConstraint) throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = AsStatementList(statement);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                if (isConstraint) Concrete.Accordings[casePosition1][casePosition2].Item2 = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+                else Concrete.Accordings[casePosition1][casePosition2].Item1 = new ObjectLiteral(constraint);
+            }
+        }
         public class ReflectionExpressionLeftPartGeneric : SameBehaviourExprGenericInfo<ReflectionExpression>
         {
             public ReflectionExpressionLeftPartGeneric(ReflectionExpression concrete, int position) : base(concrete, position) { }
@@ -2135,6 +2238,43 @@ namespace SLThree
                 Concrete.Left = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
             }
         }
+        public class NotConstraintDefinitionGeneric : ExprGenericInfo<NotConstraintDefinition>
+        {
+            public NotConstraintDefinitionGeneric(NotConstraintDefinition concrete, int position) : base(concrete, position)
+            {
+
+            }
+
+            public override void MakeValue(object any)
+            {
+                Concrete.Left = new ObjectConstraintDefinition(AsConstraint(any), Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeType(TypenameExpression type)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsType, Concrete, this);
+            }
+
+            public override void MakeName(NameExpression name)
+            {
+                Concrete.Left = new NameConstraintDefinition(name, Concrete.SourceContext.CloneCast());
+            }
+
+            public override void MakeExpression(BaseExpression expression)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsExpression, Concrete, this);
+            }
+
+            public override void MakeCode(BaseStatement statement)
+            {
+                throw new UnavailableGenericMaking(GenericMaking.AsCode, Concrete, this);
+            }
+
+            public override void MakeConstraint(Constraint constraint)
+            {
+                Concrete.Left = new ObjectConstraintDefinition(constraint, Concrete.SourceContext.CloneCast());
+            }
+        }
 
         public class OwnParameterNameGeneric : GenericInfo
         {
@@ -2385,6 +2525,20 @@ namespace SLThree
                     {
                         CheckAnyAllow(i, expression, GenericMakingConstraint.AllowNames, GenericMakingConstraint.AllowTypes);
                         Infos.Add(new NameConstraintDefinitionGeneric(expression, i));
+                    }
+                }
+                base.VisitConstraint(expression);
+            }
+
+            public override void VisitConstraint(NotConstraintDefinition expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    if (expression.Left is NameConstraintDefinition name1 && name1.Name is NameExpression name2 && name2.Name == Generics[i])
+                    {
+                        CheckAnyAllow(i, expression, GenericMakingConstraint.AllowValues, GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowConstraints);
+                        Infos.Add(new NotConstraintDefinitionGeneric(expression, i));
                     }
                 }
                 base.VisitConstraint(expression);
@@ -2950,6 +3104,36 @@ namespace SLThree
                             if (expression.Matches[j][k] is NameExpression arg_name2 && arg_name2.Name == Generics[i])
                             {
                                 Infos.Add(new MatchExpressionMatchesPartGeneric(expression, i, j, k));
+                            }
+                        }
+                    }
+                }
+                base.VisitExpression(expression);
+            }
+
+            public override void VisitExpression(AccordExpression expression)
+            {
+                for (var i = 0; i < Generics.Length; i++)
+                {
+                    if (IsShaded(i)) continue;
+                    for (var j = 0; j < expression.HeadAccords.Length; j++)
+                    {
+                        if (expression.HeadAccords[j] is NameExpression name && name.Name == Generics[i])
+                        {
+                            Infos.Add(new AccordExpressionHeadPartGeneric(expression, i, j));
+                        }
+                    }
+                    for (var j = 0; j < expression.Accordings.Length; j++)
+                    {
+                        for (var k = 0; k < expression.Accordings[j].Length; k++)
+                        {
+                            if (expression.Accordings[j][k].Item1 is NameExpression arg_name2 && arg_name2.Name == Generics[i])
+                            {
+                                Infos.Add(new AccordExpressionMatchesPartGeneric(expression, i, j, k, false));
+                            }
+                            if (expression.Accordings[j][k].Item2 is NameConstraintDefinition arg_name3 && arg_name3.Name is NameExpression name2 && name2.Name == Generics[i])
+                            {
+                                Infos.Add(new AccordExpressionMatchesPartGeneric(expression, i, j, k, true));
                             }
                         }
                     }

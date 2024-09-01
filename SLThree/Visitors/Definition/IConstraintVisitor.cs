@@ -7,5 +7,6 @@
         void VisitConstraint(TemplateMethod.FunctionConstraintDefinition expression);
         void VisitConstraint(TemplateMethod.CombineConstraintDefinition expression);
         void VisitConstraint(TemplateMethod.IntersectionConstraintDefinition expression);
+        void VisitConstraint(TemplateMethod.NotConstraintDefinition expression);
     }
 }

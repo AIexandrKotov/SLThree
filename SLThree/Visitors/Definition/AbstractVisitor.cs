@@ -105,6 +105,7 @@ namespace SLThree.Visitors
                 case TemplateMethod.FunctionConstraintDefinition expr: VisitConstraint(expr); return;
                 case TemplateMethod.CombineConstraintDefinition expr: VisitConstraint(expr); return;
                 case TemplateMethod.IntersectionConstraintDefinition expr: VisitConstraint(expr); return;
+                case TemplateMethod.NotConstraintDefinition expr: VisitConstraint(expr); return;
             }
             Executables.Remove(expression);
         }
@@ -520,6 +521,11 @@ namespace SLThree.Visitors
         {
             VisitConstraint(expression.Left);
             VisitConstraint(expression.Right);
+        }
+
+        public virtual void VisitConstraint(TemplateMethod.NotConstraintDefinition expression)
+        {
+            VisitConstraint(expression.Left);
         }
 
         public virtual void VisitExpression(ConstraintExpression expression)

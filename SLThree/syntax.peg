@@ -355,6 +355,10 @@ constraint <TemplateMethod.ConstraintDefinition> -memoize
 
 constraint_intersect <TemplateMethod.ConstraintDefinition> -memoize
     = left:constraint_intersect _ "|" _ right:constraint_intersect { new TemplateMethod.IntersectionConstraintDefinition(left, right, state) }
+    / constraint_unary
+
+constraint_unary <TemplateMethod.ConstraintDefinition> -memoize
+    = "!" _ left:constraint_unary { new TemplateMethod.NotConstraintDefinition(left, state) }
     / constraint_primary
 
 constraint_primary <TemplateMethod.ConstraintDefinition>
