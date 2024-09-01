@@ -2,7 +2,9 @@ ASSERT(self, ((static x = 5) as is is SLThree.BinaryAssign) as is);
 ASSERT(self, ((static x(a) => 5) as is is SLThree.BinaryAssign) as is);
 ASSERT(self, ((static new context x) as is is SLThree.BinaryAssign) as is);
 ASSERT(self, ((static new any x) as is is SLThree.BinaryAssign) as is);
+ASSERT(self, ((static constraint x: any) as is is SLThree.BinaryAssign) as is);
 
-ASSERT_THROW(self, null as is, @SLThree.LogicalError, "static f = f(x) => 2");
-ASSERT_THROW(self, null as is, @SLThree.LogicalError, "static f = new context f");
-ASSERT_THROW(self, null as is, @SLThree.LogicalError, "static f = new any f");
+ASSERT_THROW<SLThree.LogicalError>(self, null as is, "static f = f(x) => 2");
+ASSERT_THROW<SLThree.LogicalError>(self, null as is, "static f = new context f");
+ASSERT_THROW<SLThree.LogicalError>(self, null as is, "static f = new any f");
+ASSERT_THROW<SLThree.LogicalError>(self, null as is, "static f = constraint f: i64");

@@ -53,7 +53,7 @@ namespace TestSuite
                 ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {e}");
             }
         }
-        public static void AssertThrow(ContextWrap context, BaseExpression sc, Type type, string val)
+        public static void AssertThrow<T>(ContextWrap context, BaseExpression sc, string val)
         {
             try
             {
@@ -71,16 +71,16 @@ namespace TestSuite
                 Console.Write($" at {expression.SourceContext.ToStringWithoutFile()}  ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"{expression}");
-                ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {type} not thrown");
+                ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {typeof(T)} not thrown");
             }
             catch (Exception e)
             {
-                if (SLTHelpers.IsType(type, e.GetType()))
+                if (SLTHelpers.IsType(typeof(T), e.GetType()))
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write($"SUCCESS ");
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($" [{type.Name}]");
+                    Console.Write($" [{typeof(T).Name}]");
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($" {val}    ");
                     Console.ForegroundColor = ConsoleColor.White;
@@ -128,7 +128,7 @@ namespace TestSuite
         {
             var context = new ExecutionContext();
             context.LocalVariables.SetValue("ASSERT", ((Action<ContextWrap, BaseExpression>)Assert).Method);
-            context.LocalVariables.SetValue("ASSERT_THROW", ((Action<ContextWrap, BaseExpression, Type, string>)AssertThrow).Method);
+            context.LocalVariables.SetValue("ASSERT_THROW", ((Action<ContextWrap, BaseExpression, string>)AssertThrow<Exception>).Method.GetGenericMethodDefinition());
             context.LocalVariables.SetValue("PATH", ((Func<string, string>)GetPath).Method);
             context.LocalVariables.SetValue("LOG", ((Action<string>)Log).Method);
 
