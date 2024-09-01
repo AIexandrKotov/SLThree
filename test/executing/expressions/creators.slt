@@ -4,7 +4,7 @@ arr = new tested_type[1];
 ASSERT(self, (arr[0] is tested_type) as is);
 
 //list
-lst = [228 as tested_type, ];
+lst = new list { 228 as tested_type, };
 ASSERT(self, (lst[0] is tested_type) as is);
 
 //context

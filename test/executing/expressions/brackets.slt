@@ -1,63 +1,23 @@
 tests = context {
-    //indexator (1), call (2), tuple (3)
+    //call (2), tuple (3)
     
-    test_111 = [[[0x111]]];
-    test_112 = [[a => a]];
-    test_113 = [[(0x113, )]];
-    test_121 = [() => [0x121]];
-    test_122 = [() => a => a];
-    test_123 = [a => (0x123, )];
-    test_131 = [([0x131], )];
-    test_132 = [(a => a, )];
-    test_133 = [((0x133, ), )];
-    
-    test_211 = () => [[0x211]];
-    test_212 = () => [a => a];
-    test_213 = () => [(0x213, )];
-    test_221 = () => () => [0x221];
     test_222 = () => () => a => a;
     test_223 = () => a => (0x223, );
-    test_231 = () => ([0x231], );
     test_232 = () => (a => a, );
     test_233 = () => ((0x233, ), );
     
-    test_311 = ([[0x311]], );
-    test_312 = ([a => a], );
-    test_313 = ([(0x313, )], );
-    test_321 = (() => [0x321], );
     test_322 = (() => a => a, );
     test_323 = (a => (0x323, ), );
-    test_331 = (([0x331], ), );
     test_332 = ((a => a, ), );
     test_333 = (((0x333, ), ), );
 };
 
-ASSERT(self, (0x111 == tests.test_111[0][0][0]) as is);
-ASSERT(self, (0x112 == tests.test_112[0][0](0x112)) as is);
-ASSERT(self, (0x113 == tests.test_113[0][0][0]) as is);
-ASSERT(self, (0x121 == tests.test_121[0]()[0]) as is);
-ASSERT(self, (0x122 == tests.test_122[0]()(0x122)) as is);
-ASSERT(self, (0x123 == tests.test_123[0](5)[0]) as is);
-ASSERT(self, (0x131 == tests.test_131[0][0][0]) as is);
-ASSERT(self, (0x132 == tests.test_132[0][0](0x132)) as is);
-ASSERT(self, (0x133 == tests.test_133[0][0][0]) as is);
-
-ASSERT(self, (0x211 == tests.test_211()[0][0]) as is);
-ASSERT(self, (0x212 == tests.test_212()[0](0x212)) as is);
-ASSERT(self, (0x213 == tests.test_213()[0][0]) as is);
-ASSERT(self, (0x221 == tests.test_221()()[0]) as is);
 ASSERT(self, (0x222 == tests.test_222()()(0x222)) as is);
 ASSERT(self, (0x223 == tests.test_223()(5)[0]) as is);
-ASSERT(self, (0x231 == tests.test_231()[0][0]) as is);
 ASSERT(self, (0x232 == tests.test_232()[0](0x232)) as is);
 ASSERT(self, (0x233 == tests.test_233()[0][0]) as is);
 
-ASSERT(self, (0x311 == tests.test_311[0][0][0]) as is);
-ASSERT(self, (0x312 == tests.test_312[0][0](0x312)) as is);
-ASSERT(self, (0x313 == tests.test_313[0][0][0]) as is);
-ASSERT(self, (0x321 == tests.test_321[0]()[0]) as is);
 ASSERT(self, (0x322 == tests.test_322[0]()(0x322)) as is);
 ASSERT(self, (0x323 == tests.test_323[0](5)[0]) as is);
-ASSERT(self, (0x331 == tests.test_331[0][0][0]) as is);
 ASSERT(self, (0x332 == tests.test_332[0][0](0x332)) as is);
 ASSERT(self, (0x333 == tests.test_333[0][0][0]) as is);

@@ -10,4 +10,4 @@ x-->(new SLThree.BinaryAssign() {
     }
 );
 
-ASSERT(self, (x.r == "XXX"));
+ASSERT(self, (x.r == "XXX") as is);

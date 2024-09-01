@@ -1,11 +1,11 @@
 ------ 0.9.0 Massive Update ------ [~.~.~]
 Language:
-    - New generic methods
-        - For now need to add the `template` modificator
+    - Template methods
+        - Add the `template` modificator to generic method
           `template f<T>() => T;`
         - Constraints on parameters
           `template<T1: value + i64 | u64,
-                    T2: => T2 >= 10>() => T1 + T2;`
+                    T2: => (T2 >= 10)>() => T1 + T2;`
         - Constraint expression to describe them in advance
           `constraint [Name][ on T]: expr | value`
         - Invokation (and making without `()`):

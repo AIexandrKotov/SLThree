@@ -1,8 +1,8 @@
 using linq;
-x = 1..9 
+x = 1..10 
     |> linq.select(x => {
         using linq;
-        return 1..9 |> linq.select(y => upper.x*y, self);
+        return 1..10 |> linq.select(y => upper.x*y, self);
     })
     |> linq.select_many()
     |> linq.sum();
