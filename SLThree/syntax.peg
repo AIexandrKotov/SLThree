@@ -15,7 +15,6 @@ expr_statement_list <BlockExpression>
 
 statement <BaseStatement>
     = return_statement
-    / overload_statement
     / break_statement
     / continue_statement
     / foreach_statement
@@ -26,6 +25,7 @@ statement <BaseStatement>
     / try_statement
     / throw_statement
     / e:condition_statement { new ExpressionStatement(e, state) }
+    / e:accord_expression { new ExpressionStatement(e, state) }
     / e:match_expression { new ExpressionStatement(e, state) }
     / e:context_expression { new ExpressionStatement(e, state) }
     / e:collection_expression { new ExpressionStatement(e, state) }
@@ -103,14 +103,6 @@ throw_statement <ThrowStatement>
     = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, state) }
     / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], state)) }
 
-overload_statement <BaseStatement>
-    // "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ body:block_statement _ other:overload_statement { new ExpressionStatement(Overload(args, body, other), state) }
-    // "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ "=>" _ body:expression _ ";" _ other:overload_statement { new ExpressionStatement(Overload(args, GetListStatement(new ReturnStatement(body, state)), other), state) }
-    = "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ body:block_statement { new ExpressionStatement(Overload(args, body), state) }
-    / "overload" _ "(" _ args:arg_name<1,,","_> _ ")" _ "=>" _ body:expression _ ";" { new ExpressionStatement(Overload(args, GetListStatement(new ReturnStatement(body, state))), state) }
-    / "overload" _ "(" _ ")" _ body:block_statement { new ExpressionStatement(Overload(null, body), state) }
-    / "overload" _ "(" _ ")" _ "=>" _ body:expression _ ";" { new ExpressionStatement(Overload(null, GetListStatement(new ReturnStatement(body, state))), state) }
-
 expression_as_return <BaseStatement>
     = block_statement
     / value:expression { new ReturnStatement(value, state) }
@@ -134,6 +126,7 @@ binary_9 <BaseExpression> -memoize
     / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, state)) }
     / block_expression
     / condition_expression
+    / accord_expression
     / match_expression
     / method_definition_expression
     / "*" _ left:block_expression { new DereferenceExpression(left, state) }
@@ -254,6 +247,17 @@ condition_expression <ConditionExpression>
 
 condition_expression_1 <ConditionExpression>
     = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), state) }
+
+accord_expression <BaseExpression>
+    = "accord" _ "(" _ expr:expression<0,,_ "," _> _ ")" _ "{" _ 
+          matches:accord_node<1,,_>
+          _ ";"?
+    _ "}" { new AccordExpression(expr.ToArray(), matches, state) }
+
+accord_node <ValueTuple<IList<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>>, BaseStatement>>
+    = "(" _ left:(<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>> value:(<BaseExpression> b:binary_8 _ ":" _ {b})? constr:constraint { new ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>(GetOptional(value), constr) })<0,,_ "," _> _ ")"
+      _ "=>" _ right:statement
+    { new ValueTuple<IList<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>>, BaseStatement>(left, right) }
 
 match_expression <BaseExpression>
     = "match" _ "(" _ expr:expression _ ")" _ "{" _ 

@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,7 +51,7 @@ namespace SLThree
             var sb = new StringBuilder();
             sb.AppendLine($"match {Matching} {{");
             for (var i = 0; i < count; i++)
-                sb.AppendLine($"{Matches[i]} ==> {Cases[i]}");
+                sb.AppendLine($"{Matches[i]} => {Cases[i]}");
             sb.AppendLine("}");
             return sb.ToString();
         }

@@ -83,6 +83,7 @@ namespace SLThree.Visitors
                 case CreatorNewArray expr: VisitExpression(expr); return;
                 case CreatorContext expr: VisitExpression(expr); return;
                 case CreatorRange expr: VisitExpression(expr); return;
+                case AccordExpression expr: VisitExpression(expr); return;
                 case MatchExpression expr: VisitExpression(expr); return;
                 case UsingExpression expr: VisitExpression(expr); return;
                 case BlockExpression expr: VisitExpression(expr); return;
@@ -110,6 +111,24 @@ namespace SLThree.Visitors
             Executables.Remove(expression);
         }
 
+        public virtual void VisitExpression(AccordExpression expression)
+        {
+            for (var i = 0; i < expression.HeadAccords.Length; i++)
+            {
+                VisitExpression(expression.HeadAccords[i]);
+            }
+            for (var i = 0; i < expression.Accordings.Length; i++)
+            {
+                for (var j = 0; j > expression.Accordings[i].Length; j++)
+                {
+                    VisitExpression(expression.Accordings[i][j].Item1);
+                    VisitConstraint(expression.Accordings[i][j].Item2);
+                }
+                VisitStatement(expression.Cases[i]);
+            }
+            if (expression.InDefault != null)
+                VisitStatement(expression.InDefault);
+        }
         public virtual void VisitExpression(MatchExpression expression)
         {
             VisitExpression(expression.Matching);

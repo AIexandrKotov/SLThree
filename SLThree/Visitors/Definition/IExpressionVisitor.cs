@@ -31,6 +31,7 @@
         void VisitExpression(ReflectionExpression expression);
         void VisitExpression(TypenameExpression expression);
         void VisitExpression(MatchExpression expression);
+        void VisitExpression(AccordExpression expression);
         void VisitExpression(StaticExpression expression);
         void VisitExpression(UsingExpression expression);
         void VisitExpression(BlockExpression expression);
