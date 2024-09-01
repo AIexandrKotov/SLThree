@@ -26,7 +26,7 @@
             <Keywords name="Folders in comment, close"></Keywords>
             <Keywords name="Keywords1">new as is true false null using context self this global upper super private recursive explicit static constructor abstract params native template value type name expr code constraint</Keywords>
             <Keywords name="Keywords2">u8 i8 u16 i16 u32 i32 u64 i64 f64 f32 string bool any char list dict tuple stack queue</Keywords>
-            <Keywords name="Keywords3">while return break continue if else foreach in try catch finally match throw</Keywords>
+            <Keywords name="Keywords3">while return break continue if else foreach in try catch finally match throw loop do accord</Keywords>
             <Keywords name="Keywords4">\n \t \r \\\</Keywords>
             <Keywords name="Keywords5"></Keywords>
             <Keywords name="Keywords6"></Keywords>
