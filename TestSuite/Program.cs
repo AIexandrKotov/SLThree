@@ -53,7 +53,7 @@ namespace TestSuite
                 ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {e}");
             }
         }
-        public static void AssertThrow<T>(ContextWrap context, BaseExpression sc, string val)
+        public static void AssertThrow<T>(ContextWrap context, BaseExpression sc, string val) where T : Exception
         {
             try
             {
@@ -73,31 +73,28 @@ namespace TestSuite
                 Console.WriteLine($"{expression}");
                 ErrorLog.Add($"FAILED {expression} as {expression.SourceContext} ===> {typeof(T)} not thrown");
             }
+            catch (T)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"SUCCESS ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($" [{typeof(T).Name}]");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($" {val}    ");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
             catch (Exception e)
             {
-                if (SLTHelpers.IsType(typeof(T), e.GetType()))
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($"SUCCESS ");
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($" [{typeof(T).Name}]");
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($" {val}    ");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    current_assert = false;
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write($" FAILED ");
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write($" [{e.GetType().Name}]");
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write($" at {sc.SourceContext.ToStringWithoutFile()}  ");
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"{val}");
-                    ErrorLog.Add($"FAILED {val} as {sc.SourceContext} ===> another exception thrown\n{e}");
-                }
+                current_assert = false;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($" FAILED ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($" [{e.GetType().Name}]");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.Write($" at {sc.SourceContext.ToStringWithoutFile()}  ");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{val}");
+                ErrorLog.Add($"FAILED {val} as {sc.SourceContext} ===> another exception thrown\n{e}");
             }
         }
 
