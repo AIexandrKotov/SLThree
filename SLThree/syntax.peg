@@ -64,9 +64,9 @@ while_statement <WhileLoopStatement>
     / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
 
 do_statement <DoWhileLoopStatement>
-    = "do" _ body:block_statement _ "while" _ "(" _ cond:expression _ ")" _ ";" { new DoWhileLoopStatement(cond, GetListStatement(body), state) }
-    / "do" _ body:block_statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
-    / "do" _ body:block_statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
+    = "do" _ body:statement _ "while" _ "(" _ cond:expression _ ")" _ ";" { new DoWhileLoopStatement(cond, GetListStatement(body), state) }
+    / "do" _ body:statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], state)) }
+    / "do" _ body:statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], state)) }
 
 infin_loop_statement <InfiniteLoopStatement>
     = "loop" _ body:block_statement { new InfiniteLoopStatement(GetListStatement(body), state) }
@@ -888,7 +888,7 @@ interpolation_escape
 interpolation <BaseExpression>
     = expression
     
-multiline_string_literal <StringLiteral> = "\"\"\"" chars:string_element* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
+multiline_string_literal <StringLiteral> = "\"\"\"" chars:multiline_string_element* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
     new StringLiteral(string.Concat(chars), state)
 }
 

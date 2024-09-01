@@ -1,0 +1,6 @@
+x = {
+    x = 0;
+    while (x < 100) x += 1;
+};
+
+ASSERT(self, (x == 100) as is);

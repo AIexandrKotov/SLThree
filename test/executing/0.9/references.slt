@@ -1,0 +1,11 @@
+swap(x, y) {
+    t = *x;
+    *x = *y;
+    *y = t;
+};
+
+(x, y) = (50, 100);
+swap(&x, &y);
+
+ASSERT(self, (x == 100) as is);
+ASSERT(self, (y == 50) as is);

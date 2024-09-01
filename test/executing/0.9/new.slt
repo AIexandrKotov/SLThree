@@ -1,0 +1,3 @@
+x = new { };
+
+ASSERT(self, ((x->private) == null) as is);

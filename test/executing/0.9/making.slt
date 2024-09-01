@@ -1,0 +1,4 @@
+f<T>(): T {};
+
+ASSERT(self, ((f<i64>).ReturnType() == @i64) as is);
+ASSERT(self, ((f<any>).ReturnType() == @any) as is);

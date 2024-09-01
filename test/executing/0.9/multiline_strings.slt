@@ -1,0 +1,4 @@
+using linq;
+
+ASSERT(self, ("""
+""".Contains("\n")) as is);

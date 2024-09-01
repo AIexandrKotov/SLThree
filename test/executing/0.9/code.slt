@@ -1,0 +1,5 @@
+expr = $(2 + 2 * 2);
+code = ${2 + 2 * 2;};
+
+ASSERT(self, (expr() == 6) as is);
+ASSERT(self, (code() == 6) as is);

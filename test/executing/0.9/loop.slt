@@ -1,0 +1,4 @@
+i = 0;
+loop (10) i += 1;
+
+ASSERT(self, (i == 10) as is);
