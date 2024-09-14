@@ -7,7 +7,7 @@ namespace SLThree
     public class BinaryAssign : BinaryOperator
     {
         public override string Operator => "=";
-        public BinaryAssign(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryAssign(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryAssign() : base() { }
         private ExecutionContext counted_invoked;
         private bool is_name_expr;

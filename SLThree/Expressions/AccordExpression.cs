@@ -39,7 +39,7 @@ namespace SLThree
             }
         }
 
-        public AccordExpression(BaseExpression[] matching, IList<(IList<(BaseExpression, TemplateMethod.ConstraintDefinition)>, BaseStatement)> matches, SourceContext context) : base(context)
+        public AccordExpression(BaseExpression[] matching, IList<(IList<(BaseExpression, TemplateMethod.ConstraintDefinition)>, BaseStatement)> matches, ISourceContext context) : base(context)
         {
             HeadAccords = matching;
             var a = matches.Select(x => x.Item1?.ToArray()).ToList();
@@ -62,7 +62,7 @@ namespace SLThree
             count = Accordings.Length;
             CountBuffer();
         }
-        internal AccordExpression(BaseExpression[] matching, (BaseExpression, TemplateMethod.ConstraintDefinition)[][] matches, BaseStatement[] cases, BaseStatement inDefault, SourceContext context) : base(context)
+        internal AccordExpression(BaseExpression[] matching, (BaseExpression, TemplateMethod.ConstraintDefinition)[][] matches, BaseStatement[] cases, BaseStatement inDefault, ISourceContext context) : base(context)
         {
             HeadAccords = matching;
             Accordings = matches;

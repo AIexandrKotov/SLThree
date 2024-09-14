@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryMultiply : BinaryOperator
     {
         public override string Operator => "*";
-        public BinaryMultiply(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryMultiply(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryMultiply() : base() { }
         public override object GetValue(ExecutionContext context)
         {

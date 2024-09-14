@@ -20,7 +20,7 @@ namespace SLThree
         //Left::Right(MethodArguments)
         //Left::Right
 
-        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodGenericArguments, TypenameExpression[] methodArguments, SourceContext context) : base(context)
+        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodGenericArguments, TypenameExpression[] methodArguments, ISourceContext context) : base(context)
         {
             Left = left;
             Right = right;
@@ -30,9 +30,9 @@ namespace SLThree
             is_constructor = name == "new";
         }
 
-        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodArguments, SourceContext context) : this(left, right, null, methodArguments, context) { }
+        public ReflectionExpression(BaseExpression left, NameExpression right, TypenameExpression[] methodArguments, ISourceContext context) : this(left, right, null, methodArguments, context) { }
 
-        public ReflectionExpression(BaseExpression left, NameExpression right, SourceContext context) : this(left, right, null, null, context) { }
+        public ReflectionExpression(BaseExpression left, NameExpression right, ISourceContext context) : this(left, right, null, null, context) { }
 
         public override object GetValue(ExecutionContext context)
         {

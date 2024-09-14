@@ -28,112 +28,112 @@ namespace SLThree
         new T(args) Name: TBase;
         new T(args) Name: TBase {};
         */
-        public static CreatorInstance CaseType(TypenameExpression type, SourceContext context)
+        public static CreatorInstance CaseType(TypenameExpression type, ISourceContext context)
             => new CreatorInstance(
                 type, 
                 null, 
                 new BaseExpression[0], 
                 null, 
                 context);
-        public static CreatorInstance CaseTypeBody(TypenameExpression type, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance CaseTypeBody(TypenameExpression type, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 new BaseExpression[0],
                 new CreatorContext(null, new BaseExpression[0], body, false, context),
                 context);
-        public static CreatorInstance CaseTypeArgs(TypenameExpression type, BaseExpression[] args, SourceContext context)
+        public static CreatorInstance CaseTypeArgs(TypenameExpression type, BaseExpression[] args, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 args,
                 null,
                 context);
-        public static CreatorInstance CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type, 
                 null, 
                 args,
                 new CreatorContext(null, new BaseExpression[0], body, false, context),
                 context);
-        public static CreatorInstance CaseTypeInheritance(TypenameExpression type, BaseExpression[] ancestors, SourceContext context)
+        public static CreatorInstance CaseTypeInheritance(TypenameExpression type, BaseExpression[] ancestors, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 new BaseExpression[0],
                 new CreatorContext(null, ancestors, null, false, context),
                 context);
-        public static CreatorInstance CaseTypeBodyInheritance(TypenameExpression type, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance CaseTypeBodyInheritance(TypenameExpression type, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 new BaseExpression[0],
                 new CreatorContext(null, ancestors, body, false, context),
                 context);
-        public static CreatorInstance CaseTypeArgsInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, SourceContext context)
+        public static CreatorInstance CaseTypeArgsInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 args,
                 null,
                 context);
-        public static CreatorInstance CaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance CaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 null,
                 args,
                 new CreatorContext(null, ancestors, body, false, context),
                 context);
-        public static CreatorInstance NamedCaseType(TypenameExpression type, BaseExpression name, SourceContext context)
+        public static CreatorInstance NamedCaseType(TypenameExpression type, BaseExpression name, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 new BaseExpression[0],
                 null,
                 context);
-        public static CreatorInstance NamedCaseTypeBody(TypenameExpression type, BaseExpression name, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance NamedCaseTypeBody(TypenameExpression type, BaseExpression name, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 new BaseExpression[0],
                 new CreatorContext(name, new BaseExpression[0], body, false, context),
                 context);
-        public static CreatorInstance NamedCaseTypeArgs(TypenameExpression type, BaseExpression name, BaseExpression[] args, SourceContext context)
+        public static CreatorInstance NamedCaseTypeArgs(TypenameExpression type, BaseExpression name, BaseExpression[] args, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 args,
                 null,
                 context);
-        public static CreatorInstance NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 args,
                 new CreatorContext(name, new BaseExpression[0], body, false, context),
                 context);
-        public static CreatorInstance NamedCaseTypeInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, SourceContext context)
+        public static CreatorInstance NamedCaseTypeInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 new BaseExpression[0],
                 new CreatorContext(name, ancestors, null, false, context),
                 context);
-        public static CreatorInstance NamedCaseTypeBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance NamedCaseTypeBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 new BaseExpression[0],
                 new CreatorContext(name, ancestors, body, false, context),
                 context);
-        public static CreatorInstance NamedCaseTypeArgsInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, SourceContext context)
+        public static CreatorInstance NamedCaseTypeArgsInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
                 args,
                 null,
                 context);
-        public static CreatorInstance NamedCaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public static CreatorInstance NamedCaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
                 type,
                 name,
@@ -142,7 +142,7 @@ namespace SLThree
                 context);
 
 
-        public CreatorInstance(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContext creatorContext, SourceContext context) : base(context)
+        public CreatorInstance(TypenameExpression type, BaseExpression name, BaseExpression[] args, CreatorContext creatorContext, ISourceContext context) : base(context)
         {
             Type = type;
             Name = name;

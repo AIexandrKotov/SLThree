@@ -6,7 +6,7 @@ namespace SLThree
     {
         public ExecutionContext.IExecutable Executable;
 
-        public MacrosDefinition(ExecutionContext.IExecutable executable, SourceContext context) : base(context)
+        public MacrosDefinition(ExecutionContext.IExecutable executable, ISourceContext context) : base(context)
         {
             Executable = executable;
         }

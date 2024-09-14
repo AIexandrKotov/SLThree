@@ -11,8 +11,8 @@ namespace SLThree
     {
 
         public override string Operator => ".";
-        public MemberAccess(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context) { }
-        public MemberAccess(BaseExpression left, BaseExpression right, bool null_conditional, SourceContext context) : base(left, right, context)
+        public MemberAccess(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
+        public MemberAccess(BaseExpression left, BaseExpression right, bool null_conditional, ISourceContext context) : base(left, right, context)
         {
             this.null_conditional = null_conditional;
         }

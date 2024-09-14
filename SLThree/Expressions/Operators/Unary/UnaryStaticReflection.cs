@@ -4,7 +4,7 @@ namespace SLThree
 {
     public class UnaryStaticReflection : UnaryOperator
     {
-        public UnaryStaticReflection(BaseExpression left, SourceContext context) : base(left, context)
+        public UnaryStaticReflection(BaseExpression left, ISourceContext context) : base(left, context)
         {
         }
 

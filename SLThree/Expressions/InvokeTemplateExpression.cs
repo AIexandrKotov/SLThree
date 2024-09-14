@@ -11,7 +11,7 @@ namespace SLThree
         {
             public BaseExpression Expression;
 
-            public GenericMakingDefinition(BaseExpression expression, SourceContext context) : base(context)
+            public GenericMakingDefinition(BaseExpression expression, ISourceContext context) : base(context)
             {
                 Expression = expression;
             }
@@ -57,13 +57,13 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public InvokeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, BaseExpression[] arguments, SourceContext context) : base(context)
+        public InvokeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, BaseExpression[] arguments, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;
             Arguments = arguments;
         }
-        public InvokeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        public InvokeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, BaseExpression[] arguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;

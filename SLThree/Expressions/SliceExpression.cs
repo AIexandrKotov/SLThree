@@ -13,7 +13,7 @@ namespace SLThree
         public BaseExpression UpperBound;
         public bool Excluding;
 
-        public SliceExpression(BaseExpression left, BaseExpression lowerBound, BaseExpression upperBound, bool excluding, SourceContext context) : base(context)
+        public SliceExpression(BaseExpression left, BaseExpression lowerBound, BaseExpression upperBound, bool excluding, ISourceContext context) : base(context)
         {
             Left = left;
             LowerBound = lowerBound;

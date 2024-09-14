@@ -27,7 +27,7 @@ namespace SLThree
 
         public bool HasName => Name != null;
 
-        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, SourceContext context, bool generatePrivate = true) : base(context)
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, bool is_free_creator, ISourceContext context, bool generatePrivate = true) : base(context)
         {
             Name = name;
             Ancestors = ancestors;
@@ -35,21 +35,21 @@ namespace SLThree
             IsFreeCreator = is_free_creator;
             GeneratePrivate = generatePrivate;
         }
-        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             : this(name, ancestors, body, true, context) { }
-        public CreatorContext(BaseExpression name, CreatorContextBody body, SourceContext context)
+        public CreatorContext(BaseExpression name, CreatorContextBody body, ISourceContext context)
             : this(name, new BaseExpression[0], body, true, context) { }
-        public CreatorContext(BaseExpression[] ancestors, CreatorContextBody body, SourceContext context)
+        public CreatorContext(BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             : this(null, ancestors, body, true, context) { }
-        public CreatorContext(CreatorContextBody body, SourceContext context, bool generatePrivate = true)
+        public CreatorContext(CreatorContextBody body, ISourceContext context, bool generatePrivate = true)
             : this(null, new BaseExpression[0], body, true, context, generatePrivate) { }
-        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, SourceContext context)
+        public CreatorContext(BaseExpression name, BaseExpression[] ancestors, ISourceContext context)
             : this(name, ancestors, null, true, context) { }
-        public CreatorContext(BaseExpression name, SourceContext context)
+        public CreatorContext(BaseExpression name, ISourceContext context)
             : this(name, new BaseExpression[0], null, true, context) { }
-        public CreatorContext(BaseExpression[] ancestors, SourceContext context)
+        public CreatorContext(BaseExpression[] ancestors, ISourceContext context)
             : this(null, ancestors, null, true, context) { }
-        public CreatorContext(SourceContext context)
+        public CreatorContext(ISourceContext context)
             : this(null, new BaseExpression[0], null, true, context) { }
 
         public override string ExpressionToString() => $"context {(HasName ? Name.ToString() : "")} {{\n{CreatorBody}\n}}";

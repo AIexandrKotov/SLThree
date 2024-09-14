@@ -15,13 +15,13 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public InvokeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, BaseExpression[] arguments, SourceContext context) : base(context)
+        public InvokeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, BaseExpression[] arguments, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;
             Arguments = arguments;
         }
-        public InvokeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        public InvokeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, BaseExpression[] arguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;

@@ -7,11 +7,11 @@ namespace SLThree
         public BaseExpression Condition;
 
         public DoWhileLoopStatement() : base() { }
-        public DoWhileLoopStatement(BaseExpression condition, StatementList cycleBody, SourceContext context) : base(cycleBody, context)
+        public DoWhileLoopStatement(BaseExpression condition, StatementList cycleBody, ISourceContext context) : base(cycleBody, context)
         {
             Condition = condition;
         }
-        public DoWhileLoopStatement(BaseExpression condition, BaseStatement[] cycleBody, SourceContext context) : base(cycleBody, context)
+        public DoWhileLoopStatement(BaseExpression condition, BaseStatement[] cycleBody, ISourceContext context) : base(cycleBody, context)
         {
             Condition = condition;
         }

@@ -1,6 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using SLThree.sys;
+
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
@@ -18,8 +18,8 @@ namespace SLThree
         #region Definitions
         public abstract class ConstraintDefinition : BaseExpression
         {
-            public ConstraintDefinition(SourceContext context) : base(context) { }
-            public ConstraintDefinition(bool priority, SourceContext context) : base(priority, context) { }
+            public ConstraintDefinition(ISourceContext context) : base(context) { }
+            public ConstraintDefinition(bool priority, ISourceContext context) : base(priority, context) { }
 
             public override object GetValue(ExecutionContext context) => throw new NotSupportedException();
             public abstract Constraint GetConstraint(string current_template, ExecutionContext context);
@@ -28,12 +28,12 @@ namespace SLThree
         {
             public BaseExpression Name;
 
-            public NameConstraintDefinition(BaseExpression name, SourceContext context) : base(context)
+            public NameConstraintDefinition(BaseExpression name, ISourceContext context) : base(context)
             {
                 Name = name;
             }
 
-            public NameConstraintDefinition(BaseExpression name, bool priority, SourceContext context) : base(priority, context)
+            public NameConstraintDefinition(BaseExpression name, bool priority, ISourceContext context) : base(priority, context)
             {
                 Name = name;
             }
@@ -103,12 +103,12 @@ namespace SLThree
         public class FunctionConstraintDefinition : ConstraintDefinition
         {
             public BaseStatement Statement;
-            public FunctionConstraintDefinition(BaseStatement statement, SourceContext context) : base(context)
+            public FunctionConstraintDefinition(BaseStatement statement, ISourceContext context) : base(context)
             {
                 Statement = statement;
             }
 
-            public FunctionConstraintDefinition(BaseStatement statement, bool priority, SourceContext context) : base(priority, context)
+            public FunctionConstraintDefinition(BaseStatement statement, bool priority, ISourceContext context) : base(priority, context)
             {
                 Statement = statement;
             }
@@ -127,13 +127,13 @@ namespace SLThree
         {
             public ConstraintDefinition Left, Right;
 
-            public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, SourceContext context) : base(context)
+            public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, ISourceContext context) : base(context)
             {
                 Left = left;
                 Right = right;
             }
 
-            public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, SourceContext context) : base(priority, context)
+            public CombineConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, ISourceContext context) : base(priority, context)
             {
                 Left = left;
                 Right = right;
@@ -152,13 +152,13 @@ namespace SLThree
         {
             public ConstraintDefinition Left, Right;
 
-            public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, SourceContext context) : base(context)
+            public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, ISourceContext context) : base(context)
             {
                 Left = left;
                 Right = right;
             }
 
-            public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, SourceContext context) : base(priority, context)
+            public IntersectionConstraintDefinition(ConstraintDefinition left, ConstraintDefinition right, bool priority, ISourceContext context) : base(priority, context)
             {
                 Left = left;
                 Right = right;
@@ -177,12 +177,12 @@ namespace SLThree
         {
             public ConstraintDefinition Left;
 
-            public NotConstraintDefinition(ConstraintDefinition left, SourceContext context) : base(context)
+            public NotConstraintDefinition(ConstraintDefinition left, ISourceContext context) : base(context)
             {
                 Left = left;
             }
 
-            public NotConstraintDefinition(ConstraintDefinition left, bool priority, SourceContext context) : base(priority, context)
+            public NotConstraintDefinition(ConstraintDefinition left, bool priority, ISourceContext context) : base(priority, context)
             {
                 Left = left;
             }
@@ -200,7 +200,7 @@ namespace SLThree
         {
             public Constraint Value;
 
-            public ObjectConstraintDefinition(Constraint left, SourceContext context) : base(context)
+            public ObjectConstraintDefinition(Constraint left, ISourceContext context) : base(context)
             {
                 Value = left;
             }
@@ -218,10 +218,10 @@ namespace SLThree
         public abstract class Constraint : ICloneable
         {
             public bool PrioriryRaised { get; set; }
-            public SourceContext SourceContext { get; set; }
+            public ISourceContext IISourceContext { get; set; }
             public Constraint() { }
-            public Constraint(SourceContext context) => SourceContext = context;
-            public Constraint(bool priority, SourceContext context) => (SourceContext, PrioriryRaised) = (context, priority);
+            public Constraint(ISourceContext context) => IISourceContext = context;
+            public Constraint(bool priority, ISourceContext context) => (IISourceContext, PrioriryRaised) = (context, priority);
             public override string ToString() => PrioriryRaised ? $"({ConstraintToString()})" : ConstraintToString();
             public abstract string ConstraintToString();
             public abstract bool Applicable(GenericMaking making, object target);
@@ -262,18 +262,18 @@ namespace SLThree
         }
         public class AnyConstraint : Constraint
         {
-            public AnyConstraint(SourceContext context) : base(context) { }
+            public AnyConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"any";
 
             public override bool Applicable(GenericMaking making, object target) => true;
 
-            public override object Clone() => new AnyConstraint(SourceContext.CloneCast());
+            public override object Clone() => new AnyConstraint(IISourceContext.CloneCast());
 
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class ValueConstraint : Constraint
         {
-            public ValueConstraint(SourceContext context) : base(context) { }
+            public ValueConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"value";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -281,12 +281,12 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsValue);
             }
 
-            public override object Clone() => new ValueConstraint(SourceContext.CloneCast());
+            public override object Clone() => new ValueConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowValues;
         }
         public class NameConstraint : Constraint
         {
-            public NameConstraint(SourceContext context) : base(context) { }
+            public NameConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"name";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -294,12 +294,12 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsName);
             }
 
-            public override object Clone() => new NameConstraint(SourceContext.CloneCast());
+            public override object Clone() => new NameConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowNames;
         }
         public class TypeConstraint : Constraint
         {
-            public TypeConstraint(SourceContext context) : base(context) { }
+            public TypeConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"type";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -307,13 +307,13 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsType);
             }
 
-            public override object Clone() => new TypeConstraint(SourceContext.CloneCast());
+            public override object Clone() => new TypeConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowTypes;
         }
         public class ConcrecteTypeConstraint : Constraint
         {
             public readonly Type Type;
-            public ConcrecteTypeConstraint(Type type, SourceContext context) : base(context) => Type = type;
+            public ConcrecteTypeConstraint(Type type, ISourceContext context) : base(context) => Type = type;
             public override string ConstraintToString() => $"{Type.GetTypeString()}";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -321,12 +321,12 @@ namespace SLThree
                 return target?.GetType().IsType(Type) ?? false;
             }
 
-            public override object Clone() => new ConcrecteTypeConstraint(Type, SourceContext.CloneCast());
+            public override object Clone() => new ConcrecteTypeConstraint(Type, IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class ExprConstraint : Constraint
         {
-            public ExprConstraint(SourceContext context) : base(context) { }
+            public ExprConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"expr";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -334,12 +334,12 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsExpression);
             }
 
-            public override object Clone() => new ExprConstraint(SourceContext.CloneCast());
+            public override object Clone() => new ExprConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowExpressions;
         }
         public class CodeConstraint : Constraint
         {
-            public CodeConstraint(SourceContext context) : base(context) { }
+            public CodeConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"code";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -347,12 +347,12 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsCode);
             }
 
-            public override object Clone() => new CodeConstraint(SourceContext.CloneCast());
+            public override object Clone() => new CodeConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowCode;
         }
         public class ConstraintConstraint : Constraint
         {
-            public ConstraintConstraint(SourceContext context) : base(context) { }
+            public ConstraintConstraint(ISourceContext context) : base(context) { }
             public override string ConstraintToString() => $"constraint";
 
             public override bool Applicable(GenericMaking making, object target)
@@ -360,7 +360,7 @@ namespace SLThree
                 return making.HasFlag(GenericMaking.AsConstraint);
             }
 
-            public override object Clone() => new ConstraintConstraint(SourceContext.CloneCast());
+            public override object Clone() => new ConstraintConstraint(IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowConstraints;
         }
         public class CombineConstraint : Constraint
@@ -368,7 +368,7 @@ namespace SLThree
             public Constraint Left;
             public Constraint Right;
 
-            public CombineConstraint(Constraint left, Constraint right, SourceContext context) : base(context)
+            public CombineConstraint(Constraint left, Constraint right, ISourceContext context) : base(context)
             {
                 Left = left;
                 Right = right;
@@ -381,7 +381,7 @@ namespace SLThree
 
             public override string ConstraintToString() => $"{Left} + {Right}";
 
-            public override object Clone() => new CombineConstraint(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new CombineConstraint(Left.CloneCast(), Right.CloneCast(), IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => CombineMakingConstraint(Left.GetMakingConstraint(), Right.GetMakingConstraint());
         }
         public class IntersectionConstraint : Constraint
@@ -389,7 +389,7 @@ namespace SLThree
             public Constraint Left;
             public Constraint Right;
 
-            public IntersectionConstraint(Constraint left, Constraint right, SourceContext context) : base(context)
+            public IntersectionConstraint(Constraint left, Constraint right, ISourceContext context) : base(context)
             {
                 Left = left;
                 Right = right;
@@ -399,14 +399,14 @@ namespace SLThree
                 return Left.Applicable(making, target) || Right.Applicable(making, target);
             }
             public override string ConstraintToString() => $"{Left} | {Right}";
-            public override object Clone() => new IntersectionConstraint(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new IntersectionConstraint(Left.CloneCast(), Right.CloneCast(), IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => IntersectionMakingConstraint(Left.GetMakingConstraint(), Right.GetMakingConstraint());
         }
         public class NotConstraint : Constraint
         {
             public Constraint Left;
 
-            public NotConstraint(Constraint left, SourceContext context) : base(context)
+            public NotConstraint(Constraint left, ISourceContext context) : base(context)
             {
                 Left = left;
             }
@@ -416,12 +416,12 @@ namespace SLThree
                 return !Left.Applicable(making, target);
             }
             public override string ConstraintToString() => $"!{Left}";
-            public override object Clone() => new NotConstraint(Left.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new NotConstraint(Left.CloneCast(), IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => NotMakingConstraint(Left.GetMakingConstraint());
         }
         public class FunctionConstraint : Constraint
         {
-            public FunctionConstraint(Method method, SourceContext context) : base(context)
+            public FunctionConstraint(Method method, ISourceContext context) : base(context)
             {
                 Predicate = method;
             }
@@ -433,7 +433,7 @@ namespace SLThree
                 return Predicate.Invoke(target).Cast<bool>();
             }
 
-            public override object Clone() => new FunctionConstraint(Predicate.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new FunctionConstraint(Predicate.CloneCast(), IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => GenericMakingConstraint.AllowAll;
         }
         public class CustomConstraint : Constraint
@@ -441,7 +441,7 @@ namespace SLThree
             public string Name;
             public readonly Constraint Constraint;
 
-            public CustomConstraint(string name, Constraint constraint, SourceContext context) : base(context)
+            public CustomConstraint(string name, Constraint constraint, ISourceContext context) : base(context)
             {
                 Name = name;
                 Constraint = constraint;
@@ -454,7 +454,7 @@ namespace SLThree
                 return Constraint.Applicable(making, target);
             }
 
-            public override object Clone() => new CustomConstraint(Name, Constraint.CloneCast(), SourceContext.CloneCast());
+            public override object Clone() => new CustomConstraint(Name, Constraint.CloneCast(), IISourceContext.CloneCast());
             public override GenericMakingConstraint GetMakingConstraint() => Constraint.GetMakingConstraint();
         }
 
@@ -3530,7 +3530,7 @@ namespace SLThree
         {
             for (var i = 0; i < Generics.Length; i++)
                 if (!Generics[i].Item2.Applicable(args[i].Item1, args[i].Item2))
-                    throw new RuntimeError(string.Format(Locale.Current["ERR_DoesntFitConstraint"], args[i].Item2.GetType().GetTypeString(), args[i].Item2, Generics[i].Item2), Generics[i].Item2.SourceContext);
+                    throw new RuntimeError(string.Format(Locale.Current["ERR_DoesntFitConstraint"], args[i].Item2.GetType().GetTypeString(), args[i].Item2, Generics[i].Item2), Generics[i].Item2.IISourceContext);
             var constraints = args.Select((x, i) => x.Item1 == GenericMaking.Constraint ? GetMakingBasedOnConstraint(MakingConstraints[i]) : x.Item1).ToArray();
             foreach (var x in GenericsInfo)
             {
@@ -3550,7 +3550,7 @@ namespace SLThree
         {
             var sb = new StringBuilder();
             var unnamed = Name == DefaultMethodName;
-            if (slt.is_abstract(Statements))
+            if (Statements.IsAbstract())
                 sb.Append("abstract ");
             else
             {

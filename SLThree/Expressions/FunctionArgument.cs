@@ -7,12 +7,12 @@ namespace SLThree
         public NameExpression Name;
         public BaseExpression DefaultValue;
 
-        public FunctionArgument(NameExpression name, BaseExpression value, SourceContext context) : base(context)
+        public FunctionArgument(NameExpression name, BaseExpression value, ISourceContext context) : base(context)
         {
             Name = name;
             DefaultValue = value;
         }
-        public FunctionArgument(NameExpression name, SourceContext context) : this(name, null, context) { }
+        public FunctionArgument(NameExpression name, ISourceContext context) : this(name, null, context) { }
 
         public override string ExpressionToString() => $"{Name}{(DefaultValue == null ? "" : $" = {DefaultValue}")}";
 

@@ -11,12 +11,12 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public MakeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, SourceContext context) : base(context)
+        public MakeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;
         }
-        public MakeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, bool null_conditional, SourceContext context) : base(context)
+        public MakeTemplateExpression(BaseExpression left, (BaseExpression, BaseExpression)[] genericArguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;

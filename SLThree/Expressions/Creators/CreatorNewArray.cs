@@ -10,7 +10,7 @@ namespace SLThree
         public TypenameExpression ArrayType;
         public BaseExpression Size;
 
-        public CreatorNewArray(TypenameExpression arrayType, BaseExpression size, SourceContext context) : base(context)
+        public CreatorNewArray(TypenameExpression arrayType, BaseExpression size, ISourceContext context) : base(context)
         {
             ArrayType = arrayType;
             Size = size;

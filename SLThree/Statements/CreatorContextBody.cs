@@ -9,7 +9,7 @@ namespace SLThree
         private (ExecutionContext, bool, int)[] Caches;
 
         public CreatorContextBody() : base() { }
-        public CreatorContextBody(IList<BaseStatement> statements, SourceContext context) : base(statements, context)
+        public CreatorContextBody(IList<BaseStatement> statements, ISourceContext context) : base(statements, context)
         {
             foreach (var x in Statements)
                 CheckOnContextStatements(x);

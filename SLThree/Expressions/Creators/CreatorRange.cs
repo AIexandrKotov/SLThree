@@ -14,8 +14,8 @@ namespace SLThree
         public TypenameExpression RangeType;
         public bool Excluding;
 
-        public CreatorRange(BaseExpression lowerBound, BaseExpression upperBound, bool excluding, SourceContext context) : this(lowerBound, upperBound, null, excluding, context) { }
-        public CreatorRange(BaseExpression lowerBound, BaseExpression upperBound, TypenameExpression type, bool excluding, SourceContext context) : base(context)
+        public CreatorRange(BaseExpression lowerBound, BaseExpression upperBound, bool excluding, ISourceContext context) : this(lowerBound, upperBound, null, excluding, context) { }
+        public CreatorRange(BaseExpression lowerBound, BaseExpression upperBound, TypenameExpression type, bool excluding, ISourceContext context) : base(context)
         {
             LowerBound = lowerBound;
             UpperBound = upperBound;

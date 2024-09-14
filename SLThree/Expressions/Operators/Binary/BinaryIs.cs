@@ -6,7 +6,7 @@ namespace SLThree
 {
     public class BinaryIs : BinaryOperator
     {
-        public BinaryIs(BaseExpression left, BaseExpression right, SourceContext context) : base(left, right, context)
+        public BinaryIs(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context)
         {
 
         }

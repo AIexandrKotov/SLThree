@@ -61,10 +61,10 @@ namespace SLThree.Native
     {
         public SupportException() { }
 
-        public SupportException(SourceContext context) : base(context) { }
+        public SupportException(ISourceContext context) : base(context) { }
 
-        public SupportException(string message, SourceContext context) : base(message, context) { }
+        public SupportException(string message, ISourceContext context) : base(message, context) { }
 
-        public SupportException(string message, Exception inner, SourceContext context) : base(message, inner, context) { }
+        public SupportException(string message, Exception inner, ISourceContext context) : base(message, inner, context) { }
     }
 }

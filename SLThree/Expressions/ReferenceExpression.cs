@@ -6,7 +6,7 @@ namespace SLThree
     {
         public BaseExpression Expression;
 
-        public ReferenceExpression(BaseExpression expression, SourceContext context) : base(context)
+        public ReferenceExpression(BaseExpression expression, ISourceContext context) : base(context)
         {
             Expression = expression;
         }
@@ -25,7 +25,7 @@ namespace SLThree
     {
         public BaseExpression Expression;
 
-        public DereferenceExpression(BaseExpression expression, SourceContext context) : base(context)
+        public DereferenceExpression(BaseExpression expression, ISourceContext context) : base(context)
         {
             Expression = expression;
         }

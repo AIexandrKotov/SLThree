@@ -2,9 +2,9 @@
 
 namespace SLThree
 {
-    internal class EmptyStatement : BaseStatement
+    public class EmptyStatement : BaseStatement
     {
-        public EmptyStatement(SourceContext context) : base(context) { }
+        public EmptyStatement(ISourceContext context) : base(context) { }
 
         public override string ToString() => $";";
         public override object GetValue(ExecutionContext context) => null;

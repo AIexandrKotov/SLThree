@@ -21,14 +21,14 @@ namespace SLThree
 
         public TypenameExpression() : base() { }
 
-        public TypenameExpression(BaseExpression expression, TypenameExpression[] generics, SourceContext context) : base(context)
+        public TypenameExpression(BaseExpression expression, TypenameExpression[] generics, ISourceContext context) : base(context)
         {
             Typename = expression;
             Generics = generics;
             PullTheType();
         }
 
-        public TypenameExpression(BaseExpression expression, SourceContext context) : this(expression, null, context)
+        public TypenameExpression(BaseExpression expression, ISourceContext context) : this(expression, null, context)
         {
 
         }

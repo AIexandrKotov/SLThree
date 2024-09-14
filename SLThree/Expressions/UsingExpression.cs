@@ -12,13 +12,13 @@ namespace SLThree
         private bool is_name_expr;
         private int variable_index;
 
-        public UsingExpression(BaseExpression alias, CreatorUsing usingBody, SourceContext context) : base(context)
+        public UsingExpression(BaseExpression alias, CreatorUsing usingBody, ISourceContext context) : base(context)
         {
             Alias = alias;
             Using = usingBody;
         }
 
-        public UsingExpression(CreatorUsing @using, SourceContext context) : this(null, @using, context) { }
+        public UsingExpression(CreatorUsing @using, ISourceContext context) : this(null, @using, context) { }
 
         public override string ExpressionToString() => $"using {Using.Type}{(Alias == null ? "" : $" as {Alias}")}";
 

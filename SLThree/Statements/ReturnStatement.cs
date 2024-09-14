@@ -8,12 +8,12 @@ namespace SLThree
         public BaseExpression Expression;
 
         public ReturnStatement() : base() { }
-        public ReturnStatement(BaseExpression expression, SourceContext context) : base(context)
+        public ReturnStatement(BaseExpression expression, ISourceContext context) : base(context)
         {
             Expression = expression;
         }
 
-        public ReturnStatement(SourceContext context) : base(context)
+        public ReturnStatement(ISourceContext context) : base(context)
         {
             VoidReturn = true;
         }

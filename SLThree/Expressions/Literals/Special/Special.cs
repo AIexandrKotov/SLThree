@@ -6,11 +6,11 @@
         {
         }
 
-        public Special(SourceContext context) : base(context)
+        public Special(ISourceContext context) : base(context)
         {
         }
 
-        public Special(bool priority, SourceContext context) : base(priority, context)
+        public Special(bool priority, ISourceContext context) : base(priority, context)
         {
         }
     }

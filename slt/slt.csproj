@@ -44,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SLThree.Language\SLThree.Language.csproj" />
     <ProjectReference Include="..\SLThree\SLThree.csproj" />
   </ItemGroup>
 

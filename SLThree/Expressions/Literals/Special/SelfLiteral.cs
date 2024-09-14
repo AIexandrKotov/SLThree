@@ -1,11 +1,10 @@
-﻿using Pegasus.Common;
+﻿
 
 namespace SLThree
 {
     public class SelfLiteral : Special
     {
-        public SelfLiteral(SourceContext context) : base(context) { }
-        public SelfLiteral(Cursor cursor) : base(cursor) { }
+        public SelfLiteral(ISourceContext context) : base(context) { }
 
         public override string ExpressionToString() => "self";
 

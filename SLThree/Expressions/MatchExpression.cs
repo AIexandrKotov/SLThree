@@ -15,7 +15,7 @@ namespace SLThree
         public BaseStatement InDefault;
         private int count;
 
-        public MatchExpression(BaseExpression matching, IList<(IList<BaseExpression>, BaseStatement)> matches, SourceContext context) : base(context)
+        public MatchExpression(BaseExpression matching, IList<(IList<BaseExpression>, BaseStatement)> matches, ISourceContext context) : base(context)
         {
             Matching = matching;
             var m = matches.Select(x => x.Item1?.ToArray()).ToList();
@@ -37,7 +37,7 @@ namespace SLThree
             Cases = c.ToArray();
             count = Matches.Length;
         }
-        public MatchExpression(BaseExpression matching, BaseExpression[][] matches, BaseStatement[] cases, BaseStatement inDefault, SourceContext context) : base(context)
+        public MatchExpression(BaseExpression matching, BaseExpression[][] matches, BaseStatement[] cases, BaseStatement inDefault, ISourceContext context) : base(context)
         {
             Matching = matching;
             Matches = matches;

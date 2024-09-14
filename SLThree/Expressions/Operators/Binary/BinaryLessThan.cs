@@ -7,7 +7,7 @@ namespace SLThree
     public class BinaryLessThan : BinaryOperator
     {
         public override string Operator => "<";
-        public BinaryLessThan(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryLessThan(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryLessThan() : base() { }
         public override object GetValue(ExecutionContext context)
         {

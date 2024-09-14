@@ -1,6 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using SLThree.sys;
+
 using System;
 using System.Linq;
 using System.Reflection.Emit;
@@ -32,7 +32,7 @@ namespace SLThree
         private bool not_native;
         private bool is_abstract;
 
-        public FunctionDefinition(string[] modificators, BaseExpression name, (NameExpression, TemplateMethod.ConstraintDefinition)[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, SourceContext context) : base(context)
+        public FunctionDefinition(string[] modificators, BaseExpression name, (NameExpression, TemplateMethod.ConstraintDefinition)[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, ISourceContext context) : base(context)
         {
             Modificators = modificators;
             FunctionName = name;
@@ -65,7 +65,7 @@ namespace SLThree
                 }
                 else throw new LogicalError("Abstract method without abstract modifier", context);
             }
-            else if (is_abstract && !slt.is_abstract(FunctionBody)) throw new LogicalError("An abstract method shouldn't have a body", context);
+            else if (is_abstract && !FunctionBody.IsAbstract()) throw new LogicalError("An abstract method shouldn't have a body", context);
             not_native = !Modificators.Contains("native");
         }
 

@@ -71,7 +71,7 @@ namespace SLThree.Visitors
             {
                 d[p.Name] = GetValue(p.GetValue(o));
             }
-            d.Remove("SourceContext");
+            d.Remove("ISourceContext");
             foreach (var key in d.Keys.ToArray())
                 if (!WhiteList.Contains(key) && key.All(x => char.IsLower(x) || x == '_' || char.IsDigit(x)))
                     d.Remove(key);

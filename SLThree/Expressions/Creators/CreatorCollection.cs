@@ -20,35 +20,35 @@ namespace SLThree
         new T(args) Name {,,};
         */
         public BaseExpression[] Body;
-        public static CreatorCollection CaseShort(BaseExpression[] body, SourceContext context)
+        public static CreatorCollection CaseShort(BaseExpression[] body, ISourceContext context)
             => new CreatorCollection(
                 null,
                 null,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorCollection CaseTypeBody(TypenameExpression type, BaseExpression[] body, SourceContext context)
+        public static CreatorCollection CaseTypeBody(TypenameExpression type, BaseExpression[] body, ISourceContext context)
             => new CreatorCollection(
                 type,
                 null,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorCollection CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, BaseExpression[] body, SourceContext context)
+        public static CreatorCollection CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, BaseExpression[] body, ISourceContext context)
             => new CreatorCollection(
                 type,
                 null,
                 args,
                 body,
                 context);
-        public static CreatorCollection NamedCaseTypeBody(TypenameExpression type, BaseExpression name, BaseExpression[] body, SourceContext context)
+        public static CreatorCollection NamedCaseTypeBody(TypenameExpression type, BaseExpression name, BaseExpression[] body, ISourceContext context)
             => new CreatorCollection(
                 type,
                 name,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorCollection NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] body, SourceContext context)
+        public static CreatorCollection NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] body, ISourceContext context)
             => new CreatorCollection(
                 type,
                 name,
@@ -56,7 +56,7 @@ namespace SLThree
                 body,
                 context);
 
-        public CreatorCollection(TypenameExpression type, BaseExpression name, BaseExpression[] arguments, BaseExpression[] body, SourceContext context) : base(context)
+        public CreatorCollection(TypenameExpression type, BaseExpression name, BaseExpression[] arguments, BaseExpression[] body, ISourceContext context) : base(context)
         {
             Type = type ?? new TypenameExpression(new NameExpression("array", context), context);
             Name = name;

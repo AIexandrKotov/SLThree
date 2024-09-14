@@ -5,7 +5,7 @@ namespace SLThree
     public class NullCoalescing : BinaryOperator
     {
         public override string Operator => "??";
-        public NullCoalescing(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public NullCoalescing(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public NullCoalescing() : base() { }
 
         public override object GetValue(ExecutionContext context)

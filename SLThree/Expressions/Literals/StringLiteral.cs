@@ -1,11 +1,11 @@
-﻿using Pegasus.Common;
+﻿
 using SLThree.Extensions.Cloning;
 
 namespace SLThree
 {
     public class StringLiteral : Literal<string>
     {
-        public StringLiteral(string value, Cursor cursor) : base(value, $"\"{value}\"", cursor) { }
+        public StringLiteral(string value, ISourceContext cursor) : base(value, $"\"{value}\"", cursor) { }
         public StringLiteral() : base() { }
         public override object Clone() => new StringLiteral()
         {

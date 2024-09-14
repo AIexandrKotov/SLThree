@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryRem : BinaryOperator
     {
         public override string Operator => "-";
-        public BinaryRem(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryRem(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {

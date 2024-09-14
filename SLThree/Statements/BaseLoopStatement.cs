@@ -10,13 +10,13 @@ namespace SLThree
         {
         }
 
-        public BaseLoopStatement(StatementList cycleBody, SourceContext context) : base(context)
+        public BaseLoopStatement(StatementList cycleBody, ISourceContext context) : base(context)
         {
             LoopBody = cycleBody.Statements.ToArray();
             count = LoopBody.Length;
         }
 
-        public BaseLoopStatement(BaseStatement[] cycleBody, SourceContext context) : base(context)
+        public BaseLoopStatement(BaseStatement[] cycleBody, ISourceContext context) : base(context)
         {
             LoopBody = cycleBody;
             count = LoopBody.Length;

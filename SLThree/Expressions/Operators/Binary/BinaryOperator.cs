@@ -5,12 +5,12 @@
         public BaseExpression Left;
         public BaseExpression Right;
 
-        public BinaryOperator(BaseExpression left, BaseExpression right, SourceContext context) : base(context)
+        public BinaryOperator(BaseExpression left, BaseExpression right, ISourceContext context) : base(context)
         {
             Left = left;
             Right = right;
         }
-        public BinaryOperator(BaseExpression left, BaseExpression right, SourceContext context, bool priority) : base(priority, context)
+        public BinaryOperator(BaseExpression left, BaseExpression right, ISourceContext context, bool priority) : base(priority, context)
         {
             Left = left;
             Right = right;

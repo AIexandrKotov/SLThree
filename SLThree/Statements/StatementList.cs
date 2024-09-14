@@ -11,7 +11,7 @@ namespace SLThree
 
         public StatementList() : base() { }
 
-        public StatementList(IList<BaseStatement> statements, SourceContext context) : base(context)
+        public StatementList(IList<BaseStatement> statements, ISourceContext context) : base(context)
         {
             Statements = statements.Where(x => !(x is EmptyStatement)).ToArray();
             count = Statements.Length;

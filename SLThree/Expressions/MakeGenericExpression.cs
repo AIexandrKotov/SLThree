@@ -14,12 +14,12 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public MakeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, SourceContext context) : base(context)
+        public MakeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;
         }
-        public MakeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, bool null_conditional, SourceContext context) : base(context)
+        public MakeGenericExpression(BaseExpression left, TypenameExpression[] genericArguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Left = left;
             GenericArguments = genericArguments;

@@ -6,7 +6,7 @@ namespace SLThree
     public class UnaryRem : UnaryOperator
     {
         public override string Operator => "-";
-        public UnaryRem(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryRem(BaseExpression left, ISourceContext context, bool priority = false) : base(left, context, priority) { }
         public UnaryRem() : base() { }
         public override object GetValue(ExecutionContext context)
         {

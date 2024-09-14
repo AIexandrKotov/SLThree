@@ -14,12 +14,12 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public IndexExpression(BaseExpression expression, BaseExpression[] arguments, SourceContext context) : base(context)
+        public IndexExpression(BaseExpression expression, BaseExpression[] arguments, ISourceContext context) : base(context)
         {
             Expression = expression;
             Arguments = arguments;
         }
-        public IndexExpression(BaseExpression expression, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        public IndexExpression(BaseExpression expression, BaseExpression[] arguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Expression = expression;
             Arguments = arguments;

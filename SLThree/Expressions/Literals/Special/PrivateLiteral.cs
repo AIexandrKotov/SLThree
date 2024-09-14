@@ -1,11 +1,10 @@
-﻿using Pegasus.Common;
+﻿
 
 namespace SLThree
 {
     public class PrivateLiteral : Special
     {
-        public PrivateLiteral(SourceContext context) : base(context) { }
-        public PrivateLiteral(Cursor cursor) : base(cursor) { }
+        public PrivateLiteral(ISourceContext context) : base(context) { }
 
         public override string ExpressionToString() => "private";
         public override object GetValue(ExecutionContext context) => context.@this.Context.@private;

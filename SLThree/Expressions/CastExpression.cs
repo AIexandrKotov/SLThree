@@ -11,7 +11,7 @@ namespace SLThree
         public bool normal;
         public bool as_is;
 
-        public CastExpression(BaseExpression left, TypenameExpression type, SourceContext context) : base(context)
+        public CastExpression(BaseExpression left, TypenameExpression type, ISourceContext context) : base(context)
         {
             Left = left;
             Type = type;

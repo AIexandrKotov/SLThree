@@ -1,6 +1,5 @@
 ﻿using SLThree.Extensions;
 using SLThree.Native;
-using SLThree.sys;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -184,7 +183,7 @@ namespace SLThree
             }
             else if (type.IsTuple())
             {
-                return CreatorTuple.Create(linq.entuple((ITuple)o).ToArray());
+                return CreatorTuple.Create(((ITuple)o).Enumerate().ToArray());
             }
             return o;
         }

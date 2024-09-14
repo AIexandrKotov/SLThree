@@ -5,10 +5,10 @@ namespace SLThree
     public class InfiniteLoopStatement : BaseLoopStatement
     {
         public InfiniteLoopStatement() : base() { }
-        public InfiniteLoopStatement(StatementList cycleBody, SourceContext context) : base(cycleBody, context)
+        public InfiniteLoopStatement(StatementList cycleBody, ISourceContext context) : base(cycleBody, context)
         {
         }
-        public InfiniteLoopStatement(BaseStatement[] cycleBody, SourceContext context) : base(cycleBody, context)
+        public InfiniteLoopStatement(BaseStatement[] cycleBody, ISourceContext context) : base(cycleBody, context)
         {
         }
 

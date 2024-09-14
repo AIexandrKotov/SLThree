@@ -8,8 +8,8 @@ namespace SLThree
         public TypenameExpression TypeHint;
         public string Name;
         public NameExpression() : base() { }
-        public NameExpression(string name, SourceContext context) : this(name, null, context) { }
-        public NameExpression(string name, TypenameExpression typehint, SourceContext context) : base(context)
+        public NameExpression(string name, ISourceContext context) : this(name, null, context) { }
+        public NameExpression(string name, TypenameExpression typehint, ISourceContext context) : base(context)
         {
             Name = name;
             TypeHint = typehint;

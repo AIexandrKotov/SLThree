@@ -31,7 +31,26 @@ namespace SLThree.Extensions
                 return sr.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.None);
             }
         }
-        public static string Representation(this ExecutionContext context) => sys.slt.context_repr(context.wrap);
-        public static string Representation(this ContextWrap context) => sys.slt.context_repr(context);
+
+        public static object EvalExpression(this LanguageInformation.IParser parser, string s, ExecutionContext context = null)
+        {
+            if (context == null) context = new ExecutionContext();
+            return parser.ParseExpression(s, null).GetValue(context);
+        }
+
+        private static ExecutionContext InitPreseted(ExecutionContext preset)
+        {
+            var ret = new ExecutionContext(false, false);
+            if (preset != null) ret.implement(preset);
+            return ret;
+        }
+
+        public static ExecutionContext RunScript(this LanguageInformation.IParser parser, string s, string filename = null, ExecutionContext context = null, ExecutionContext preset = null)
+        {
+            var parsed = parser.ParseScript(s, filename);
+            var ret = context ?? InitPreseted(preset);
+            parsed.GetValue(ret);
+            return ret;
+        }
     }
 }

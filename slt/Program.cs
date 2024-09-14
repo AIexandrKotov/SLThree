@@ -68,7 +68,7 @@ namespace slt
         private static string GetArgument(string arg) => RunArguments.GetArgument(arg, ShortCommands);
         private static void InitSLThreeAssemblyInfo()
         {
-            SLThreeAssembly = Assembly.GetAssembly(typeof(SLTVersion));
+            SLThreeAssembly = Assembly.GetAssembly(typeof(Parser));
             REPLAssembly = Assembly.GetAssembly(typeof(Program));
             SLThreeVersion = new SLTVersion.Reflected();
             SLTREPLVersion = new REPLVersion.Reflected();
@@ -401,9 +401,9 @@ namespace slt
             foreach (var x in Assembly.GetExecutingAssembly().GetTypes()
                 .Where(x => x.FullName.StartsWith("slt.sys.") && !x.Name.StartsWith("<")).ToDictionary(x => x.Name, x => x))
             {
-                SLThree.sys.slt.sys_types.Add(x.Key, x.Value);
+                DotnetEnvironment.SystemTypes.Add(x.Key, x.Value);
             }
-            SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
+            DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
         }
 
         private static void AppendInitialLocales()

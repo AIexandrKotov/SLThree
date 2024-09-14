@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryUnequals : BinaryOperator
     {
         public override string Operator => "!=";
-        public BinaryUnequals(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryUnequals(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryUnequals() : base() { }
         public override object GetValue(ExecutionContext context)
         {

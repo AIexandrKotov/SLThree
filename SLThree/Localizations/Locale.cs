@@ -55,14 +55,14 @@ namespace SLThree
             var ass = Assembly.GetExecutingAssembly();
             RegistredLocales = ass
                 .GetManifestResourceNames()
-                .Where(x => x.StartsWith("SLThree.docs.locales."))
+                .Where(x => x.StartsWith("SLThree._locales."))
                 .Select(
                     x => {
                         using (var stream = ass.GetManifestResourceStream(x))
                         {
                             var script = stream.ReadStrings().Where(str => !string.IsNullOrWhiteSpace(str)).Select(str => SplitByFirst(str, '='));
                             return new Locale(
-                                Path.GetFileNameWithoutExtension(x).Replace("SLThree.docs.locales.", ""),
+                                Path.GetFileNameWithoutExtension(x).Replace("SLThree._locales.", ""),
                                 new ConcurrentDictionary<string, string>(script)
                             );
                         }

@@ -11,7 +11,7 @@ namespace SLThree
         public BaseExpression[] Expressions;
         private (ExecutionContext, bool, int)[] Caches;
 
-        public CreatorTuple(BaseExpression[] expressions, SourceContext context) : base(context)
+        public CreatorTuple(BaseExpression[] expressions, ISourceContext context) : base(context)
         {
             Expressions = expressions;
             Caches = new (ExecutionContext, bool, int)[expressions.Length];

@@ -4,7 +4,7 @@
     {
         public object Value;
         public Literal() : base() { }
-        public Literal(SourceContext context) : base(context) { }
+        public Literal(ISourceContext context) : base(context) { }
 
         private string rawRepresentation = "";
         public string RawRepresentation
@@ -19,12 +19,12 @@
     public abstract class Literal<T> : Literal
     {
         public Literal() : base() { }
-        public Literal(T value, SourceContext context) : base(context)
+        public Literal(T value, ISourceContext context) : base(context)
         {
             Value = value;
             RawRepresentation = Value?.ToString() ?? "null";
         }
-        public Literal(T value, string raw, SourceContext context) : base(context)
+        public Literal(T value, string raw, ISourceContext context) : base(context)
         {
             Value = value;
             RawRepresentation = raw;

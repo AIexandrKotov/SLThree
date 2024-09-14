@@ -1,6 +1,6 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using SLThree.sys;
+
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
@@ -346,7 +346,7 @@ namespace SLThree
         {
             var sb = new StringBuilder();
             var unnamed = Name == DefaultMethodName;
-            if (slt.is_abstract(Statements))
+            if (Statements.IsAbstract())
                 sb.Append("abstract ");
             else
             {

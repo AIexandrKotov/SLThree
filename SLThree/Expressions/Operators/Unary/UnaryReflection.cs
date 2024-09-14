@@ -2,7 +2,7 @@
 {
     public class UnaryReflection : UnaryOperator
     {
-        public UnaryReflection(BaseExpression left, SourceContext context) : base(left, context)
+        public UnaryReflection(BaseExpression left, ISourceContext context) : base(left, context)
         {
         }
 

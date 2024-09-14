@@ -6,7 +6,7 @@ namespace SLThree
     {
         public BaseExpression Right;
 
-        public StaticExpression(BaseExpression right, SourceContext context) : base(context)
+        public StaticExpression(BaseExpression right, ISourceContext context) : base(context)
         {
             Right = right;
         }

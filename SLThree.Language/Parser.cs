@@ -1,4 +1,5 @@
-﻿using SLThree.Extensions;
+﻿using Pegasus.Common;
+using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using SLThree.Visitors;
 using System;
@@ -7,40 +8,26 @@ using System.Linq;
 
 namespace SLThree
 {
-    public partial class Parser
+    public partial class Parser : LanguageInformation.IParser
     {
         public static readonly Parser This = new Parser();
+        public SourceContext _(Cursor cursor) => new SourceContext(cursor);
+        private static T Panic<T>(SLTException exception)
+        {
+            throw exception;
+        }
 
-        public BaseExpression ParseExpression(string s)
+        public BaseExpression ParseExpression(string s, string filename = null)
         {
             var ret = this.Parse("#EXPR# " + s).Cast<ExpressionStatement>().Expression;
             return ret;
         }
-        public object EvalExpression(string s, ExecutionContext context = null)
-        {
-            if (context == null) context = new ExecutionContext();
-            return ParseExpression(s).GetValue(context);
-        }
-
         public BaseStatement ParseScript(string s, string filename = null)
         {
             var ret = this.Parse("#SLT# " + s, filename);
             return ret;
         }
 
-        private ExecutionContext InitPreseted(ExecutionContext preset) {
-            var ret = new ExecutionContext(false, false);
-            if (preset != null) ret.implement(preset);
-            return ret;
-        }
-
-        public ExecutionContext RunScript(string s, string filename = null, ExecutionContext context = null, ExecutionContext preset = null)
-        {
-            var parsed = ParseScript(s, filename);
-            var ret = context ?? InitPreseted(preset);
-            parsed.GetValue(ret);
-            return ret;
-        }
 
         private BaseStatement[] GetStatements(BaseStatement statement)
         {
@@ -118,33 +105,6 @@ namespace SLThree
             iv.VisitExpression(right);
             if (!iv.done) throw new SyntaxError("Right of |> operator must be invokation", right.SourceContext);
             return right;
-        }
-
-        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body)
-        {
-            return Overload(arguments, body, new StatementList(new BaseStatement[0], body.SourceContext));
-        }
-        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body, BaseStatement other)
-        {
-            return Overload(arguments, body, new StatementList(new BaseStatement[1] { other }, body.SourceContext));
-        }
-        private ConditionExpression Overload(IList<NameExpression> arguments, StatementList body, StatementList other)
-        {
-            var condition = default(BaseExpression);
-            if (arguments != null)
-            {
-                foreach (var arg in arguments)
-                {
-                    var hint = arg.TypeHint;
-                    arg.TypeHint = null;
-                    if (condition == null)
-                        condition = new BinaryIs(arg, hint, arg.SourceContext);
-                    else condition = new BinaryAnd(condition, new BinaryIs(arg, hint, arg.SourceContext), arg.SourceContext);
-                }
-            }
-            else condition = new BoolLiteral(true, body.SourceContext);
-
-            return new ConditionExpression(condition, body, other, body.SourceContext);
         }
 
         #region Tree Searching
@@ -233,22 +193,6 @@ namespace SLThree
                 throw new LogicalError($"Unexpected named constraint{suffix}", wrongconstraint.SourceContext);
         }
 
-        //public static void NotSupportedNullContextCheck()
-
-        private FunctionArgument[] DefaultValueCheck(FunctionArgument[] arg)
-        {
-            //foreach (var x in arg)
-            //    if (x.DefaultValue != null)
-            //        UncachebleCheck(x.DefaultValue, " as default value");
-            return arg;
-        }
-        private FunctionArgument DefaultValueCheck(FunctionArgument x)
-        {
-            //if (x.DefaultValue != null)
-            //    UncachebleCheck(x.DefaultValue, " as default value");
-            return x;
-        }
-
         private BaseExpression ReorderStatic(StaticExpression expression)
         {
             //if (did.TryGetValue(expression, out var expr)) return expr;
@@ -282,11 +226,6 @@ namespace SLThree
                 return new BinaryAssign(func.FunctionName.CloneCast(), expression, expression.Right.SourceContext);
             UncachebleCheck(expression.Right);
             return expression;
-        }
-
-        private static T Panic<T>(SLTException exception)
-        {
-            throw exception;
         }
     }
 }

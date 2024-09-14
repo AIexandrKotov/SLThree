@@ -13,14 +13,14 @@ namespace SLThree
         private bool is_name_expr;
         private ExecutionContext counted_invoked;
 
-        public ConstraintExpression(NameExpression target, BaseExpression name, TemplateMethod.ConstraintDefinition left, SourceContext context) : base(context)
+        public ConstraintExpression(NameExpression target, BaseExpression name, TemplateMethod.ConstraintDefinition left, ISourceContext context) : base(context)
         {
             Name = name;
             Body = left;
             Target = target;
             DefaultTarget = false;
         }
-        public ConstraintExpression(BaseExpression name, TemplateMethod.ConstraintDefinition left, SourceContext context) : base(context)
+        public ConstraintExpression(BaseExpression name, TemplateMethod.ConstraintDefinition left, ISourceContext context) : base(context)
         {
             Name = name;
             Body = left;

@@ -6,7 +6,7 @@ namespace SLThree
     public class UnaryBitNot : UnaryOperator
     {
         public override string Operator => "~";
-        public UnaryBitNot(BaseExpression left, SourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryBitNot(BaseExpression left, ISourceContext context, bool priority = false) : base(left, context, priority) { }
         public UnaryBitNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {

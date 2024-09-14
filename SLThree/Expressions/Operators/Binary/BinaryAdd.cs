@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryAdd : BinaryOperator
     {
         public override string Operator => "+";
-        public BinaryAdd(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryAdd(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
         public BinaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {

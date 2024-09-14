@@ -10,10 +10,10 @@
         {
         }
 
-        protected BaseInstanceCreator(SourceContext context) : base(context)
+        protected BaseInstanceCreator(ISourceContext context) : base(context)
         {
         }
-        protected BaseInstanceCreator(bool priority, SourceContext context) : base(priority, context)
+        protected BaseInstanceCreator(bool priority, ISourceContext context) : base(priority, context)
         {
         }
     }

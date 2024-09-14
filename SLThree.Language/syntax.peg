@@ -1,0 +1,933 @@
+﻿@namespace SLThree
+@classname Parser
+@using System.Linq;
+@using System.Globalization;
+@using SLThree.Extensions;
+
+file <BaseStatement> 
+    = "#SLT#" _ v:statement_list _ EOF { v }
+    / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, _(state)) }
+
+statement_list <StatementList>
+    = st:statement<0,,_> { new StatementList(st, _(state)) }
+expr_statement_list <BlockExpression>
+    = st:statement<0,,_> { new BlockExpression(st, _(state)) }
+
+statement <BaseStatement>
+    = return_statement
+    / break_statement
+    / continue_statement
+    / foreach_statement
+    / while_statement
+    / do_statement
+    / fin_loop_statement
+    / infin_loop_statement
+    / try_statement
+    / throw_statement
+    / e:condition_statement { new ExpressionStatement(e, _(state)) }
+    / e:accord_expression { new ExpressionStatement(e, _(state)) }
+    / e:match_expression { new ExpressionStatement(e, _(state)) }
+    / e:context_expression { new ExpressionStatement(e, _(state)) }
+    / e:collection_expression { new ExpressionStatement(e, _(state)) }
+    / e:block_instance_expression { new ExpressionStatement(e, _(state)) }
+    / "static" _required_ e:method_definition_statement { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, _(state))), _(state)) }
+    / "static" _ e:method_definition_nswm { new ExpressionStatement(ReorderStaticMethod(new StaticExpression(e, _(state))), _(state)) }
+    / e:method_definition_statement { new ExpressionStatement(e, _(state)) }
+    / block_statement
+    / expression_statement
+    / ";" { new EmptyStatement(_(state)) }
+
+return_statement <ReturnStatement>
+    = "return" _ expr:expression _ ";" { new ReturnStatement(expr, _(state)) }
+    / "return" _ ";" { new ReturnStatement(_(state)) }
+    / "return" (_ expr:expression)? _ { Panic<ReturnStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], _(state))) }
+
+break_statement <BreakStatement>
+    = "break" _ ";" { new BreakStatement(_(state)) }
+    / "break" _ { Panic<BreakStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], _(state))) }
+
+continue_statement <ContinueStatement>
+    = "continue" _ ";" { new ContinueStatement(_(state)) }
+    / "continue" _ { Panic<ContinueStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], _(state))) }
+
+block_statement <StatementList>
+    = "{" _ st:statement_list _ "}" { st }
+    / "{" _ st:statement_list _ { Panic<StatementList>(new SyntaxError(Locale.Current["STX_Unclosed_{}"], _(state))) }
+
+block_expression <BlockExpression>
+    = "{" _ st:expr_statement_list _ "}" { st }
+    / "{" _ st:expr_statement_list _ { Panic<BlockExpression>(new SyntaxError(Locale.Current["STX_Unclosed_{}"], _(state))) }
+
+while_statement <WhileLoopStatement>
+    = "while" _ "(" _ cond:expression _ ")" _ body:statement { new WhileLoopStatement(cond, GetListStatement(body), _(state)) }
+    / "while" _ "(" _ ")" _ statement? { Panic<WhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
+    / "while" _required_ cond:expression { Panic<WhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], _(state))) }
+
+do_statement <DoWhileLoopStatement>
+    = "do" _ body:statement _ "while" _ "(" _ cond:expression _ ")" _ ";" { new DoWhileLoopStatement(cond, GetListStatement(body), _(state)) }
+    / "do" _ body:statement _ "while" _ "(" _ ")" _ statement? { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
+    / "do" _ body:statement _ "while" _required_ cond:expression { Panic<DoWhileLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], _(state))) }
+
+infin_loop_statement <InfiniteLoopStatement>
+    = "loop" _ body:block_statement { new InfiniteLoopStatement(GetListStatement(body), _(state)) }
+    / "loop" _ ";" { new InfiniteLoopStatement(GetListStatement(new EmptyStatement(_(state))), _(state)) }
+    / "loop" _required_ body:statement { new InfiniteLoopStatement(GetListStatement(body), _(state)) }
+
+fin_loop_statement <FiniteLoopStatement>
+    = "loop" _ "(" _ cond:expression _ ")" _ body:statement { new FiniteLoopStatement(cond, GetListStatement(body), _(state)) }
+    / "loop" _ "(" _ ")" _ statement? { Panic<FiniteLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
+
+foreach_statement <ForeachLoopStatement>
+    = "foreach" _ "(" _ n:req_arg_name _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), _(state)) }
+    / "foreach" _ "(" _ n:expression _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), _(state)) }
+    / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Foreach_Body"], _(state))) }
+    / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
+    / "foreach" _required_ cond:expression { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Loop_Head"], _(state))) }
+
+try_statement <TryStatement>
+    = "try" _ try_body:block_statement _ 
+      "catch" _ "(" _ catch_var:expression _ ")" _ catch_body:statement _
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, catch_var, GetListStatement(catch_body), finally_body, _(state)) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ catch_body:block_statement _
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, null     , catch_body, finally_body, _(state)) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ "(" _ catch_var:expression _ ")" _ catch_body:statement         { new TryStatement(try_body, catch_var, GetListStatement(catch_body), null        , _(state)) }
+    / "try" _ try_body:block_statement _ 
+      "catch" _ catch_body:block_statement                                      { new TryStatement(try_body, null     , catch_body, null        , _(state)) }
+    / "try" _ try_body:block_statement _ 
+      "finally" _ finally_body:block_statement                                  { new TryStatement(try_body, null     , null      , finally_body, _(state)) }
+    / "try" _ try_body:block_statement                                          { new TryStatement(try_body, null     , null      , null        , _(state)) }
+
+throw_statement <ThrowStatement>
+    = "throw" _required_ expr:expression _ ";" { new ThrowStatement(expr, _(state)) }
+    / "throw" _required_ expr:expression _ { Panic<ThrowStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], _(state))) }
+
+expression_as_return <BaseStatement>
+    = block_statement
+    / value:expression { new ReturnStatement(value, _(state)) }
+
+expression_as_statement <BaseStatement>
+    = block_statement
+    / value:expression { new ExpressionStatement(value, _(state)) }
+
+expression_statement <ExpressionStatement> 
+    = value:expression _ ";" { new ExpressionStatement(value, _(state)) }
+    / expression _ { Panic<ExpressionStatement>(new SyntaxError(Locale.Current["STX_Expected_Semicolon"], _(state))) }
+
+expression <BaseExpression>
+    = binary_9
+
+binary_9 <BaseExpression> -memoize
+    = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=" / "??=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError(string.Format(Locale.Current["STX_Keyword_Assign"], left), _(state))) }
+    / left:binary_9 _ "|>" _ right:binary_7 { InjectFirst(left, right) }
+    / left:binary_7 _ "-->" _ right:(binary_9 / block_expression) { new BinaryGetRuntimeValue(left, right, _(state)) }
+    / left:binary_7 _ "->" _ right:(binary_9 / block_expression) { new BinaryGetValue(left, right, _(state)) }
+    / "static" _required_ left:expression { ReorderStatic(new StaticExpression(left, _(state))) }
+    / block_expression
+    / condition_expression
+    / accord_expression
+    / match_expression
+    / method_definition_expression
+    / "*" _ left:block_expression { new DereferenceExpression(left, _(state)) }
+    / "&" _ left:block_expression { new ReferenceExpression(left, _(state)) }
+    / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, _(state)) }
+    / left:arg_name _ "=" _ right:binary_9 { new BinaryAssign(left, right, _(state)) }
+    / left:binary_7 _ "=" _ right:binary_9 { new BinaryAssign(left, right, _(state)) }
+    / left:binary_7 _ "+=" _ right:binary_9 { new BinaryAssign(left, new BinaryAdd(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "-=" _ right:binary_9 { new BinaryAssign(left, new BinaryRem(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "*=" _ right:binary_9 { new BinaryAssign(left, new BinaryMultiply(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "/=" _ right:binary_9 { new BinaryAssign(left, new BinaryDivide(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "%=" _ right:binary_9 { new BinaryAssign(left, new BinaryMod(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "&=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitAnd(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "|=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitOr(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "^=" _ right:binary_9 { new BinaryAssign(left, new BinaryBitXor(left, right, _(state)), _(state)) }
+    / left:binary_7 _ "??=" _ right:binary_9 { new BinaryAssign(left, new NullCoalescing(left, right, _(state)), _(state)) }
+    / ternary_0
+    
+ternary_0 <BaseExpression> -memoize
+    = cond:ternary_0 _ "?" _ t:expression _ ":" _ f:expression { new TernaryOperator(cond, t, f, _(state)) }
+    / binary_8
+
+binary_8 <BaseExpression>
+    = left:binary_7 _ "-?" _ right:binary_8 { new SafeExpression(left, right, _(state)) }
+    / left:binary_7 _ "??" _ right:binary_8 { new NullCoalescing(left, right, _(state)) }
+    / binary_7
+
+binary_7 <BaseExpression> -memoize
+    = left:binary_7 _ "||" _ right:binary_5 { new BinaryOr(left, right, _(state)) }
+    / binary_5
+
+binary_6 <BaseExpression> -memoize
+    = left:binary_6 _ "&&" _ right:binary_5 { new BinaryAnd(left, right, _(state)) }
+    / binary_5
+
+binary_5 <BaseExpression> -memoize
+    = left:binary_5 _ "&&" _ right:binary_4 { new BinaryAnd(left, right, _(state)) }
+    / left:binary_5 _ "&" _ right:binary_4 { new BinaryBitAnd(left, right, _(state)) }
+    / left:binary_5 _ "^" _ right:binary_4 { new BinaryBitXor(left, right, _(state)) }
+    / left:binary_5 _ "|" _ right:binary_4 { new BinaryBitOr(left, right, _(state)) }
+    / binary_4
+
+binary_4 <BaseExpression> -memoize
+    = left:binary_4 _ "==" _ right:binary_3 { new BinaryEquals(left, right, _(state)) }
+    / left:binary_4 _ "!=" _ right:binary_3 { new BinaryUnequals(left, right, _(state)) }
+    / left:binary_4 _ "is" _required_ right:typename _ expr:primary { new BinaryIsAssign(left, right, expr, _(state)) }
+    / left:binary_4 _ "is" _required_ right:typename { new BinaryIs(left, right, _(state)) }
+    / binary_3
+
+binary_3 <BaseExpression> -memoize
+    = left:binary_3 _ ">=" _ right:binary_2 { new BinaryGreaterThanEquals(left, right, _(state)) }
+    / left:binary_3 _ "<=" _ right:binary_2 { new BinaryLessThanEquals(left, right, _(state)) }
+    / left:binary_3 _ ">" _ right:binary_2 { new BinaryGreaterThan(left, right, _(state)) }
+    / left:binary_3 _ "<" _ right:binary_2 { new BinaryLessThan(left, right, _(state)) }
+    / binary_2
+
+binary_2 <BaseExpression> -memoize
+    = left:binary_2 _ "+" _ right:binary_1 { new BinaryAdd(left, right, _(state)) }
+    / left:binary_2 _ "-" _ right:binary_1 { new BinaryRem(left, right, _(state)) }
+    / binary_1
+
+binary_1 <BaseExpression> -memoize
+    = left:binary_1 _ "*" _ right:binary_0 { new BinaryMultiply(left, right, _(state)) }
+    / left:binary_1 _ "/" _ right:binary_0 { new BinaryDivide(left, right, _(state)) }
+    / left:binary_1 _ "%" _ right:binary_0 { new BinaryMod(left, right, _(state)) }
+    / binary_0
+
+binary_0 <BaseExpression> -memoize
+    = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, _(state)) }
+    / "^*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)), t, _(state)) }
+    / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)), _(state)) }
+    / "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)) }
+    / "^*" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)), null, _(state)) }
+    / "^" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)), _(state)) }
+    / lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)) }
+    / left:binary_0 _ "::" _ right:name 
+    _ gen_args:(<IList<TypenameExpression>> "<" _ gen_args_i:typename<0,,_ "," _> _ ">" {gen_args_i})? 
+    _ args:    (<IList<TypenameExpression>> "(" _ args_i    :typename<0,,_ "," _> _ ")" {args_i    })? {
+        new ReflectionExpression(left, right, GetOptional(gen_args)?.ToArray(), GetOptional(args)?.ToArray(), _(state))
+    }
+    / left:binary_min { left }
+
+binary_min <BaseExpression>
+    = unary
+
+unary <BaseExpression>
+    = "+" _ left:binary_min { new UnaryAdd(left, _(state)) }
+    / i8:("-" ([0-9_]+ ("i8"))) { new SByteLiteral(sbyte.Parse(i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), i8, _(state)) }
+    / i16:("-" ([0-9_]+ ("i16"))) { new ShortLiteral(short.Parse(i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, _(state)) }
+    / i32:("-" ([0-9_]+ ("i32"))) { new IntLiteral(int.Parse(i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), i32, _(state)) }
+    / i64:("-" ([0-9_]+ ("i64"))) { new LongLiteral(long.Parse(i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, _(state)) }
+    / "-" _ left:binary_min { new UnaryRem(left, _(state)) }
+    / "~" _ left:binary_min { new UnaryBitNot(left, _(state)) }
+    / "!" _ left:binary_min { new UnaryNot(left, _(state)) }
+    / "^*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, _(state)) }
+    / "^*" _ left:binary_min { new UnaryGetChooser(left, null, _(state)) }
+    / "^" _ left:binary_min { new UnaryChoose(left, _(state)) }
+    / "@@" _ left:typename { new UnaryStaticReflection(left, _(state)) }
+    / "@" _ left:typename { new UnaryReflection(left, _(state)) }
+    / primary
+
+using_expression <UsingExpression>
+    = "using" _required_ u:using  
+    using_alias:(<BaseExpression> _required_ "as" _required_ name:primary {name})? {
+        new UsingExpression(GetOptional(using_alias), u, _(state))
+    }
+
+condition_statement <ConditionExpression>
+    = expr:condition_expression _ ";" { expr }
+    / "if" _ "(" _ cond:expression _ ")" _ t:statement _ "else" _ f:statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), _(state)) }
+    / condition_expression_1
+    / "if" _ "(" _ cond:expression _ ")" _ t:statement { new ConditionExpression(cond, GetListStatement(t), new StatementList(new BaseStatement[0], _(state)), _(state)) }
+    / "if" _ "(" _ ")" _ block_statement? { Panic<ConditionExpression>(new SyntaxError(Locale.Current["STX_EmptyCondition"], _(state))) }
+
+condition_expression <ConditionExpression>
+    = condition_expression_1
+    / "if" _ "(" _ ")" _ statement? { Panic<ConditionExpression>(new SyntaxError(Locale.Current["STX_EmptyCondition"], _(state))) }
+
+condition_expression_1 <ConditionExpression>
+    = "if" _ "(" _ cond:expression _ ")" _ t:expression_as_statement _ "else" _ f:expression_as_statement { new ConditionExpression(cond, GetListStatement(t), GetListStatement(f), _(state)) }
+
+accord_expression <BaseExpression>
+    = "accord" _ "(" _ expr:expression<0,,_ "," _> _ ")" _ "{" _ 
+          matches:accord_node<1,,_>
+          _ ";"?
+    _ "}" { new AccordExpression(expr.ToArray(), matches, _(state)) }
+
+accord_node <ValueTuple<IList<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>>, BaseStatement>>
+    = "(" _ left:(<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>> value:(<BaseExpression> b:binary_8 _ ":" _ {b})? constr:constraint { new ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>(GetOptional(value), constr) })<0,,_ "," _> _ ")"
+      _ "=>" _ right:statement
+    { new ValueTuple<IList<ValueTuple<BaseExpression, TemplateMethod.ConstraintDefinition>>, BaseStatement>(left, right) }
+
+match_expression <BaseExpression>
+    = "match" _ "(" _ expr:expression _ ")" _ "{" _ 
+          matches:match_node<1,,_>
+          _ ";"?
+    _ "}" { new MatchExpression(expr, matches, _(state)) }
+
+match_node <ValueTuple<IList<BaseExpression>, BaseStatement>>
+    = left:(<IList<BaseExpression>>"(" _ ")" { null } / exprs:binary_8<1,,_ "," _> { exprs })
+      _ "=>" _ right:statement
+    { new ValueTuple<IList<BaseExpression>, BaseStatement>(left, right) }
+
+withoutinvokation_primary <BaseExpression> -memoize
+    = left:withoutinvokation_primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, _(state)) }
+    / left:withoutinvokation_primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, _(state)) }
+    / left:withoutinvokation_primary _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
+    / onlyname_access
+
+primary <BaseExpression> -memoize
+    = left:primary _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
+    / left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
+    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
+    / left:primary _ "." _ "?" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, _(state)) }
+    / left:primary _ "."? _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, _(state)) }
+    / left:primary _ "[" _ lower:unary? _ ".." excl:"="? _ upper:unary? _ "]" { new SliceExpression(left, GetOptional(lower), GetOptional(upper), GetOptional(excl) == null, _(state)) }
+    / left:primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, _(state)) }
+    / left:primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, _(state)) }
+    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, _(state)) }
+    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, _(state)) }
+    / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
+    / "*" _ left:(primary/block_expression) { new DereferenceExpression(left, _(state)) }
+    / "&" _ left:(primary/block_expression) { new ReferenceExpression(left, _(state)) }
+    / "$" x:block_statement { new MacrosDefinition(x, _(state)) }
+    / "$(" _ x:expression _ ")" { new MacrosDefinition(x, _(state)) }
+    / "(" _ x:expression _ ")" { x.RaisePriority() }
+    / "new" _required_ "using" _required_ u: using { u }
+    / new_context_expression
+    / collection_expression
+    / using_expression
+    / instance_expression
+    / context_expression
+    / constraint_expression
+    / "(" _ args:req_arg_name<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), _(state)) }
+    / "(" _ args:expression<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), _(state)) }
+    / special
+    / literal
+    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_[]"], _(state))) }
+    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_()"], _(state))) }
+
+constraint_expression <ConstraintExpression>
+    = "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, null, c, _(state)) }
+    / "constraint" _required_ n:primary  _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, n, c, _(state)) }
+    / "constraint" _required_ n:primary _ ":" _ c:constraint { new ConstraintExpression(n, c, _(state)) }
+    / "constraint" _ ":" _ c:constraint { new ConstraintExpression(null, c, _(state)) }
+
+generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = old_generic_invokation
+    / constraint_generic_invokation
+    / maki:generic_making _ ":" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, new MacrosDefinition(expr, _(state))) }
+    / maki:generic_making _ "=" _ expr:block_or_primary { new ValueTuple<BaseExpression, BaseExpression>(maki, expr) }
+    / ":" _ expr:block_or_primary { 
+        new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("runtime", _(state)), _(state)), 
+            new MacrosDefinition(expr, _(state)))
+    }
+    / "=" _ expr:block_or_primary { 
+        new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("runtime", _(state)), _(state)), 
+        expr)
+    }
+
+old_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = "as" _required_ "type" _ ":" _ expr:typename { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", _(state)), _(state)), 
+        expr) }
+    / "as" _required_ "type" _ "=" _ expr:block_expression { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("type", _(state)), _(state)), 
+        expr) }
+
+constraint_generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
+    = "as" _required_ "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", _(state)), _(state)), new ConstraintExpression(x, null, c, _(state))) }
+    / "as" _required_ "constraint" _ ":" _ c:constraint { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", _(state)), _(state)), new ConstraintExpression(null, c, _(state))) }
+    / "as" _required_ "constraint" _ "=" _ expr:block_expression { new ValueTuple<BaseExpression, BaseExpression>(
+            new InvokeTemplateExpression.GenericMakingDefinition(new NameExpression("constraint", _(state)), _(state)), 
+        expr) }
+
+block_or_primary <BaseExpression>
+    = block_expression / primary
+
+generic_making <BaseExpression>
+    = "as" _required_ maki:primary { new InvokeTemplateExpression.GenericMakingDefinition(maki, _(state)) }
+
+constraint <TemplateMethod.ConstraintDefinition> -memoize
+    = left:constraint _ "+" _ right:constraint { new TemplateMethod.CombineConstraintDefinition(left, right, _(state)) }
+    / constraint_intersect
+
+constraint_intersect <TemplateMethod.ConstraintDefinition> -memoize
+    = left:constraint_intersect _ "|" _ right:constraint_intersect { new TemplateMethod.IntersectionConstraintDefinition(left, right, _(state)) }
+    / constraint_unary
+
+constraint_unary <TemplateMethod.ConstraintDefinition> -memoize
+    = "!" _ left:constraint_unary { new TemplateMethod.NotConstraintDefinition(left, _(state)) }
+    / constraint_primary
+
+constraint_primary <TemplateMethod.ConstraintDefinition>
+    = "(" _ cnstr:constraint _ ")" { (TemplateMethod.ConstraintDefinition)cnstr.RaisePriority() }
+    / "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
+        new ReturnStatement(func, _(state)), _(state)
+    ) }
+    / name:typename { new TemplateMethod.NameConstraintDefinition(name, _(state)) }
+    / name:onlyname_access { new TemplateMethod.NameConstraintDefinition(name, _(state)) }
+
+new_context_expression <BaseExpression>
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        new context Name: TBase
+    = "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> { 
+        new CreatorContext(name, ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        new context Name
+    / "new" _required_ "context" _required_ name:primary { 
+        new CreatorContext(name, _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        new context: TBase
+    / "new" _required_ "context" _ ":" _ ancestors:primary<1,,_ "," _> { 
+        new CreatorContext(ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        new context
+    / "new" _required_ "context" { 
+        new CreatorContext(_(state))
+    }
+
+context_expression <BaseExpression>
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        context Name: TBase {}
+    = "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        new CreatorContext(name, ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        context Name {}
+    / "context" _required_ name:primary
+    _ body:context_body { 
+        new CreatorContext(name, body, _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        context: TBase {}
+    / "context" _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        new CreatorContext(ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        context {}
+    / "context"
+    _ body:context_body { 
+        new CreatorContext(body, _(state))
+    }
+
+context_body <CreatorContextBody>
+    = _ st:block_statement { new CreatorContextBody(st.Statements, st.SourceContext) }
+
+collection_expression <BaseExpression>
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T(args) Name {};
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ body:dictionary_body { 
+        CreatorDictionary.NamedCaseTypeArgsBody(t, name, args.ToArray(), body.ToArray(), _(state))
+    }
+//--------CREATOR--COLLECTION------------------------------------------------
+//        new T(args) Name {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ body:collection_body { 
+        CreatorCollection.NamedCaseTypeArgsBody(t, name, args.ToArray(), body.ToArray(), _(state))
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ body:dictionary_body { 
+        CreatorDictionary.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), _(state))
+    }
+//--------CREATOR--COLLECTION------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ body:collection_body { 
+        CreatorCollection.CaseTypeArgsBody(t, args.ToArray(), body.ToArray(), _(state))
+    }
+//--------CREATOR--NEW--ARRAY------------------------------------------------
+//        new T[10];
+    / "new" _required_ tp:typename _ "[" _ size:expression _ "]" { new CreatorNewArray(tp, size, _(state)) }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:dictionary_body { 
+        CreatorDictionary.NamedCaseTypeBody(t, name, body.ToArray(), _(state))
+    }
+//--------CREATOR--COLLECTION------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:collection_body { 
+        CreatorCollection.NamedCaseTypeBody(t, name, body.ToArray(), _(state))
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:dictionary_body { 
+        CreatorDictionary.CaseTypeBody(t, body.ToArray(), _(state))
+    }
+//--------CREATOR--COLLECTION------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:collection_body { 
+        CreatorCollection.CaseTypeBody(t, body.ToArray(), _(state))
+    }
+
+collection_body <IList<BaseExpression>>
+    = "{" _ entries:expression<1,,_ "," _> _ (_ "," _)? "}" { entries }
+
+dictionary_body <IList<CreatorDictionary.DictionaryEntry>>
+    = "{" _ entries:dictionary_entry<1,,_ "," _> _ (_ "," _)? "}" { entries }
+
+dictionary_entry <CreatorDictionary.DictionaryEntry>
+    = left:expression _ ":" _ right:expression { new CreatorDictionary.DictionaryEntry(left, right, _(state)) } 
+
+instance_expression <BaseExpression>
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name: TBase {};
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name: TBase;
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
+        CreatorInstance.NamedCaseTypeArgsInheritance(t, name, args.ToArray(), ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args): TBase {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeArgsBodyInheritance(t, args.ToArray(), ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args): TBase;
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
+        CreatorInstance.CaseTypeArgsInheritance(t, args.ToArray(), ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name: TBase {}; 
+    / "new" _required_ t:typename _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name: TBase;
+    / "new" _required_ t:typename _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
+        CreatorInstance.NamedCaseTypeInheritance(t, name, ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T: TBase {}; 
+    / "new" _required_ t:typename 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeBodyInheritance(t, ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T: TBase;
+    / "new" _required_ t:typename 
+    _ ":" _ ancestors:primary<1,,_ "," _> { 
+        CreatorInstance.CaseTypeInheritance(t, ancestors.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name;
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary { 
+        CreatorInstance.NamedCaseTypeArgs(t, name, args.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeArgsBody(t, args.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args);
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")"  { 
+        CreatorInstance.CaseTypeArgs(t, args.ToArray(), _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeBody(t, name, body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name;
+    / "new" _required_ t:typename _ name:primary { 
+        CreatorInstance.NamedCaseType(t, name, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeBody(t, body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T;
+    / "new" _required_ t:typename  { 
+        CreatorInstance.CaseType(t, _(state))
+    }
+//--------CREATOR--DICTIONARY------------------------------------------------
+//        new {};
+    / "new"
+    _ body:dictionary_body { 
+        CreatorDictionary.CaseShort(body.ToArray(), _(state))
+    }
+//--------CREATOR--COLLECTION------------------------------------------------
+//        new {};
+    / "new"
+    _ body:collection_body { 
+        CreatorCollection.CaseShort(body.ToArray(), _(state))
+    }
+//--------CREATOR--CONTEXT-------------------------------------------------
+//        new {}
+    / "new"
+    _ body:context_body { 
+        new CreatorContext(body, _(state), false)
+    }
+
+block_instance_expression <BaseExpression>
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name: TBase {};
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args): TBase {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeArgsBodyInheritance(t, args.ToArray(), ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name: TBase {}; 
+    / "new" _required_ t:typename _ name:primary
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T: TBase {}; 
+    / "new" _required_ t:typename 
+    _ ":" _ ancestors:primary<1,,_ "," _> 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeBodyInheritance(t, ancestors.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) Name {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T(args) {};
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeArgsBody(t, args.ToArray(), body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T Name {};
+    / "new" _required_ t:typename _ name:primary
+    _ body:context_body { 
+        CreatorInstance.NamedCaseTypeBody(t, name, body, _(state))
+    }
+//--------CREATOR--INSTANCE------------------------------------------------
+//        new T {};
+    / "new" _required_ t:typename 
+    _ body:context_body { 
+        CreatorInstance.CaseTypeBody(t, body, _(state))
+    }
+
+access_right <BaseExpression> -memoize
+    = left:name _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
+    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
+    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), _(state)) }
+    / left:name _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), _(state)) }
+    / right:access_right { right }
+    / right:name { right }
+
+onlyname_access <BaseExpression> -memoize
+    = left:special _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
+    / right:special { right }
+
+using <CreatorUsing>
+    = t_name:typename { new CreatorUsing(t_name, _(state)) }
+
+method_definition_expression <FunctionDefinition>
+    = method_definition_statement1
+    / mods_name:method_mods_name?
+      generics:method_generic_part? 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
+      {
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), GetListStatement(new ReturnStatement(value, _(state))), GetOptional(ret), _(state))
+      }
+    / generics:method_generic_part?
+      arg:func_arg
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ "=>" _ value:expression
+      {
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], new FunctionArgument[1] {(arg)}, GetListStatement(new ReturnStatement(value, _(state))), GetOptional(ret), _(state))
+      }
+    / abstract_method_expression
+method_definition_statement <FunctionDefinition>
+    = method_definition_statement1
+    / abstract_method_statement
+
+abstract_method_statement <FunctionDefinition> = func:abstract_method_expression _ ";" { func }
+abstract_method_expression <FunctionDefinition>
+    = "abstract" _required_
+      name:withoutinvokation_primary _
+      generics:method_generic_part?
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})?
+      {
+          new FunctionDefinition(new string[1] { "abstract" }, name, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), null, GetOptional(ret), _(state))
+      }
+method_definition_statement1 <FunctionDefinition>
+    = mods_name:method_mods_name?
+      generics:method_generic_part? 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _ body:block_statement {
+          new FunctionDefinition(GetOptional(mods_name)?.Item1 ?? new string[0], GetOptional(mods_name)?.Item2, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), _(state))
+      }
+    
+
+method_definition_nswm <FunctionDefinition>
+    = generics:method_generic_part? 
+      "(" _ args:func_arg<0,,_ "," _> _ ")" 
+      ret:(<TypenameExpression> _ ":" _ t:typename {t})? _
+      body:block_statement {
+          new FunctionDefinition(new string[0], null, GetOptional(generics)?.ToArray() ?? new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>[0], (args.ToArray()), body, GetOptional(ret), _(state))
+      }
+
+method_generic_part <IList<ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>>
+    = "<" _ generic_args:generic_arg<1,,_ "," _> _ ">" _ { generic_args }
+
+generic_arg <ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>
+    = generic_name:name _ ":" _ cnstr:constraint { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, cnstr) }
+    / generic_name:name { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, null) }
+
+method_mods_name <Tuple<string[], BaseExpression>>
+    = mods:method_modificator<1,,_required_> _required_ name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(mods.ToArray(), name) }
+    / mods:method_modificator<1,,_required_> _ { new Tuple<string[], BaseExpression>(mods.ToArray(), null) }
+    / name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(new string[0], name) }
+
+method_modificator
+    = "abstract"
+    / "recursive"
+    / "explicit"
+    / "params"
+    / "native"
+    / "template"
+
+typename <TypenameExpression>
+    = t_node:typename_node _ "<" _ t_list:typename<1,,_ "," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), _(state)) }
+    / t_node:typename_node { new TypenameExpression(t_node, _(state)) }
+
+typename_node <BaseExpression> -memoize
+    = left:typename_node _ "." _ right:name { new MemberAccess(left, right, _(state)) }
+    / special
+
+func_arg <FunctionArgument>
+    = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, _(state)) }
+    / name:arg_name { new FunctionArgument(name, _(state)) }
+
+arg_name <NameExpression>
+    = req_arg_name
+    / name
+
+req_arg_name <NameExpression>
+    = t:typename _ n:name { n.Hint(t) }
+
+name_literal <BaseExpression>
+    = b:("true"/"false") { new BoolLiteral(bool.Parse(b), _(state)) }
+    / "null" { new NullLiteral(_(state)) }
+
+special <BaseExpression>
+    = n:name { GetSpecialName(n) }
+
+literal <BaseExpression>
+    = percent_literal
+    / float_literal
+
+    / binary_num_literal
+    / octal_num_literal
+    / hex_num_literal
+    / num_literal
+
+    / multiline_interpolated_string
+    / interpolated_string
+    / multiline_string_literal
+    / string_literal
+    / char_literal
+
+percent_literal <DoubleLiteral>
+    = f64:([0-9_]+ ("."[0-9_]+)? "%") { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", "").Replace("%", ""), CultureInfo.InvariantCulture) / 100.0, f64, _(state)) }
+
+float_literal <BaseExpression>
+    = f32:([0-9_]+ ("." [0-9_]+)? ("f32"))    { new FloatLiteral(float.Parse(f32.Replace("f32", "").Replace("_", ""), CultureInfo.InvariantCulture), f32, _(state)) }
+    / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), f64, _(state)) }
+    / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), f64, _(state)) }
+
+binary_num_literal <BaseExpression>
+    = "0b" i8:([01_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 2), "0b"+i8, _(state)) }
+    / "0b" u8:([01_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 2), "0b"+u8, _(state)) }
+    / "0b" i16:([01_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 2), "0b"+i16, _(state)) }
+    / "0b" u16:([01_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 2), "0b"+u16, _(state)) }
+    / "0b" i32:([01_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 2), "0b"+i32, _(state)) }
+    / "0b" u32:([01_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 2), "0b"+u32, _(state)) }
+    / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), "0b"+u64, _(state)) }
+    / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), "0b"+i64, _(state)) }
+    / "0b" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], _(state))) }
+
+octal_num_literal <BaseExpression>
+    = "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), "0o"+i8, _(state)) }
+    / "0o" u8:([0-7_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 8), "0o"+u8, _(state)) }
+    / "0o" i16:([0-7_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 8), "0o"+i16, _(state)) }
+    / "0o" u16:([0-7_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 8), "0o"+u16, _(state)) }
+    / "0o" i32:([0-7_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 8), "0o"+i32, _(state)) }
+    / "0o" u32:([0-7_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 8), "0o"+u32, _(state)) }
+    / "0o" u64:([0-7_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 8), "0o"+u64, _(state)) }
+    / "0o" i64:([0-7_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 8), "0o"+i64, _(state)) }
+    / "0o" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_OLiteral"], _(state))) }
+
+hex_num_literal <BaseExpression>
+    = "0x" i8:([0-9A-Fa-f_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), "0x"+i8, _(state)) }
+    / "0x" u8:([0-9A-Fa-f_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), "0x"+u8, _(state)) }
+    / "0x" i16:([0-9A-Fa-f_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 16), "0x"+i16, _(state)) }
+    / "0x" u16:([0-9A-Fa-f_]+ ("u16"))     { new UShortLiteral (Convert.ToUInt16   (u16.Replace("u16", "").Replace("_", ""), 16), "0x"+u16, _(state)) }
+    / "0x" i32:([0-9A-Fa-f_]+ ("i32"))     { new IntLiteral    (Convert.ToInt32    (i32.Replace("i32", "").Replace("_", ""), 16), "0x"+i32, _(state)) }
+    / "0x" u32:([0-9A-Fa-f_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), "0x"+u32, _(state)) }
+    / "0x" u64:([0-9A-Fa-f_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), "0x"+u64, _(state)) }
+    / "0x" i64:([0-9A-Fa-f_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), "0x"+i64, _(state)) }
+    / "0x" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_XLiteral"], _(state))) }
+
+num_literal <BaseExpression>
+    = i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), i8, _(state)) }
+    / u8:([0-9_]+ ("u8"))       { new ByteLiteral   (byte.Parse     (u8.Replace("u8", "").Replace("_", ""), CultureInfo.InvariantCulture), u8, _(state)) }
+    / i16:([0-9_]+ ("i16"))     { new ShortLiteral  (short.Parse    (i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, _(state)) }
+    / u16:([0-9_]+ ("u16"))     { new UShortLiteral (ushort.Parse   (u16.Replace("u16", "").Replace("_", ""), CultureInfo.InvariantCulture), u16, _(state)) }
+    / i32:([0-9_]+ ("i32"))     { new IntLiteral    (int.Parse      (i32.Replace("i32", "").Replace("_", ""), CultureInfo.InvariantCulture), i32, _(state)) }
+    / u32:([0-9_]+ ("u32"))     { new UIntLiteral   (uint.Parse     (u32.Replace("u32", "").Replace("_", ""), CultureInfo.InvariantCulture), u32, _(state)) }
+    / u64:([0-9_]+ ("u64"))     { new ULongLiteral  (ulong.Parse    (u64.Replace("u64", "").Replace("_", ""), CultureInfo.InvariantCulture), u64, _(state)) }
+    / i64:([0-9_]+ ("i64")?)    { new LongLiteral   (long.Parse     (i64.Replace("i64", "").Replace("_", ""), CultureInfo.InvariantCulture), i64, _(state)) }
+    
+keyword
+    = "while" / "if" / "else" / "foreach" / "return" / "break" / "continue" / "static" / "do" / "loop"
+    / "using" / "context" / "new" / "match"
+    / "self" / "upper" / "this" / "global" / "super" / "private"
+    / "try" / "catch" / "finally" / "throw"
+
+name <NameExpression>
+    = u:unicode {
+        new NameExpression(u, _(state))
+    }
+
+unicode
+    = name_not_digit name_digit*
+
+name_digit
+    = first:.&{ first == "_" || char.IsLetter(first[0]) || char.IsDigit(first[0]) }
+
+name_not_digit
+    = first:.&{ first == "_" || char.IsLetter(first[0]) }
+
+
+multiline_interpolated_string <InterpolatedString> = "$\"\"\"" chars:multiline_interpolated_start exp:multiline_interpolated_expression* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
+    new InterpolatedString(chars, exp, _(state))
+}
+
+multiline_interpolated_expression <ValueTuple<BaseExpression, string>> = ("{" _ expr:interpolation _ "}" s:multiline_interpolated_mid?) { new ValueTuple<BaseExpression, string>(expr, s.JoinIntoString("")) }
+
+multiline_interpolated_start = chars:multiline_interpolated_mid? { chars.JoinIntoString("") }
+
+multiline_interpolated_mid = chars:multiline_interpolated_element+ { chars.JoinIntoString("") }
+
+multiline_interpolated_element
+    = interpolation_escape
+    / string_escape
+    / [^\\\t\"{}]
+
+interpolated_string <InterpolatedString> = "$\"" chars:interpolated_start exp:interpolated_expression* ("\"" / #ERROR{ "Expected '\"'" }) {
+    new InterpolatedString(chars, exp, _(state))
+}
+
+interpolated_expression <ValueTuple<BaseExpression, string>> = ("{" _ expr:interpolation _ "}" s:interpolated_mid?) { new ValueTuple<BaseExpression, string>(expr, s.JoinIntoString("")) }
+
+interpolated_start = chars:interpolated_mid? { chars.JoinIntoString("") }
+
+interpolated_mid = chars:interpolated_element+ { chars.JoinIntoString("") }
+
+interpolated_element
+    = interpolation_escape
+    / string_escape
+    / [^\\\t\r\n\"{}]
+
+interpolation_escape
+    = "{{" { "{{" }
+    / "}}" { "}}" }
+
+interpolation <BaseExpression>
+    = expression
+    
+multiline_string_literal <StringLiteral> = "\"\"\"" chars:multiline_string_element* ("\"\"\"" / #ERROR{ "Expected '\"'" }) {
+    new StringLiteral(string.Concat(chars), _(state))
+}
+
+string_literal <StringLiteral> = "\"" chars:string_element* ("\"" / #ERROR{ "Expected '\"'" }) {
+    new StringLiteral(string.Concat(chars), _(state))
+}
+
+char_literal <CharLiteral>
+    = "'" c:char_element "'" { new CharLiteral(c[0], _(state)) }
+
+char_element
+    = char_escape
+    / string_element
+
+char_escape
+    = "\\\\'" { "'" }
+
+multiline_string_element
+    = string_escape
+    / [^\\\t\"]
+
+string_element
+    = string_escape
+    / [^\\\t\r\n\"]
+
+string_escape
+    = "\\\\" { "\\" }
+    / "\\t" { "\t" }
+    / "\\n" { "\n" }
+    / "\\r" { "\r" }
+    / "\\\"" { "\"" }
+
+comment
+    = "//" ([^\r\n]*)
+
+_required_
+    = [ \t\r\n] _ { " " }
+
+_
+    = [ \t\r\n]* (comment+ _)? { "" }
+
+EOF = !. / comment / c:. { Panic<string>(new UnexpectedError(c[0], _(state))) }

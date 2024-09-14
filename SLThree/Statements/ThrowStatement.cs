@@ -7,7 +7,7 @@ namespace SLThree
     public class ThrowStatement : BaseStatement
     {
         public BaseExpression ThrowExpression;
-        public ThrowStatement(BaseExpression expression, SourceContext context) : base(context)
+        public ThrowStatement(BaseExpression expression, ISourceContext context) : base(context)
         {
             ThrowExpression = expression;
         }

@@ -13,12 +13,12 @@ namespace SLThree
         private bool null_conditional;
         public bool NullConditional => null_conditional;
 
-        public InvokeExpression(BaseExpression name, BaseExpression[] arguments, SourceContext context) : base(context)
+        public InvokeExpression(BaseExpression name, BaseExpression[] arguments, ISourceContext context) : base(context)
         {
             Left = name;
             Arguments = arguments;
         }
-        public InvokeExpression(BaseExpression name, BaseExpression[] arguments, bool null_conditional, SourceContext context) : base(context)
+        public InvokeExpression(BaseExpression name, BaseExpression[] arguments, bool null_conditional, ISourceContext context) : base(context)
         {
             Left = name;
             Arguments = arguments;

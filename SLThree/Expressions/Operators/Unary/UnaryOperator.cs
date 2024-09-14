@@ -3,11 +3,11 @@
     public abstract class UnaryOperator : BaseExpression
     {
         public BaseExpression Left;
-        public UnaryOperator(BaseExpression left, SourceContext context) : base(context)
+        public UnaryOperator(BaseExpression left, ISourceContext context) : base(context)
         {
             Left = left;
         }
-        public UnaryOperator(BaseExpression left, SourceContext context, bool priority) : base(priority, context)
+        public UnaryOperator(BaseExpression left, ISourceContext context, bool priority) : base(priority, context)
         {
             Left = left;
         }

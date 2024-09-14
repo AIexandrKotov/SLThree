@@ -5,7 +5,7 @@ namespace SLThree
 {
     public class BinaryGetValue : BinaryOperator
     {
-        public BinaryGetValue(BaseExpression left, BaseExpression right, SourceContext context, bool priorityRaised = false) : base(left, right, context, priorityRaised)
+        public BinaryGetValue(BaseExpression left, BaseExpression right, ISourceContext context, bool priorityRaised = false) : base(left, right, context, priorityRaised)
         {
 
         }
@@ -22,7 +22,7 @@ namespace SLThree
     }
     public class BinaryGetRuntimeValue : BinaryOperator
     {
-        public BinaryGetRuntimeValue(BaseExpression left, BaseExpression right, SourceContext context, bool priorityRaised = false) : base(left, right, context, priorityRaised)
+        public BinaryGetRuntimeValue(BaseExpression left, BaseExpression right, ISourceContext context, bool priorityRaised = false) : base(left, right, context, priorityRaised)
         {
 
         }

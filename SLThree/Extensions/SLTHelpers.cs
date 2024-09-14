@@ -1,12 +1,135 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
 namespace SLThree.Extensions
 {
     public static class SLTHelpers
     {
+#pragma warning disable IDE1006 // Стили именования
+        public class random
+        {
+            public static object choose(IChooser chooser) => chooser.Choose();
+            public static object to_chooser(object o)
+            {
+                if (o is IDictionary dictionary)
+                {
+                    var lst = new List<(object, double)>();
+                    foreach (var key in dictionary.Keys)
+                        lst.Add((key, dictionary[key].Cast<double>()));
+                    return new ChanceChooser<object>(lst);
+                }
+                if (o is CreatorRange.RangeEnumerator enumerator) return new RangeChooser(enumerator.Lower, enumerator.Upper);
+                if (o is double d) return new BooleanChooser(d);
+                if (o is IEnumerable enumerable) return new EqualchanceChooser<object>(enumerable.Enumerate().ToArray());
+                throw new ArgumentException($"{o?.GetType().GetTypeString() ?? "null"} is not convertable to chooser");
+            }
+            public static object to_chooser(object o, Type type)
+            {
+                if (o is IDictionary dictionary) return internal_chooser1reflected(dictionary, type);
+                if (o is IEnumerable enumerable) return internal_chooser2reflected(enumerable, type);
+                throw new ArgumentException($"{o?.GetType().GetTypeString() ?? "null"} is not convertable to chooser<{type.GetTypeString()}>");
+            }
+
+            private static ChanceChooser<T> internal_chooser1<T>(IDictionary dictionary)
+            {
+                var lst = new List<(T, double)>();
+                foreach (var key in dictionary.Keys)
+                    lst.Add((key.CastToType<T>(), dictionary[key].Cast<double>()));
+                return new ChanceChooser<T>(lst);
+            }
+            private static EqualchanceChooser<T> internal_chooser2<T>(IEnumerable enumerable)
+            {
+                var ret = new List<T>();
+                foreach (var x in enumerable)
+                    ret.Add(x.CastToType<T>());
+                return new EqualchanceChooser<T>(ret);
+            }
+            private static readonly MethodInfo i_c1 = ((Func<IDictionary, ChanceChooser<int>>)internal_chooser1<int>).Method.GetGenericMethodDefinition();
+            private static readonly MethodInfo i_c2 = ((Func<IDictionary, EqualchanceChooser<int>>)internal_chooser2<int>).Method.GetGenericMethodDefinition();
+            private static object internal_chooser1reflected(IDictionary dictionary, Type type)
+                => i_c1.MakeGenericMethod(new Type[1] { type }).Invoke(null, new object[1] { dictionary });
+            private static object internal_chooser2reflected(IEnumerable enumerable, Type type)
+                => i_c2.MakeGenericMethod(new Type[1] { type }).Invoke(null, new object[1] { enumerable });
+        }
+#pragma warning restore IDE1006 // Стили именования
+        
+        /// <summary>
+        /// МНЕ НАДОЕЛО ЭТИ СВИТЧИ ВРУЧНУЮ ПИСАТЬ!!!
+        /// Метод, автоматически строящий соответствия 
+        /// switch (T) {
+        ///     case TA x: Method(x); break;
+        ///     case TB x: Method(x); break;
+        /// }
+        /// Проверит наличие перегрузки
+        /// </summary>
+        /// <typeparam name="T">Класс, методы которого будут</typeparam>
+        /// <returns></returns>
+        public static Action<Target, T> CreateInheritorSwitcher<Target, T>(string methodName, Type[] excludedTypes, Type[] excludedInheritors)
+        {
+            bool IsInheritor(Type baseType, Type searchType)
+            {
+                var target = baseType;
+                if (excludedTypes.Contains(target)) return false;
+                target = target.BaseType;
+                while (target != null)
+                {
+                    if (excludedTypes.Contains(target)) return false;
+                    if (target == searchType) return true;
+                    if (excludedInheritors.Contains(target)) return false;
+                    target = target.BaseType;
+                }
+                return false;
+            }
+
+            var type = typeof(T);
+            var assembly = type.Assembly;
+            var inheritors = assembly.GetTypes()
+                .Where(x => IsInheritor(x, type))
+                .Select(x => new ValueTuple<Type, MethodInfo, Label>(x, null, default)).ToArray();
+            var methods = typeof(Target).GetMethods(BindingFlags.Instance | BindingFlags.Public);
+            for (var i = 0; i < inheritors.Length; i++)
+            {
+                var m = methods.FirstOrDefault(x => x.Name == methodName && x.GetParameters()[0].ParameterType == inheritors[i].Item1);
+                if (m == null) throw new Exception($"Не найден перегруженный метод {methodName}({inheritors[i].Item1})");
+                inheritors[i].Item2 = m;
+            }
+
+            var method = new DynamicMethod("GENERATED", typeof(void), new Type[2] { typeof(Target), type });
+            var il = method.GetILGenerator();
+
+            for (var i = 0; i < inheritors.Length; i++)
+            {
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Isinst, inheritors[i].Item1);
+                inheritors[i].Item3 = il.DefineLabel();
+                il.Emit(OpCodes.Brtrue, inheritors[i].Item3);
+            }
+            il.Emit(OpCodes.Ret);
+            for (var i = 0; i < inheritors.Length; i++)
+            {
+                il.MarkLabel(inheritors[i].Item3);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Isinst, inheritors[i].Item1);
+                il.Emit(OpCodes.Callvirt, inheritors[i].Item2);
+                il.Emit(OpCodes.Ret);
+            }
+            return (Action<Target, T>)method.CreateDelegate(typeof(Action<Target, T>));
+        }
+
+        public static bool IsAbstract(this StatementList statement)
+        {
+            return statement.Statements.Length > 0
+                && statement.Statements[0] is ThrowStatement @throw
+                && @throw.ThrowExpression is ObjectLiteral expression
+                && expression.Value is AbstractInvokation;
+        }
+
         public static object CastToMax(this object o)
         {
             switch (o)
@@ -145,7 +268,7 @@ namespace SLThree.Extensions
             if (founded_types.TryGetValue(s, out var type)) return type;
             else
             {
-                foreach (var ass in sys.slt.registred)
+                foreach (var ass in DotnetEnvironment.RegistredAssemblies)
                 {
                     var ret = ass.GetType(s, throwError);
                     if (ret != null) return founded_types[s] = ret;

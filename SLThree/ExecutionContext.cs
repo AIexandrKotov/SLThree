@@ -120,7 +120,7 @@ namespace SLThree
             constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
             return ret;
         }
-        public ExecutionContext CreateInstanceTemplate((TemplateMethod.GenericMaking, object)[] generic_args, object[] args, SourceContext sourceContext)
+        public ExecutionContext CreateInstanceTemplate((TemplateMethod.GenericMaking, object)[] generic_args, object[] args, ISourceContext sourceContext)
         {
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
@@ -143,7 +143,7 @@ namespace SLThree
             constructor.MakeGenericMethod(generic_args).GetValue(ret, args);
             return ret;
         }
-        public ExecutionContext CreateInstanceGeneric(Type[] generic_args, object[] args, SourceContext sourceContext)
+        public ExecutionContext CreateInstanceGeneric(Type[] generic_args, object[] args, ISourceContext sourceContext)
         {
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
@@ -166,7 +166,7 @@ namespace SLThree
             constructor.GetValue(ret, args);
             return ret;
         }
-        public ExecutionContext CreateInstance(object[] args, SourceContext sourceContext)
+        public ExecutionContext CreateInstance(object[] args, ISourceContext sourceContext)
         {
             var ret = new ExecutionContext(super.Context);
             ret.Name = $"{Name}@{Convert.ToString(Creations++, 16).ToUpper().PadLeft(4, '0')}";
@@ -186,7 +186,7 @@ namespace SLThree
             constructor.@this = ret.wrap;
             constructor.GetValue(ret, args);
         }
-        public void Implementation(ExecutionContext ret, object[] args, SourceContext sourceContext)
+        public void Implementation(ExecutionContext ret, object[] args, ISourceContext sourceContext)
         {
             if (LocalVariables.GetValue("constructor").Item1 is Method constructor)
             {
@@ -218,7 +218,7 @@ namespace SLThree
             return o;
         }
 
-        internal ExecutionContext implement(ExecutionContext context)
+        public ExecutionContext implement(ExecutionContext context)
         {
             var vars = context.LocalVariables.Variables;
             foreach (var x in context.LocalVariables.NamedIdentificators)

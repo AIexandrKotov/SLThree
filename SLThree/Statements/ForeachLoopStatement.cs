@@ -11,13 +11,13 @@ namespace SLThree
         public BaseExpression Iterator;
 
         public ForeachLoopStatement() : base() { }
-        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, SourceContext context) : base(cycleBody, context)
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, BaseStatement[] cycleBody, ISourceContext context) : base(cycleBody, context)
         {
             Left = left;
             Iterator = iterator;
             is_name_expr = Left is NameExpression;
         }
-        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementList cycleBody, SourceContext context)
+        public ForeachLoopStatement(BaseExpression left, BaseExpression iterator, StatementList cycleBody, ISourceContext context)
             : this(left, iterator, cycleBody.Statements.ToArray(), context) { }
 
         private bool is_name_expr;

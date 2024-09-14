@@ -11,7 +11,7 @@ namespace SLThree
 
         public BlockExpression() : base() { }
         
-        public BlockExpression(IList<BaseStatement> statements, SourceContext context) : base(context)
+        public BlockExpression(IList<BaseStatement> statements, ISourceContext context) : base(context)
         {
             Statements = statements.Where(x => !(x is EmptyStatement)).ToArray();
             count = Statements.Length;

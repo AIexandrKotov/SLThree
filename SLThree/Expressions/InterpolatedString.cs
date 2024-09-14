@@ -1,4 +1,4 @@
-﻿using Pegasus.Common;
+﻿
 using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace SLThree
         public BaseExpression[] Expressions;
 
         public InterpolatedString() : base() { }
-        public InterpolatedString(string value, IList<(BaseExpression, string)> other, Cursor cursor) : base(cursor)
+        public InterpolatedString(string value, IList<(BaseExpression, string)> other, ISourceContext context) : base(context)
         {
             var sb = new StringBuilder();
             Expressions = new BaseExpression[other.Count];

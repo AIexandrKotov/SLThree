@@ -8,11 +8,11 @@ namespace SLThree
         public BaseExpression Iterations;
 
         public FiniteLoopStatement() : base() { }
-        public FiniteLoopStatement(BaseExpression condition, StatementList cycleBody, SourceContext context) : base(cycleBody, context)
+        public FiniteLoopStatement(BaseExpression condition, StatementList cycleBody, ISourceContext context) : base(cycleBody, context)
         {
             Iterations = condition;
         }
-        public FiniteLoopStatement(BaseExpression condition, BaseStatement[] cycleBody, SourceContext context) : base(cycleBody, context)
+        public FiniteLoopStatement(BaseExpression condition, BaseStatement[] cycleBody, ISourceContext context) : base(cycleBody, context)
         {
             Iterations = condition;
         }

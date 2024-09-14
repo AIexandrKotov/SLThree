@@ -10,7 +10,7 @@ namespace SLThree
         public BaseExpression Left;
         public BaseExpression Right;
 
-        public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(priority, context)
+        public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(priority, context)
         {
             Condition = cond;
             Left = left;

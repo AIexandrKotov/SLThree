@@ -9,7 +9,7 @@ namespace SLThree
         public BaseStatement[] Body;
 
         public ConditionExpression() { }
-        public ConditionExpression(BaseExpression condition, BaseStatement[] body, int falsestart, SourceContext context) : base(context)
+        public ConditionExpression(BaseExpression condition, BaseStatement[] body, int falsestart, ISourceContext context) : base(context)
         {
             Condition = condition;
             Body = body;
@@ -17,7 +17,7 @@ namespace SLThree
             this.falsestart = falsestart;
         }
 
-        public ConditionExpression(BaseExpression condition, StatementList trueBlock, StatementList falseBlock, SourceContext context) : base(context)
+        public ConditionExpression(BaseExpression condition, StatementList trueBlock, StatementList falseBlock, ISourceContext context) : base(context)
         {
             Condition = condition;
             count = trueBlock.Statements.Length + falseBlock.Statements.Length;

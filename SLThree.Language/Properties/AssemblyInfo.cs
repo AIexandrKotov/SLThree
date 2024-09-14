@@ -47,6 +47,7 @@ public static class SLTVersion
     public static string[] Specification { get; private set; }
     static SLTVersion()
     {
+        return;
         var ass = Assembly.GetExecutingAssembly();
         VersionsData = new SortedDictionary<string, string[]>(ass
             .GetManifestResourceNames()

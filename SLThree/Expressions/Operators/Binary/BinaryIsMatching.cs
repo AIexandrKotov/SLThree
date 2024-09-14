@@ -7,7 +7,7 @@ namespace SLThree
     public class BinaryIsAssign : BinaryOperator
     {
         public BaseExpression Variable;
-        public BinaryIsAssign(BaseExpression left, BaseExpression right, BaseExpression variable, SourceContext context) : base(left, right, context)
+        public BinaryIsAssign(BaseExpression left, BaseExpression right, BaseExpression variable, ISourceContext context) : base(left, right, context)
         {
             Variable = variable;
         }

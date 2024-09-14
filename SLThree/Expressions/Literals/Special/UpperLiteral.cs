@@ -1,11 +1,10 @@
-﻿using Pegasus.Common;
+﻿
 
 namespace SLThree
 {
     public class UpperLiteral : Special
     {
-        public UpperLiteral(SourceContext context) : base(context) { }
-        public UpperLiteral(Cursor cursor) : base(cursor) { }
+        public UpperLiteral(ISourceContext context) : base(context) { }
 
         public override string ExpressionToString() => "upper";
         public override object GetValue(ExecutionContext context) => context.PreviousContext;

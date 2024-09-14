@@ -10,13 +10,13 @@ namespace SLThree
         public TypenameExpression Type;
         public ClassAccess system;
 
-        public CreatorUsing(TypenameExpression type, SourceContext context) : base(context)
+        public CreatorUsing(TypenameExpression type, ISourceContext context) : base(context)
         {
             Type = type;
             if (type.Generics == null)
             {
                 var str = type.Typename.ToString();
-                if (SLThree.sys.slt.sys_types.TryGetValue(str, out var sys))
+                if (DotnetEnvironment.SystemTypes.TryGetValue(str, out var sys))
                     system = new ClassAccess(sys);
             }
         }

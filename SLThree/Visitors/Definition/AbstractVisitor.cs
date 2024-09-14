@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.Extensions;
+using System;
 using System.Collections.Generic;
 
 namespace SLThree.Visitors
@@ -47,53 +48,15 @@ namespace SLThree.Visitors
 
         public List<ExecutionContext.IExecutable> Executables { get; } = new List<ExecutionContext.IExecutable>();
 
+        private static Action<AbstractVisitor, BaseExpression> visitExpression = SLTHelpers.CreateInheritorSwitcher<AbstractVisitor, BaseExpression>("VisitExpression", 
+                new Type[] { typeof(TemplateMethod.ConstraintDefinition), typeof(TypenameGenericPart) },
+                new Type[] { typeof(Literal), typeof(Special), typeof(BinaryOperator), typeof(UnaryOperator) }           
+            );
         public virtual void VisitExpression(BaseExpression expression)
         {
             Executables.Add(expression);
-            switch (expression)
-            {
-                case CastExpression expr: VisitExpression(expr); return;
-                case MemberAccess expr: VisitExpression(expr); return;
-                case TernaryOperator expr: VisitExpression(expr); return;
-                case BinaryOperator expr: VisitExpression(expr); return;
-                case UnaryOperator expr: VisitExpression(expr); return;
-                case Special expr: VisitExpression(expr); return;
-                case Literal expr: VisitExpression(expr); return;
-                case CreatorInstance expr: VisitExpression(expr); return;
-                case NameExpression expr: VisitExpression(expr); return;
-                case ConditionExpression expr: VisitExpression(expr); return;
-                case FunctionDefinition expr: VisitExpression(expr); return;
-                case StaticExpression expr: VisitExpression(expr); return;
-                case InvokeExpression expr: VisitExpression(expr); return;
-                case InvokeGenericExpression expr: VisitExpression(expr); return;
-                case InvokeTemplateExpression expr: VisitExpression(expr); return;
-                case InvokeTemplateExpression.GenericMakingDefinition expr: VisitExpression(expr); return;
-                case MakeGenericExpression expr: VisitExpression(expr); return;
-                case MakeTemplateExpression expr: VisitExpression(expr); return;
-                case ReferenceExpression expr: VisitExpression(expr); return;
-                case DereferenceExpression expr: VisitExpression(expr); return;
-                case InterpolatedString expr: VisitExpression(expr); return;
-                case IndexExpression expr: VisitExpression(expr); return;
-                case CreatorTuple expr: VisitExpression(expr); return;
-                case CreatorDictionary expr: VisitExpression(expr); return;
-                case CreatorCollection expr: VisitExpression(expr); return;
-                case CreatorUsing expr: VisitExpression(expr); return;
-                case ReflectionExpression expr: VisitExpression(expr); return;
-                case TypenameExpression expr: VisitExpression(expr); return;
-                case CreatorNewArray expr: VisitExpression(expr); return;
-                case CreatorContext expr: VisitExpression(expr); return;
-                case CreatorRange expr: VisitExpression(expr); return;
-                case AccordExpression expr: VisitExpression(expr); return;
-                case MatchExpression expr: VisitExpression(expr); return;
-                case UsingExpression expr: VisitExpression(expr); return;
-                case BlockExpression expr: VisitExpression(expr); return;
-                case FunctionArgument expr: VisitExpression(expr); return;
-                case ConstraintExpression expr: VisitExpression(expr); return;
-                case TemplateMethod.ConstraintDefinition expr: VisitConstraint(expr); return;
-                case MacrosDefinition expr: VisitExpression(expr); return;
-
-                case BaseInstanceCreator expr: VisitExpression(expr); return;
-            }
+            if (expression is TemplateMethod.ConstraintDefinition c) VisitConstraint(c);
+            else visitExpression(this, expression);
             Executables.Remove(expression);
         }
 

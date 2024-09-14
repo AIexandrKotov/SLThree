@@ -14,7 +14,7 @@ namespace SLThree
     public class AbstractInvokation : RuntimeError
     {
         public AbstractInvokation() : base() { }
-        public AbstractInvokation(SourceContext context) : base(GetErrorText(), context) { }
+        public AbstractInvokation(ISourceContext context) : base(GetErrorText(), context) { }
 
         public static string GetErrorText()
         {
@@ -90,7 +90,7 @@ namespace SLThree
             return sb.ToString();
         }
 
-        public static SourceContext TakeContext(ExecutionContext.IExecutable executable)
+        public static ISourceContext TakeContext(ExecutionContext.IExecutable executable)
         {
             if (executable is BaseExpression expr) return expr.SourceContext;
             if (executable is BaseStatement code) return code.SourceContext;
@@ -102,7 +102,7 @@ namespace SLThree
     public class WrongCallArgumentsCount : RuntimeError
     {
         public WrongCallArgumentsCount() : base() { }
-        public WrongCallArgumentsCount(SourceContext context)
+        public WrongCallArgumentsCount(ISourceContext context)
             : base(string.Format(Locale.Current["ERR_WrongArgs"]), context) { }
     }
 
@@ -110,7 +110,7 @@ namespace SLThree
     public class WrongConstructorCallArgumentsCount : RuntimeError
     {
         public WrongConstructorCallArgumentsCount() : base() { }
-        public WrongConstructorCallArgumentsCount(SourceContext context)
+        public WrongConstructorCallArgumentsCount(ISourceContext context)
             : base(string.Format(Locale.Current["ERR_CtorWrongArgs"]), context) { }
     }
 
@@ -118,7 +118,7 @@ namespace SLThree
     public class CollectionIncorrectType : RuntimeError
     {
         public CollectionIncorrectType() : base() { }
-        public CollectionIncorrectType(Type type, SourceContext context)
+        public CollectionIncorrectType(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_CollectionIncorrectType"], type?.GetTypeString()), context) { }
     }
 
@@ -126,7 +126,7 @@ namespace SLThree
     public class DictionaryIncorrectType : RuntimeError
     {
         public DictionaryIncorrectType() : base() { }
-        public DictionaryIncorrectType(Type type, SourceContext context)
+        public DictionaryIncorrectType(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_DictionaryIncorrectType"], type?.GetTypeString() ?? "null"), context) { }
     }
 
@@ -134,7 +134,7 @@ namespace SLThree
     public class RangeIncorrectType : RuntimeError
     {
         public RangeIncorrectType() : base() { }
-        public RangeIncorrectType(Type type, SourceContext context)
+        public RangeIncorrectType(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_RangeIncorrectType"], type?.GetTypeString() ?? "null"), context) { }
     }
 
@@ -142,7 +142,7 @@ namespace SLThree
     public class IsNotTuple : RuntimeError
     {
         public IsNotTuple() : base() { }
-        public IsNotTuple(SourceContext context)
+        public IsNotTuple(ISourceContext context)
             : base(string.Format(Locale.Current["ERR_IsNotTuple"]), context) { }
     }
 
@@ -150,7 +150,7 @@ namespace SLThree
     public class IndexTargetWasNull : RuntimeError
     {
         public IndexTargetWasNull() : base() { }
-        public IndexTargetWasNull(object any, SourceContext context)
+        public IndexTargetWasNull(object any, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_IndexTargetWasNull"], any), context) { }
     }
 
@@ -158,11 +158,11 @@ namespace SLThree
     public class MethodNotFound : RuntimeError
     {
         public MethodNotFound() : base() { }
-        public MethodNotFound(BaseExpression left, SourceContext context)
+        public MethodNotFound(BaseExpression left, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_MethodNotFound"], left), context) { }
-        public MethodNotFound(string left, SourceContext context)
+        public MethodNotFound(string left, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_MethodNotFound"], left), context) { }
-        public MethodNotFound(string methodName, int argCount, SourceContext context)
+        public MethodNotFound(string methodName, int argCount, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_MethodOverloadNotFound"], methodName, Enumerable.Repeat("_", argCount).JoinIntoString(", ")), context) { }
     }
 
@@ -170,7 +170,7 @@ namespace SLThree
     public class InvokeNotAllow : RuntimeError
     {
         public InvokeNotAllow() : base() { }
-        public InvokeNotAllow(Type type, SourceContext context)
+        public InvokeNotAllow(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_InvokeNotAllow"], type.GetTypeString()), context) { }
     }
 
@@ -178,7 +178,7 @@ namespace SLThree
     public class MakeNotAllow : RuntimeError
     {
         public MakeNotAllow() : base() { }
-        public MakeNotAllow(Type type, SourceContext context)
+        public MakeNotAllow(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_MakeNotAllow"], type.GetTypeString()), context) { }
     }
 
@@ -186,7 +186,7 @@ namespace SLThree
     public class NameNotFound : RuntimeError
     {
         public NameNotFound() : base() { }
-        public NameNotFound(string name, Type target, SourceContext context)
+        public NameNotFound(string name, Type target, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_NameNotFound"], name, target.GetTypeString()), context) { }
     }
 
@@ -194,7 +194,7 @@ namespace SLThree
     public class AssignToReadonly : RuntimeError
     {
         public AssignToReadonly() : base() { }
-        public AssignToReadonly(BaseExpression right, SourceContext context)
+        public AssignToReadonly(BaseExpression right, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_AssignToReadonly"], right), context) { }
     }
 
@@ -202,7 +202,7 @@ namespace SLThree
     public class ReflectionNotFound : RuntimeError
     {
         public ReflectionNotFound() : base() { }
-        public ReflectionNotFound(BaseExpression right, SourceContext context)
+        public ReflectionNotFound(BaseExpression right, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_ReflectionNotFound"], right), context) { }
     }
 
@@ -210,7 +210,7 @@ namespace SLThree
     public class TypeNotFound : RuntimeError
     {
         public TypeNotFound() : base() { }
-        public TypeNotFound(string type, SourceContext context)
+        public TypeNotFound(string type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_TypeNotFound"], type), context) { }
     }
 
@@ -218,7 +218,7 @@ namespace SLThree
     public class UnconvertibleToType : RuntimeError
     {
         public UnconvertibleToType() : base() { }
-        public UnconvertibleToType(Type type, SourceContext context)
+        public UnconvertibleToType(Type type, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_UnconvertibleToType"], type?.GetTypeString() ?? "null"), context) { }
     }
 
@@ -226,7 +226,7 @@ namespace SLThree
     public class GenericNotSupported : RuntimeError
     {
         public GenericNotSupported() : base() { }
-        public GenericNotSupported(BaseExpression expression, SourceContext context)
+        public GenericNotSupported(BaseExpression expression, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_GenericNotSupported"], expression.GetType()?.GetTypeString()), context) { }
     }
 
@@ -234,7 +234,7 @@ namespace SLThree
     public class RecursiveInsideNotSupported : RuntimeError
     {
         public RecursiveInsideNotSupported() : base() { }
-        public RecursiveInsideNotSupported(SourceContext context)
+        public RecursiveInsideNotSupported(ISourceContext context)
             : base(string.Format(Locale.Current["ERR_RecursiveInsideNotAllowed"]), context) { }
     }
 
@@ -242,7 +242,7 @@ namespace SLThree
     public class DefaultValuesNotDefined : RuntimeError
     {
         public DefaultValuesNotDefined() : base() { }
-        public DefaultValuesNotDefined(SourceContext context)
+        public DefaultValuesNotDefined(ISourceContext context)
             : base(string.Format(Locale.Current["ERR_DefaultValuesNotDefined"]), context) { }
     }
 
@@ -250,7 +250,7 @@ namespace SLThree
     public class ConstraintNotFound : RuntimeError
     {
         public ConstraintNotFound() : base() { }
-        public ConstraintNotFound(BaseExpression name, SourceContext context)
+        public ConstraintNotFound(BaseExpression name, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_ConstraintNotFound"], name), context) { }
     }
 }

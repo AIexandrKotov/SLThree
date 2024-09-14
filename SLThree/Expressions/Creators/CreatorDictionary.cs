@@ -15,7 +15,7 @@ namespace SLThree
         {
             public BaseExpression Key;
             public BaseExpression Value;
-            public DictionaryEntry(BaseExpression key, BaseExpression value, SourceContext context) : base(context)
+            public DictionaryEntry(BaseExpression key, BaseExpression value, ISourceContext context) : base(context)
             {
                 Key = key;
                 Value = value;
@@ -40,35 +40,35 @@ namespace SLThree
         new T Name {:};
         new T(args) Name {:};
         */
-        public static CreatorDictionary CaseShort(DictionaryEntry[] body, SourceContext context)
+        public static CreatorDictionary CaseShort(DictionaryEntry[] body, ISourceContext context)
             => new CreatorDictionary(
                 null,
                 null,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorDictionary CaseTypeBody(TypenameExpression type, DictionaryEntry[] body, SourceContext context)
+        public static CreatorDictionary CaseTypeBody(TypenameExpression type, DictionaryEntry[] body, ISourceContext context)
             => new CreatorDictionary(
                 type,
                 null,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorDictionary CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, DictionaryEntry[] body, SourceContext context)
+        public static CreatorDictionary CaseTypeArgsBody(TypenameExpression type, BaseExpression[] args, DictionaryEntry[] body, ISourceContext context)
             => new CreatorDictionary(
                 type,
                 null,
                 args,
                 body,
                 context);
-        public static CreatorDictionary NamedCaseTypeBody(TypenameExpression type, BaseExpression name, DictionaryEntry[] body, SourceContext context)
+        public static CreatorDictionary NamedCaseTypeBody(TypenameExpression type, BaseExpression name, DictionaryEntry[] body, ISourceContext context)
             => new CreatorDictionary(
                 type,
                 name,
                 new BaseExpression[0],
                 body,
                 context);
-        public static CreatorDictionary NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, DictionaryEntry[] body, SourceContext context)
+        public static CreatorDictionary NamedCaseTypeArgsBody(TypenameExpression type, BaseExpression name, BaseExpression[] args, DictionaryEntry[] body, ISourceContext context)
             => new CreatorDictionary(
                 type,
                 name,
@@ -77,7 +77,7 @@ namespace SLThree
                 context);
 
 
-        public CreatorDictionary(TypenameExpression type, BaseExpression name, BaseExpression[] args, DictionaryEntry[] body, SourceContext context) : base(context)
+        public CreatorDictionary(TypenameExpression type, BaseExpression name, BaseExpression[] args, DictionaryEntry[] body, ISourceContext context) : base(context)
         {
             Type = type ?? new TypenameExpression(new NameExpression("dict", context), context);
             Name = name;

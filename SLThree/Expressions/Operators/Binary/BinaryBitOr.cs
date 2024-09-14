@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryBitOr : BinaryOperator
     {
         public override string Operator => "|";
-        public BinaryBitOr(BaseExpression left, BaseExpression right, SourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryBitOr(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
 
         public BinaryBitOr() : base() { }
 
