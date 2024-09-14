@@ -58,6 +58,7 @@ namespace SLThree
             {
                 return ci.Invoke(args);
             }
+            else if (o is TemplateMethod.Constraint constraint) return constraint.ApplicateArgs(args, Arguments.FirstOrDefault());
             else
             {
                 var type = o.GetType();

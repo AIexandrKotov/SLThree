@@ -239,6 +239,25 @@ namespace SLThree
                 const GenericMakingConstraint UndeniableConstraints = GenericMakingConstraint.AllowTypes;
                 return left;
             }
+            public bool ApplicateArgs(object[] args, BaseExpression makingMethod = null)
+            {
+                var making = GenericMaking.AsValue;
+                if (makingMethod is NameExpression name)
+                {
+                    switch (name.Name)
+                    {
+                        case "code": making = GenericMaking.AsCode; break;
+                        case "name": making = GenericMaking.AsName; break;
+                        case "value": making = GenericMaking.AsValue; break;
+                        case "constraint": making = GenericMaking.AsConstraint; break;
+                        case "type": making = GenericMaking.AsType; break;
+                        case "expr": making = GenericMaking.AsExpression; break;
+                        default: return args.All(x => Applicable(making, x));
+                    }
+                    return args.Skip(1).All(x => Applicable(making, x));
+                }
+                return args.All(x => Applicable(making, x));
+            }
             public abstract object Clone();
         }
         public class AnyConstraint : Constraint
