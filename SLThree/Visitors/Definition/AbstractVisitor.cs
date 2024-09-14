@@ -52,6 +52,20 @@ namespace SLThree.Visitors
                 new Type[] { typeof(TemplateMethod.ConstraintDefinition), typeof(TypenameGenericPart) },
                 new Type[] { typeof(Literal), typeof(Special), typeof(BinaryOperator), typeof(UnaryOperator) }           
             );
+        private static Action<AbstractVisitor, BaseStatement> visitStatement = SLTHelpers.CreateInheritorSwitcher<AbstractVisitor, BaseStatement>("VisitStatement",
+                new Type[] { typeof(EmptyStatement) },
+                new Type[] { }
+            );
+        private static Action<AbstractVisitor, TemplateMethod.ConstraintDefinition> visitConstraint = SLTHelpers.CreateInheritorSwitcher<AbstractVisitor, TemplateMethod.ConstraintDefinition>("VisitConstraint",
+                new Type[] { typeof(TemplateMethod.ObjectConstraintDefinition) },
+                new Type[] { }
+            );
+        public virtual void VisitStatement(BaseStatement statement)
+        {
+            Executables.Add(statement);
+            visitStatement(this, statement);
+            Executables.Remove(statement);
+        }
         public virtual void VisitExpression(BaseExpression expression)
         {
             Executables.Add(expression);
@@ -59,18 +73,10 @@ namespace SLThree.Visitors
             else visitExpression(this, expression);
             Executables.Remove(expression);
         }
-
         public virtual void VisitConstraint(TemplateMethod.ConstraintDefinition expression)
         {
             Executables.Add(expression);
-            switch (expression)
-            {
-                case TemplateMethod.NameConstraintDefinition expr: VisitConstraint(expr); return;
-                case TemplateMethod.FunctionConstraintDefinition expr: VisitConstraint(expr); return;
-                case TemplateMethod.CombineConstraintDefinition expr: VisitConstraint(expr); return;
-                case TemplateMethod.IntersectionConstraintDefinition expr: VisitConstraint(expr); return;
-                case TemplateMethod.NotConstraintDefinition expr: VisitConstraint(expr); return;
-            }
+            visitConstraint(this, expression);
             Executables.Remove(expression);
         }
 
@@ -308,28 +314,6 @@ namespace SLThree.Visitors
         }
 
         public BaseStatement PreviousStatement => throw new NotImplementedException();
-
-        public virtual void VisitStatement(BaseStatement statement)
-        {
-            Executables.Add(statement);
-            switch (statement)
-            {
-                case ForeachLoopStatement st: VisitStatement(st); return;
-                case WhileLoopStatement st: VisitStatement(st); return;
-                case DoWhileLoopStatement st: VisitStatement(st); return;
-                case FiniteLoopStatement st: VisitStatement(st); return;
-                case InfiniteLoopStatement st: VisitStatement(st); return;
-                case ExpressionStatement st: VisitStatement(st); return;
-                case ReturnStatement st: VisitStatement(st); return;
-                case StatementList st: VisitStatement(st); return;
-                case BreakStatement st: VisitStatement(st); return;
-                case ContinueStatement st: VisitStatement(st); return;
-                case TryStatement st: VisitStatement(st); return;
-                case ThrowStatement st: VisitStatement(st); return;
-                case BaseLoopStatement expr: VisitStatement(expr); return;
-            }
-            Executables.Remove(statement);
-        }
 
         public virtual void VisitStatement(ForeachLoopStatement statement)
         {

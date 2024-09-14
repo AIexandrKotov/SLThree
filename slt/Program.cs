@@ -1,6 +1,8 @@
 ﻿using slt.sys;
 using SLThree;
+using SLThree.Language;
 using SLThree.Extensions;
+using SLThree.Metadata;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,7 +31,7 @@ namespace slt
 #endif
             InitSLThreeAssemblyInfo();
             SupportingFeatures();
-            AppendInitialLocales();
+            InitPlugins();
         }
 
         #region Arguments
@@ -48,14 +50,26 @@ namespace slt
         private static Dictionary<string, Encoding> EncodingAliases
 #if NETFRAMEWORK
             = new Dictionary<string, Encoding>()
-        {
-            { "utf-8", Encoding.UTF8 },
-            { "utf-16", Encoding.Unicode },
-            { "unicode", Encoding.Unicode },
-            { "ansi", Encoding.GetEncoding(1250) },
-        }
+            {
+                { "utf-8", Encoding.UTF8 },
+                { "utf-16", Encoding.Unicode },
+                { "unicode", Encoding.Unicode },
+                { "ansi", Encoding.GetEncoding(1250) },
+            }
 #endif
             ;
+
+        internal static Plugin SLThreePlugin;
+        internal static Plugin SLThreeREPLPlugin;
+        internal static Plugin SLThreeLanguagePlugin;
+        internal static void InitPlugins()
+        {
+            SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
+            SLThreeLanguagePlugin = Plugin.AddOrGetPlugin(typeof(SLThree.Language.Metadata).Assembly.Location);
+            SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
+            //Plugin.CollectPlugins();
+        }
+
         internal static Assembly SLThreeAssembly, REPLAssembly;
         private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
@@ -370,7 +384,7 @@ namespace slt
         #region Compiler and Interpreter
         public static ExecutionContext InvokeFile(string filename, ExecutionContext context = null, Encoding encoding = null, bool show_result = true)
         {
-            var parser = new SLThree.Parser();
+            var parser = new SLThree.Language.Parser();
             var executionContext = context ?? GetNewREPLContext();
             try
             {
@@ -406,32 +420,6 @@ namespace slt
             DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
         }
 
-        private static void AppendInitialLocales()
-        {
-            var ass = Assembly.GetExecutingAssembly();
-            var repl_locales = ass
-                .GetManifestResourceNames()
-                .Where(x => x.StartsWith("slt.docs.locales."))
-                .Select(
-                    x => {
-                        using (var stream = ass.GetManifestResourceStream(x))
-                        {
-                            return
-                            (Path.GetFileNameWithoutExtension(x).Replace("slt.docs.locales.", ""),
-                            stream.ReadStrings().Where(str => !string.IsNullOrWhiteSpace(str)).Select(str => Locale.SplitByFirst(str, '=')));
-                        }
-                    }
-                )
-                .ToDictionary(x => x.Item1, x => x.Item2);
-            foreach (var x in Locale.RegistredLocales)
-            {
-                if (repl_locales.TryGetValue(x.Key, out var locale))
-                {
-                    foreach (var str in locale)
-                        while (!x.Value.Strings.TryAdd(str.Key, str.Value)) ;
-                }
-            }
-        }
 
         #region REPL Commands
 
@@ -768,7 +756,7 @@ namespace slt
                     wrds.HasArgument("--global")
                     ? ExecutionContext.global.Context
                         : (wrds.TryGetArgument("--context", out var vname)
-                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
+                            ? SLThree.Language.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
                             : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
@@ -802,7 +790,7 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    var ocontext = SLThree.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
+                    var ocontext = SLThree.Language.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
                     switch (ocontext)
                     {
                         case ExecutionContext cc:
@@ -906,18 +894,8 @@ namespace slt
 
         private static string VersionGetted = null;
         private static string REPLVersionGetted = null;
-        private static string GetVersionOf(Assembly assembly, ref string getted)
-        {
-            if (string.IsNullOrEmpty(getted))
-            {
-                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location).ProductVersion;
-                var index = fileVersionInfo.IndexOf('+');
-                getted = index != -1 ? fileVersionInfo.Substring(0, index) : fileVersionInfo;
-            }
-            return getted;
-        }
-        private static string GetVersionOfLanguage() => GetVersionOf(SLThreeAssembly, ref VersionGetted);
-        private static string GetVersionOfREPL() => GetVersionOf(REPLAssembly, ref REPLVersionGetted);
+        private static string GetVersionOfLanguage() => SLThreeLanguagePlugin.Version;
+        private static string GetVersionOfREPL() => SLThreeREPLPlugin.Version;
 
         public static void REPLShortVersion()
         {
@@ -971,7 +949,7 @@ namespace slt
             Console.ResetColor();
         }
 
-        private static Parser REPLParser;
+        private static IParser REPLParser;
         private static Subparser REPLSubparser;
         private static bool REPLLoop;
         internal static ExecutionContext REPLContext;
@@ -982,7 +960,7 @@ namespace slt
         {
             OutREPLInfo();
 
-            REPLParser = new SLThree.Parser();
+            REPLParser = new Parser();
             REPLSubparser = new Subparser();
             REPLContext = myExecutionContext ?? GetNewREPLContext();
             REPLLoop = true;
@@ -1032,7 +1010,7 @@ namespace slt
                     try
                     {
                         if (REPLPerfomance) ParsingStopwatch = Stopwatch.StartNew();
-                        var st = REPLParser.ParseScript(code);
+                        var st = REPLParser.ParseScript(code, null);
                         if (REPLPerfomance) ParsingStopwatch.Stop();
                         Console.ForegroundColor = ConsoleColor.Cyan;
                         if (REPLPerfomance) ExecutingStopwatch = Stopwatch.StartNew();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -57,18 +58,42 @@ namespace SLThree.Extensions
                 => i_c2.MakeGenericMethod(new Type[1] { type }).Invoke(null, new object[1] { enumerable });
         }
 #pragma warning restore IDE1006 // Стили именования
-        
+
+        public static Dictionary<string, Type> GetTypesFromAssemblySYS(Assembly assembly, string fullName = "SLThree.sys.")
+        {
+            return assembly
+                .GetTypes()
+                .Where(x => x.FullName.StartsWith(fullName) && !x.Name.StartsWith("<") && x.IsPublic)
+                .ToDictionary(x => x.Name, x => x);
+        }
+        public static IDictionary<string, IDictionary<string, string>> GetLocalesFromAssembly(Assembly assembly, string fullName = "SLThree.docs.locales.")
+        {
+            return assembly
+                .GetManifestResourceNames()
+                .Where(x => x.StartsWith(fullName))
+                .Select(
+                    x =>
+                    {
+                        using (var stream = assembly.GetManifestResourceStream(x))
+                        {
+                            return
+                            (Path.GetFileNameWithoutExtension(x).Replace(fullName, ""),
+                            stream.ReadStrings().Where(str => !string.IsNullOrWhiteSpace(str)).Select(str => Locale.SplitByFirst(str, '=')));
+                        }
+                    }
+                )
+                .ToDictionary(x => x.Item1, x => x.Item2.ToDictionary(y => y.Key, y => y.Value) as IDictionary<string, string>);
+        }
+
         /// <summary>
         /// МНЕ НАДОЕЛО ЭТИ СВИТЧИ ВРУЧНУЮ ПИСАТЬ!!!
         /// Метод, автоматически строящий соответствия 
-        /// switch (T) {
-        ///     case TA x: Method(x); break;
-        ///     case TB x: Method(x); break;
+        /// switch (arg2) {
+        ///     case TA x: methodName(x); break;
+        ///     case TB x: methodName(x); break;
         /// }
-        /// Проверит наличие перегрузки
+        /// Также проверит наличие соответствующей перегрузки в классе Target
         /// </summary>
-        /// <typeparam name="T">Класс, методы которого будут</typeparam>
-        /// <returns></returns>
         public static Action<Target, T> CreateInheritorSwitcher<Target, T>(string methodName, Type[] excludedTypes, Type[] excludedInheritors)
         {
             bool IsInheritor(Type baseType, Type searchType)
@@ -91,6 +116,7 @@ namespace SLThree.Extensions
             var inheritors = assembly.GetTypes()
                 .Where(x => IsInheritor(x, type))
                 .Select(x => new ValueTuple<Type, MethodInfo, Label>(x, null, default)).ToArray();
+
             var methods = typeof(Target).GetMethods(BindingFlags.Instance | BindingFlags.Public);
             for (var i = 0; i < inheritors.Length; i++)
             {

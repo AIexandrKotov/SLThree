@@ -1,4 +1,4 @@
-﻿@namespace SLThree
+﻿@namespace SLThree.Language
 @classname Parser
 @using System.Linq;
 @using System.Globalization;

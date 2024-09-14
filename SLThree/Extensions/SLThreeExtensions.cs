@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SLThree.Metadata;
+using System;
 using System.IO;
 
 namespace SLThree.Extensions
@@ -32,7 +33,7 @@ namespace SLThree.Extensions
             }
         }
 
-        public static object EvalExpression(this LanguageInformation.IParser parser, string s, ExecutionContext context = null)
+        public static object EvalExpression(this IParser parser, string s, ExecutionContext context = null)
         {
             if (context == null) context = new ExecutionContext();
             return parser.ParseExpression(s, null).GetValue(context);
@@ -45,7 +46,7 @@ namespace SLThree.Extensions
             return ret;
         }
 
-        public static ExecutionContext RunScript(this LanguageInformation.IParser parser, string s, string filename = null, ExecutionContext context = null, ExecutionContext preset = null)
+        public static ExecutionContext RunScript(this IParser parser, string s, string filename = null, ExecutionContext context = null, ExecutionContext preset = null)
         {
             var parsed = parser.ParseScript(s, filename);
             var ret = context ?? InitPreseted(preset);

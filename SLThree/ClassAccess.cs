@@ -19,11 +19,11 @@ namespace SLThree
             var sb = new StringBuilder();
             sb.AppendLine($"{Name.GetTypeString()} {{");
             //var methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            var static_methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            var static_methods = Name.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.FlattenHierarchy);
             //var fields = Name.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            var static_fields = Name.GetFields(BindingFlags.Public | BindingFlags.Static);
+            var static_fields = Name.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.FlattenHierarchy);
             //var props = Name.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var static_props = Name.GetProperties(BindingFlags.Public | BindingFlags.Static);
+            var static_props = Name.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.FlattenHierarchy);
             foreach (var x in static_fields)
             {
                 sb.AppendLine($"    {(x.IsInitOnly?"const ":"")}{x.FieldType.GetTypeString()} {x.Name};");

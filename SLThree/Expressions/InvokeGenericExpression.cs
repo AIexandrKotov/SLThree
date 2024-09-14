@@ -104,11 +104,11 @@ namespace SLThree
 
             if (obj is ClassAccess ca)
             {
-                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
                 // после первого вызова GetMethod
                 // переставляет перегрузки, у которых аргумент object
                 // в начало массива методов
-                founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                founded = ca.Name.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                     .FirstOrDefault(x => x.Name == key && x.GetParameters().Length == Arguments.Length);
                 cached_1 = true;
                 if (founded == null) throw new MethodNotFound(key, Arguments.Length, SourceContext);

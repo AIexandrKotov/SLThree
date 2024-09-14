@@ -21,7 +21,7 @@ namespace SLThree
             }
         }
 
-        public static readonly Dictionary<string, Locale> RegistredLocales;
+        public static readonly ConcurrentDictionary<string, Locale> RegistredLocales;
         public static readonly Locale Default;
         private static Locale current;
 
@@ -53,7 +53,7 @@ namespace SLThree
         static Locale()
         {
             var ass = Assembly.GetExecutingAssembly();
-            RegistredLocales = ass
+            RegistredLocales = new ConcurrentDictionary<string, Locale>(ass
                 .GetManifestResourceNames()
                 .Where(x => x.StartsWith("SLThree._locales."))
                 .Select(
@@ -68,7 +68,7 @@ namespace SLThree
                         }
                     }
                 )
-                .ToDictionary(x => x.Identifier);
+                .Select(x => new KeyValuePair<string, Locale>(x.Identifier, x)));
             Default = RegistredLocales.TryGetValue("en", out var en) ? en : RegistredLocales.First().Value;
             SetLocaleBasedOnCulture();
         }

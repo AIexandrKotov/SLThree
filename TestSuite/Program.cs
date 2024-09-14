@@ -218,7 +218,7 @@ namespace TestSuite
             Console.WriteLine(">>> SLThree Test Suite");
             if (args.Contains("--from-solution"))
                 from_solution = true;
-            SLThree.sys.slt.registred.Add(typeof(Program).Assembly);
+            DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());

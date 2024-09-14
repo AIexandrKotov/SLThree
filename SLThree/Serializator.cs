@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SLThree.Metadata;
+using System;
 
 namespace SLThree
 {
-    public class Serializator : LanguageInformation.ISerializator
+    public class Serializator : ISerializator
     {
         public static Serializator This = new Serializator();
 

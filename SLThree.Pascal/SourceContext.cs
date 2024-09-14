@@ -1,6 +1,6 @@
 ﻿using Pegasus.Common;
 
-namespace SLThree
+namespace SLThree.Pascal
 {
     public class SourceContext : ISourceContext
     {

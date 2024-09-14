@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net471;netstandard2.1;net6.0</TargetFrameworks>
+    <BaseOutputPath>..\bin</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="syntax.peg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pegasus" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PegGrammar Include="syntax.peg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SLThree\SLThree.csproj" />
+  </ItemGroup>
+
+</Project>

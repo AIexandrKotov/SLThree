@@ -49,5 +49,15 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SLThree.Language\SLThree.Language.csproj">
+      <Project>{95fd842b-1514-49be-9a77-e7a0aed2bf4c}</Project>
+      <Name>SLThree.Language</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SLThree\SLThree.csproj">
+      <Project>{6cd2cc25-ca20-4461-8657-5e1eef2417f1}</Project>
+      <Name>SLThree</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

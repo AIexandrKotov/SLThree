@@ -1,15 +1,14 @@
 ﻿using Pegasus.Common;
 using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
-using SLThree.Metadata;
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SLThree.Language
+namespace SLThree.Pascal
 {
-    public partial class Parser : IParser
+    public partial class Parser : LanguageInformation.IParser
     {
         public static readonly Parser This = new Parser();
         public SourceContext _(Cursor cursor) => new SourceContext(cursor);

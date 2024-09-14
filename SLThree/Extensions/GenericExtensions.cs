@@ -54,6 +54,20 @@ namespace SLThree.Extensions
         public static T Cast<T>(this object o) => (T)o;
         public static T? TryCast<T>(this object o) where T : struct => o is T t ? t : default;
         public static T TryCastRef<T>(this object o) where T : class => o is T t ? t : null;
+        public static bool TryGetAny<T>(this IEnumerable<T> values, Predicate<T> predicate, out T value)
+        {
+            foreach (var item in values)
+            {
+                if (predicate(item))
+                {
+                    value = item;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
 
 #if !NET5_0_OR_GREATER
         public static T MinBy<T, TKey>(this IEnumerable<T> enumerable, Func<T, TKey> selector)

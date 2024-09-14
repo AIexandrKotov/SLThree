@@ -377,7 +377,7 @@ namespace SLThree
                 Check(member);
             }
 
-            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static))
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
             {
                 if (member.GetCustomAttribute<IgnoreAttribute>() != null) continue;
                 CheckCtorArgs(member);
@@ -451,7 +451,7 @@ namespace SLThree
                 }
             }
 
-            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static))
+            foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
             {
                 if (member.GetCustomAttribute<IgnoreAttribute>() != null) continue;
                 Check(member);

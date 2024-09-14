@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SLThree", "SLThree\SLThree.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SLThree.Language", "SLThree.Language\SLThree.Language.csproj", "{95FD842B-1514-49BE-9A77-E7A0AED2BF4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLThree.Pascal", "SLThree.Pascal\SLThree.Pascal.csproj", "{1F16B5E1-0FE5-4734-B8E9-7C7663C99841}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{95FD842B-1514-49BE-9A77-E7A0AED2BF4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95FD842B-1514-49BE-9A77-E7A0AED2BF4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95FD842B-1514-49BE-9A77-E7A0AED2BF4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F16B5E1-0FE5-4734-B8E9-7C7663C99841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F16B5E1-0FE5-4734-B8E9-7C7663C99841}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F16B5E1-0FE5-4734-B8E9-7C7663C99841}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F16B5E1-0FE5-4734-B8E9-7C7663C99841}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
