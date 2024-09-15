@@ -1,12 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net471;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net471;netstandard2.1;net6.0</TargetFrameworks>
     <BaseOutputPath>..\bin</BaseOutputPath>
-    <Version>0.1.213</Version>
+    <Authors>Alexandr Kotov</Authors>
+    <Description>.NET script programming language</Description>
+    <Copyright>Alexandr Kotov 2023</Copyright>
+    <PackageProjectUrl>slt-lang.github.io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AIexandrKotov/SLThree</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ast;scripts;script-lang;commands</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.9.0-alpha.599</Version>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/changelog"))</PackageReleaseNotes>
+    <PackageReadmeFile>nugetreadme.md</PackageReadmeFile>
+    <PackageIcon>nugetlogo.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="docs\locales\en.dat" />
     <EmbeddedResource Include="docs\locales\ru.dat" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="docs\nugetreadme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="docs\nugetlogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;..\verser\verser.exe&quot; --append &quot;SLThree&quot;" />
+  </Target>
 </Project>
