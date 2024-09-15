@@ -2,6 +2,7 @@
 using SLThree.Visitors;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace SLThree.Metadata
 {
@@ -29,6 +30,9 @@ namespace SLThree.Metadata
         public static string context_repr(ContextWrap wrap) => wrap.ToDetailedString(1, new List<ContextWrap>());
         public static string repr(object o, long max_depth) => XmlViewer.GetView(o, max_depth);
         public static string repr(object o) => XmlViewer.GetView(o, 1);
+
+        public static Plugin plugin(string path) => Plugin.AddOrGetPlugin(path);
+        public static Plugin plugin(Assembly assembly) => Plugin.AddOrGetPlugin(assembly);
 
         protected DefualtLanguageHelper() { }
     }
