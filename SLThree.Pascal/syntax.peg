@@ -9,17 +9,21 @@ file <BaseStatement>
     / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, _(state)) }
 
 statement_list <StatementList>
-    = st:statement<0,,_ ";"+ _> { new StatementList(st, _(state)) }
+    = st:statement<0,,_ ";" _> { new StatementList(st, _(state)) }
+
 expr_statement_list <BlockExpression>
-    = st:statement<0,,_ ";"+ _> { new BlockExpression(st, _(state)) }
+    = st:statement<0,,_ ";" _> { new BlockExpression(st, _(state)) }
 
 statement <BaseStatement>
     = return_statement
     / break_statement
     / continue_statement
     / while_statement
+    / e:using_expression { new ExpressionStatement(e, _(state)) }
     / block_statement
     / assign_statement
+    / e:expression _ ";" { new ExpressionStatement(e, _(state)) }
+    / ";" { new EmptyStatement(_(state)) }
 
 return_statement <ReturnStatement>
     = "exit" _ expr:expression { new ReturnStatement(expr, _(state)) }
@@ -32,7 +36,8 @@ continue_statement <ContinueStatement>
     = "continue" { new ContinueStatement(_(state)) }
 
 block_statement <StatementList>
-    = "begin" _required_ st:statement<0,,_ ";"+ _> _required_ "end" { new StatementList(st.ToArray(), _(state)) }
+    = "begin" _required_ st:statement_list _required_ "end" { st }
+    / "begin" _required_ "end" { new StatementList(new BaseStatement[0], _(state)) }
 
 while_statement <WhileLoopStatement>
     = "while" _required_ cond:expression _required_ "do" _required_ body:statement { new WhileLoopStatement(cond, GetListStatement(body), _(state)) }
@@ -52,8 +57,9 @@ expression <BaseExpression>
     = binary_9
 
 assign_statement <BaseStatement>
-    = left:req_arg_name _ "=" _ right:binary_9 { new ExpressionStatement(new BinaryAssign(left, right, _(state)), _(state)) }
-    / left:name _ ":=" _ right:binary_9 { new ExpressionStatement(new BinaryAssign(left, right, _(state)), _(state)) }
+    = "var" _required_ left:req_arg_name _ "=" _ right:binary_9 { new ExpressionStatement(new BinaryAssign(left, right, _(state)), _(state)) }
+    / "var" _required_ left:name _ ":=" _ right:binary_9 { new ExpressionStatement(new BinaryAssign(left, right, _(state)), _(state)) }
+
 
 binary_9 <BaseExpression> -memoize
     = left:keyword _ ("=" / "+=" / "-=" / "*=" / "/=" / "%=" / "&=" / "|=" / "^=" / "??=") _ right:binary_9 { Panic<BaseExpression>(new SyntaxError(string.Format(Locale.Current["STX_Keyword_Assign"], left), _(state))) }
@@ -163,8 +169,6 @@ primary <BaseExpression> -memoize
     / "(" _ args:expression<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), _(state)) }
     / special
     / literal
-    / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_[]"], _(state))) }
-    / "(" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_()"], _(state))) }
 
 instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
