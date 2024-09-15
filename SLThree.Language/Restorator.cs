@@ -22,10 +22,11 @@ namespace SLThree.Language
 
         public override void VisitStatement(StatementList statement)
         {
-            foreach (var st in statement.Statements)
+            foreach (var x in statement.Statements)
             {
                 WriteTab();
-                VisitStatement(st);
+                VisitStatement(x);
+                Writeln("");
             }
         }
 
@@ -43,7 +44,6 @@ namespace SLThree.Language
                 || statement.Expression is AccordExpression
                 || statement.Expression is MatchExpression
                 || statement.Expression is BaseInstanceCreator)) Write(";");
-            Writeln("");
         }
 
         public override void VisitExpression(TypenameExpression expression)
@@ -127,24 +127,48 @@ namespace SLThree.Language
             else LineArgs();
         }
 
+        public override void VisitExpression(InvokeExpression expression)
+        {
+            VisitExpression(expression.Left);
+            Write("(");
+            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Write(", "));
+            Write(")");
+        }
         public bool AllowLineStatement { get; set; } = true;
 
         public void OutStatement(IList<BaseStatement> statements)
         {
             if (statements.Count == 1 && AllowLineStatement)
             {
-
+                Level += 1;
+                Writeln("");
+                WriteTab();
+                VisitStatement(statements[0]);
+                Level -= 1;
             }
             else OutStatements(statements);
         }
         public void OutStatements(IList<BaseStatement> statements)
         {
-
+            Writeln(" {");
+            Level += 1;
+            foreach (var x in statements)
+            {
+                WriteTab();
+                VisitStatement(x);
+                Writeln("");
+            }
+            Level -= 1;
+            WriteTab();
+            Write("}");
         }
 
-        public override void VisitExpression(ConditionExpression expression)
+        public override void VisitStatement(WhileLoopStatement statement)
         {
-
+            Write("while (");
+            VisitExpression(statement.Condition);
+            Write(")");
+            OutStatement(statement.LoopBody);
         }
     }
 }
