@@ -25,6 +25,27 @@ namespace SLThree.Extensions
         public static TOut[] ConvertAll<TIn, TOut>(this TIn[] array, Converter<TIn, TOut> func)
             => Array.ConvertAll(array, func);
 
+        public static void ForeachAndBetween<T>(this IEnumerable<T> values, Action<T> action, Action<T> between)
+        {
+            var count = values is ICollection collection ? collection.Count : values.Count();
+            var i = 0;
+            foreach (var x in values)
+            {
+                action(x);
+                if (++i < count) between(x);
+            }
+        }
+        public static void ForeachAndBetweenBefore<T>(this IEnumerable<T> values, Action<T> action, Action<T> between)
+        {
+            var count = values is ICollection collection ? collection.Count : values.Count();
+            var i = 0;
+            foreach (var x in values)
+            {
+                if (++i < count) between(x);
+                action(x);
+            }
+        }
+
         public static IList<T> AddAndRet<T>(this IList<T> list, T item)
         {
             var ret = new List<T>(list);
