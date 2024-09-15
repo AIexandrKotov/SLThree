@@ -9,9 +9,9 @@ file <BaseStatement>
     / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, _(state)) }
 
 statement_list <StatementList>
-    = st:statement<0,,_> { new StatementList(st, _(state)) }
+    = st:statement<0,,_ ";"+ _> { new StatementList(st, _(state)) }
 expr_statement_list <BlockExpression>
-    = st:statement<0,,_> { new BlockExpression(st, _(state)) }
+    = st:statement<0,,_ ";"+ _> { new BlockExpression(st, _(state)) }
 
 statement <BaseStatement>
     = return_statement
@@ -32,7 +32,7 @@ continue_statement <ContinueStatement>
     = "continue" { new ContinueStatement(_(state)) }
 
 block_statement <StatementList>
-    = "begin" _required_ st:statement<0,,_ ";"* _> _required_ "end" { new StatementList(st.ToArray(), _(state)) }
+    = "begin" _required_ st:statement<0,,_ ";"+ _> _required_ "end" { new StatementList(st.ToArray(), _(state)) }
 
 while_statement <WhileLoopStatement>
     = "while" _required_ cond:expression _required_ "do" _required_ body:statement { new WhileLoopStatement(cond, GetListStatement(body), _(state)) }
