@@ -9,10 +9,15 @@ file <BaseStatement>
     / "#EXPR#" _ expr:expression _ EOF { new ExpressionStatement(expr, _(state)) }
 
 statement_list <StatementList>
-    = st:statement<0,,_ ";" _> { new StatementList(st, _(state)) }
+    = st:any_statement<0,,_> _ last:last_statement? { new StatementList(BuildStatements(st, last), _(state)) }
 
 expr_statement_list <BlockExpression>
-    = st:statement<0,,_ ";" _> { new BlockExpression(st, _(state)) }
+    = st:any_statement<0,,_> _ last:last_statement? { new BlockExpression(BuildStatements(st, last), _(state)) }
+
+any_statement <BaseStatement>
+    = st:statement _ ";" { st }
+last_statement <BaseStatement>
+    = st:statement (_ ";")? { st }
 
 statement <BaseStatement>
     = return_statement

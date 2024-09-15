@@ -228,5 +228,11 @@ namespace SLThree.Pascal
             UncachebleCheck(expression.Right);
             return expression;
         }
+
+        public static IList<BaseStatement> BuildStatements(IList<BaseStatement> statements, IList<BaseStatement> last)
+        {
+            if (last?.Count == 0) return statements;
+            else return statements.Append(last[0]).ToArray();
+        }
     }
 }

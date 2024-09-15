@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net471;netstandard2.1</TargetFrameworks>
     <BaseOutputPath>..\bin</BaseOutputPath>
-    <Version>0.1.199</Version>
+    <Version>0.1.213</Version>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="docs\locales\en.dat" />
