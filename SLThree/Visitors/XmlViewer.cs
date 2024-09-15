@@ -70,6 +70,17 @@ namespace SLThree.Visitors
 
         public List<ExecutionContext> OutedContexts = new List<ExecutionContext>();
 
+        public override void Visit(GenericMethod method)
+        {
+            for (var i = 0; i < method.OriginalStatements.Statements.Length; i++)
+                VisitStatement(method.OriginalStatements.Statements[i]);
+        }
+        public override void Visit(TemplateMethod method)
+        {
+            for (var i = 0; i < method.OriginalStatements.Statements.Length; i++)
+                VisitStatement(method.OriginalStatements.Statements[i]);
+        }
+
         public override void VisitAny(object o)
         {
             depth++;
@@ -81,7 +92,7 @@ namespace SLThree.Visitors
                         if (XElements.Count > 0)
                             XElements.Peek().Add(xmethod);
                         XElements.Push(xmethod);
-                        Visit(method);
+                        if (depth <= max_depth) Visit(method);
                         if (XElements.Count > 1) XElements.Pop();
                     }
                     break;
@@ -91,7 +102,7 @@ namespace SLThree.Visitors
                         if (XElements.Count > 0)
                             XElements.Peek().Add(xmethod);
                         XElements.Push(xmethod);
-                        Visit(method);
+                        if (depth <= max_depth) Visit(method);
                         if (XElements.Count > 1) XElements.Pop();
                     }
                     break;
