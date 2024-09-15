@@ -49,7 +49,7 @@ namespace SLThree.Visitors
         public List<ExecutionContext.IExecutable> Executables { get; } = new List<ExecutionContext.IExecutable>();
 
         private static Action<AbstractVisitor, BaseExpression> visitExpression = SLTHelpers.CreateInheritorSwitcher<AbstractVisitor, BaseExpression>("VisitExpression", 
-                new Type[] { typeof(TemplateMethod.ConstraintDefinition), typeof(TypenameGenericPart) },
+                new Type[] { typeof(TemplateMethod.ConstraintDefinition), typeof(TypenameGenericPart), typeof(MemberAccess) },
                 new Type[] { typeof(Literal), typeof(Special), typeof(BinaryOperator), typeof(UnaryOperator) }           
             );
         private static Action<AbstractVisitor, BaseStatement> visitStatement = SLTHelpers.CreateInheritorSwitcher<AbstractVisitor, BaseStatement>("VisitStatement",
@@ -70,6 +70,7 @@ namespace SLThree.Visitors
         {
             Executables.Add(expression);
             if (expression is TemplateMethod.ConstraintDefinition c) VisitConstraint(c);
+            else if (expression is MemberAccess memberAccess) VisitExpression(memberAccess);
             else visitExpression(this, expression);
             Executables.Remove(expression);
         }
