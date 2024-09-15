@@ -116,6 +116,7 @@ namespace SLThree.Extensions
             var inheritors = assembly.GetTypes()
                 .Where(x => IsInheritor(x, type))
                 .Select(x => new ValueTuple<Type, MethodInfo, Label>(x, null, default)).ToArray();
+            Array.Sort(inheritors, (x, y) => y.Item1.GetAncestorsCount() - x.Item1.GetAncestorsCount());
 
             var methods = typeof(Target).GetMethods(BindingFlags.Instance | BindingFlags.Public);
             for (var i = 0; i < inheritors.Length; i++)
@@ -146,6 +147,19 @@ namespace SLThree.Extensions
                 il.Emit(OpCodes.Ret);
             }
             return (Action<Target, T>)method.CreateDelegate(typeof(Action<Target, T>));
+        }
+
+        public static int GetAncestorsCount(this Type baseType)
+        {
+            var count = 0;
+            var target = baseType;
+            while (target != null)
+            {
+                target = target.BaseType;
+                if (target == null) return count;
+                else count += 1;
+            }
+            return count;
         }
 
         public static bool IsAbstract(this StatementList statement)
