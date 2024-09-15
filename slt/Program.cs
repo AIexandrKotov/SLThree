@@ -74,7 +74,6 @@ namespace slt
         private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
-        private static string[] Specification;
         private static bool HasArgument(string arg)
             => RunArguments.HasArgument(arg, ShortCommands);
         private static bool TryGetArgument(string arg, out string value, Func<string> not_found = null)
@@ -88,7 +87,6 @@ namespace slt
             SLTREPLVersion = new REPLVersion.Reflected();
             var sltver = SLThreeAssembly.GetType("SLTVersion");
             SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
-            Specification = sltver.GetProperty("Specification").GetValue(null).Cast<string[]>();
         }
 
 
@@ -231,13 +229,6 @@ namespace slt
                 Console.WriteLine(entry.Value.JoinIntoString("\n"));
                 Console.ResetColor();
             }
-        }
-
-        public static void OutSpecification()
-        {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(Specification.JoinIntoString("\n"));
-            Console.ResetColor();
         }
 
         private static string LocaleHelpTemplate(string locale_name, Dictionary<string, string> helps, string prefix, string[] get_doc)
@@ -644,7 +635,6 @@ namespace slt
 
         public static Dictionary<string, string> ShortREPLCommands = new Dictionary<string, string>()
         {
-            { "-s", "--specification" },
             { "-v", "--version" },
             { "-d", "--difference" },
             { "-V", "--repl-version" },
@@ -833,11 +823,6 @@ namespace slt
                 }
             }
 
-            if (wrds.HasArgument("-s", ShortREPLCommands))
-            {
-                OutSpecification();
-                any_executed = true;
-            }
             if (wrds.TryGetArgument("-v", out var version, null, ShortREPLCommands))
             {
                 OutVersion(version);
@@ -1069,7 +1054,6 @@ namespace slt
                 if (int.TryParse(last_repl_versions, out var lasts)) OutREPLDifference(lasts);
                 else OutREPLDifferenceBy(last_repl_versions);
             }
-            if (HasArgument("-s")) OutSpecification();
             if (HasArgument("-h")) OutHelp();
         }
     }

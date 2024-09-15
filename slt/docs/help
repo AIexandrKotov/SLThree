@@ -3,7 +3,6 @@
     -e --encoding <E>      - {UseEnc}
 
     -r --repl or 0 args    - {StartREPL}
-    -s --specification     - {Spec}
     -v --version           - {Version}
     -v --version <V>       - {VersionX}
     -d --diff <INT>        - {DiffI}
