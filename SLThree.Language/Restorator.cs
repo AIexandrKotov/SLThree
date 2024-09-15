@@ -170,5 +170,16 @@ namespace SLThree.Language
             Write(")");
             OutStatement(statement.LoopBody);
         }
+
+        public override void VisitExpression(UsingExpression expression)
+        {
+            Write("using ");
+            VisitExpression(expression.Using.Type);
+            if (expression.Alias != null)
+            {
+                Write(" as ");
+                VisitExpression(expression.Alias);
+            }
+        }
     }
 }
