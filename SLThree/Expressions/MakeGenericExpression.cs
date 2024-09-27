@@ -52,7 +52,7 @@ namespace SLThree
             {
                 var type = o.GetType();
                 return type.GetMethods()
-                    .FirstOrDefault(x => x.Name == Left.ExpressionToString().Replace(" ", ""))
+                    .FirstOrDefault(x => x.Name == Left.ExpressionToString())
                     ?.MakeGenericMethod(generic_args);
             }
 

@@ -2,6 +2,7 @@
 using SLThree.Extensions;
 using SLThree.Language;
 using SLThree.Language.sys;
+using SLThree.Metadata;
 using SLThree.sys;
 using System;
 using System.Collections.Generic;
@@ -215,6 +216,9 @@ namespace TestSuite
 
         public static int Main(string[] args)
         {
+            Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
+            Plugin.AddOrGetPlugin(typeof(SLThree.Language.Metadata).Assembly.Location);
+            Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
             Console.Title = "SLThree Test Suite";
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(">>> SLThree Test Suite");

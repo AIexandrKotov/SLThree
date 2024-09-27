@@ -115,7 +115,7 @@ namespace SLThree
                             is_upper = true;
                             return pred.Context.PreviousContext;
                         }
-                        variable_name = predName.ExpressionToString().Replace(" ", "");
+                        variable_name = predName.ExpressionToString();
                         counted_contextwrapcache = true;
                         return pred.Context.LocalVariables.GetValue(variable_name).Item1;
                     }
@@ -200,7 +200,7 @@ namespace SLThree
                     //var type_2 = has_access_2 ? (left as ClassAccess).Name : left.GetType();
                     if (Right is NameExpression nameExpression2)
                     {
-                        other_context_name = Right.ExpressionToString().Replace(" ", "");
+                        other_context_name = Right.ExpressionToString();
                         counted_other_context_assign = true;
                         if (value is Method mth)
                         {

@@ -3,13 +3,13 @@
   <Config ConfigName="Beta" Suffix="beta" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
   <Config ConfigName="ReleaseCandidate" Suffix="rc" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
   <Config ConfigName="Release" Suffix="" Prerelease="None" AppendPatch="true" AppendPrerelease="false" ResetPrerelease="true" />
-  <Project path="C:\Users\user\Documents\GitHub\SLThree\SLThree\SLThree.csproj">
+  <Project path="..\SLThree\SLThree.csproj">
     <Config ConfigName="Alpha" Suffix="alpha" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
     <Config ConfigName="Beta" Suffix="beta" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
     <Config ConfigName="ReleaseCandidate" Suffix="rc" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
     <Config ConfigName="Release" Suffix="" Prerelease="None" AppendPatch="true" AppendPrerelease="false" ResetPrerelease="true" />
   </Project>
-  <Project path="C:\Users\user\Documents\GitHub\SLThree\SLThree.Language\SLThree.Language.csproj">
+  <Project path="..\SLThree.Language\SLThree.Language.csproj">
     <Config ConfigName="Alpha" Suffix="alpha" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
     <Config ConfigName="Beta" Suffix="beta" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />
     <Config ConfigName="ReleaseCandidate" Suffix="rc" Prerelease="Number" AppendPatch="false" AppendPrerelease="true" ResetPrerelease="true" />

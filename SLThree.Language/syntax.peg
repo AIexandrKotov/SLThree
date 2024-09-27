@@ -78,7 +78,7 @@ fin_loop_statement <FiniteLoopStatement>
     / "loop" _ "(" _ ")" _ statement? { Panic<FiniteLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
 
 foreach_statement <ForeachLoopStatement>
-    = "foreach" _ "(" _ n:req_arg_name _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), _(state)) }
+    = "foreach" _ "(" _ n:arg_name _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), _(state)) }
     / "foreach" _ "(" _ n:expression _required_ "in" _required_ iter:expression _ ")" _ body:statement { new ForeachLoopStatement(n, iter, GetStatements(body), _(state)) }
     / "foreach" _ "(" _ n:expression _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Foreach_Body"], _(state))) }
     / "foreach" _ "(" _ ")" _ statement? { Panic<ForeachLoopStatement>(new SyntaxError(Locale.Current["STX_Empty_Loop_Head"], _(state))) }
@@ -277,17 +277,17 @@ withoutinvokation_primary <BaseExpression> -memoize
     / onlyname_access
 
 primary <BaseExpression> -memoize
-    = left:primary _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
-    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
-    / left:primary _ "." _ "?" _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
-    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
-    / left:primary _ "." _ "?" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, _(state)) }
-    / left:primary _ "."? _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, _(state)) }
+    = left:(<BaseExpression>literals_as_name/primary) _ "." _ "?" _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "." _ "?" _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), true, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), false, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "." _ "?" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), true, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "."? _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), false, _(state)) }
     / left:primary _ "[" _ lower:unary? _ ".." excl:"="? _ upper:unary? _ "]" { new SliceExpression(left, GetOptional(lower), GetOptional(upper), GetOptional(excl) == null, _(state)) }
     / left:primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, _(state)) }
     / left:primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, _(state)) }
-    / left:primary _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, _(state)) }
-    / left:primary _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "."? _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" { new MakeTemplateExpression(left, gen_args.ToArray(), false, _(state)) }
+    / left:(<BaseExpression>literals_as_name/primary) _ "."? _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), false, _(state)) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
     / "*" _ left:(primary/block_expression) { new DereferenceExpression(left, _(state)) }
     / "&" _ left:(primary/block_expression) { new ReferenceExpression(left, _(state)) }
@@ -657,16 +657,16 @@ block_instance_expression <BaseExpression>
     }
 
 access_right <BaseExpression> -memoize
-    = left:name _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
-    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
-    / left:name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), _(state)) }
-    / left:name _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), _(state)) }
-    / right:access_right { right }
-    / right:name { right }
+    = left:literal_as_name _ "<" _ gen_args:generic_invokation<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeTemplateExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
+    / left:literal_as_name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeGenericExpression(left, gen_args.ToArray(), args.ToArray(), _(state)) }
+    / left:literal_as_name _ "<" _ gen_args:typename<1,,_ "," _> _ ">" { new MakeGenericExpression(left, gen_args.ToArray(), _(state)) }
+    / left:literal_as_name _ "(" _ args:expression<0,,_ "," _> _ ")" { new InvokeExpression(left, args.ToArray(), _(state)) }
+    // right:access_right { right }
+    / right:literal_as_name { right }
 
 onlyname_access <BaseExpression> -memoize
     = left:special _ conditional:"?"? _ "." _ right:onlyname_access { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
-    / right:special { right }
+    / right:literal_as_name { right }
 
 using <CreatorUsing>
     = t_name:typename { new CreatorUsing(t_name, _(state)) }
@@ -749,13 +749,15 @@ typename_node <BaseExpression> -memoize
 func_arg <FunctionArgument>
     = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, _(state)) }
     / name:arg_name { new FunctionArgument(name, _(state)) }
-
+    
 arg_name <NameExpression>
     = req_arg_name
     / name
+    / literals_as_name
 
 req_arg_name <NameExpression>
     = t:typename _ n:name { n.Hint(t) }
+    / t:typename _ n:literals_as_name { n.Hint(t) }
 
 name_literal <BaseExpression>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), _(state)) }
@@ -763,6 +765,18 @@ name_literal <BaseExpression>
 
 special <BaseExpression>
     = n:name { GetSpecialName(n) }
+
+literal_as_name <BaseExpression>
+    = special
+    / literals_as_name
+
+literals_as_name <NameExpression>
+    = l:atom_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:binary_num_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:octal_num_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:hex_num_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:num_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:string_literal { new NameExpression(l.Value.ToString(), _(state)) }
 
 literal <BaseExpression>
     = percent_literal
@@ -801,10 +815,9 @@ binary_num_literal <Literal>
     / "0b" u32:([01_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 2), "0b"+u32, _(state)) }
     / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), "0b"+u64, _(state)) }
     / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), "0b"+i64, _(state)) }
-    / "0b" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], _(state))) }
     / "0b" .* { Panic<Literal>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], _(state))) }
 
-octal_num_literal <BaseExpression>
+octal_num_literal <Literal>
     = "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), "0o"+i8, _(state)) }
     / "0o" u8:([0-7_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 8), "0o"+u8, _(state)) }
     / "0o" i16:([0-7_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 8), "0o"+i16, _(state)) }
@@ -813,9 +826,9 @@ octal_num_literal <BaseExpression>
     / "0o" u32:([0-7_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 8), "0o"+u32, _(state)) }
     / "0o" u64:([0-7_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 8), "0o"+u64, _(state)) }
     / "0o" i64:([0-7_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 8), "0o"+i64, _(state)) }
-    / "0o" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_OLiteral"], _(state))) }
+    / "0o" .* { Panic<Literal>(new SyntaxError(Locale.Current["STX_Wrong_OLiteral"], _(state))) }
 
-hex_num_literal <BaseExpression>
+hex_num_literal <Literal>
     = "0x" i8:([0-9A-Fa-f_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 16), "0x"+i8, _(state)) }
     / "0x" u8:([0-9A-Fa-f_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 16), "0x"+u8, _(state)) }
     / "0x" i16:([0-9A-Fa-f_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 16), "0x"+i16, _(state)) }
@@ -824,9 +837,9 @@ hex_num_literal <BaseExpression>
     / "0x" u32:([0-9A-Fa-f_]+ ("u32"))     { new UIntLiteral   (Convert.ToUInt32   (u32.Replace("u32", "").Replace("_", ""), 16), "0x"+u32, _(state)) }
     / "0x" u64:([0-9A-Fa-f_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 16), "0x"+u64, _(state)) }
     / "0x" i64:([0-9A-Fa-f_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 16), "0x"+i64, _(state)) }
-    / "0x" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_XLiteral"], _(state))) }
+    / "0x" .* { Panic<Literal>(new SyntaxError(Locale.Current["STX_Wrong_XLiteral"], _(state))) }
 
-num_literal <BaseExpression>
+num_literal <Literal>
     = i8:([0-9_]+ ("i8"))       { new SByteLiteral  (sbyte.Parse    (i8.Replace("i8", "").Replace("_", ""), CultureInfo.InvariantCulture), i8, _(state)) }
     / u8:([0-9_]+ ("u8"))       { new ByteLiteral   (byte.Parse     (u8.Replace("u8", "").Replace("_", ""), CultureInfo.InvariantCulture), u8, _(state)) }
     / i16:([0-9_]+ ("i16"))     { new ShortLiteral  (short.Parse    (i16.Replace("i16", "").Replace("_", ""), CultureInfo.InvariantCulture), i16, _(state)) }
