@@ -768,6 +768,7 @@ literal <BaseExpression>
     = percent_literal
     / float_literal
 
+    / atom_literal
     / binary_num_literal
     / octal_num_literal
     / hex_num_literal
@@ -787,7 +788,11 @@ float_literal <BaseExpression>
     / f64:([0-9_]+ ("." [0-9_]+) ("f64")?)    { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), f64, _(state)) }
     / f64:([0-9_]+ ("f64"))                  { new DoubleLiteral(double.Parse(f64.Replace("f64", "").Replace("_", ""), CultureInfo.InvariantCulture), f64, _(state)) }
 
-binary_num_literal <BaseExpression>
+atom_literal <AtomLiteral>
+    = "$" v:[1-8] n:name { AtomLiteral.Hash(n.Name, int.Parse(v, CultureInfo.InvariantCulture), _(state)) }
+    / "$" n:name { AtomLiteral.Hash(n.Name, 8, _(state)) }
+
+binary_num_literal <Literal>
     = "0b" i8:([01_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 2), "0b"+i8, _(state)) }
     / "0b" u8:([01_]+ ("u8"))       { new ByteLiteral   (Convert.ToByte     (u8.Replace("u8", "").Replace("_", ""), 2), "0b"+u8, _(state)) }
     / "0b" i16:([01_]+ ("i16"))     { new ShortLiteral  (Convert.ToInt16    (i16.Replace("i16", "").Replace("_", ""), 2), "0b"+i16, _(state)) }
@@ -797,6 +802,7 @@ binary_num_literal <BaseExpression>
     / "0b" u64:([01_]+ ("u64"))     { new ULongLiteral  (Convert.ToUInt64   (u64.Replace("u64", "").Replace("_", ""), 2), "0b"+u64, _(state)) }
     / "0b" i64:([01_]+ ("i64")?)    { new LongLiteral   (Convert.ToInt64    (i64.Replace("i64", "").Replace("_", ""), 2), "0b"+i64, _(state)) }
     / "0b" .* { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], _(state))) }
+    / "0b" .* { Panic<Literal>(new SyntaxError(Locale.Current["STX_Wrong_BLiteral"], _(state))) }
 
 octal_num_literal <BaseExpression>
     = "0o" i8:([0-7_]+ ("i8"))       { new SByteLiteral  (Convert.ToSByte    (i8.Replace("i8", "").Replace("_", ""), 8), "0o"+i8, _(state)) }

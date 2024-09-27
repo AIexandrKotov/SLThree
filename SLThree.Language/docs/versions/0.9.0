@@ -41,6 +41,8 @@ Language:
     - Multiline interpolated strings $"""str{2}""";
     - Multiline strings """str"""
     - Changed match expression arrow `==>` -> `=>`
+    - Atoms `$name` (~like in Erlang)
+      Actually is compile-time SHA-1 by name
     - Do-while loop
       `do {;} while (true);`
     - Finite loop
