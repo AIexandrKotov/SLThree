@@ -33,7 +33,7 @@ Language:
       `new dict<i64, i64> { 1: 2, 3: 4 }`
     - Array and list initializers new syntax:
       `new array { 1, 2, 3, 4 }`
-        - Also supports: stack, queue
+        - Also supports: stack, queue, set
     - Short initializers:
         - Array: `new { 1, 2, 3 }`
         - Dictionary: `new { 1: 2, 3: 4 }`

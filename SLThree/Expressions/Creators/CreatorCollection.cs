@@ -108,6 +108,8 @@ namespace SLThree
                 return GetTypedStackMethod.MakeGenericMethod(element_type).Invoke(null, new object[] { Body, instance, context });
             if (type.IsQueue())
                 return GetTypedQueueMethod.MakeGenericMethod(element_type).Invoke(null, new object[] { Body, instance, context });
+            if (type.IsSet())
+                return GetTypedSetMethod.MakeGenericMethod(element_type).Invoke(null, new object[] { Body, instance, context });
 
             throw new CollectionIncorrectType(type, SourceContext);
         }
@@ -157,6 +159,21 @@ namespace SLThree
             }
             return list;
         }
+        public static HashSet<T> ToHashSet<T>(IEnumerable<object> source, HashSet<T> target, bool forbid_implicit)
+        {
+            var list = target ?? new HashSet<T>();
+            if (forbid_implicit)
+            {
+                foreach (var item in source)
+                    list.Add(item.Cast<T>());
+            }
+            else
+            {
+                foreach (var item in source)
+                    list.Add(item.CastToType<T>());
+            }
+            return list;
+        }
         public static T[] ToArray<T>(IEnumerable<object> source, T[] target, bool forbid_implicit)
         {
             if (target == null) return ToList<T>(source, null, forbid_implicit).ToArray();
@@ -181,6 +198,7 @@ namespace SLThree
             GetTypedArrayMethod = typeof(CreatorCollection).GetMethod("GetTypedArray", BindingFlags.Static | BindingFlags.NonPublic),
             GetTypedListMethod = typeof(CreatorCollection).GetMethod("GetTypedList", BindingFlags.Static | BindingFlags.NonPublic),
             GetTypedStackMethod = typeof(CreatorCollection).GetMethod("GetTypedStack", BindingFlags.Static | BindingFlags.NonPublic),
+            GetTypedSetMethod = typeof(CreatorCollection).GetMethod("GetTypedSet", BindingFlags.Static | BindingFlags.NonPublic),
             GetTypedQueueMethod = typeof(CreatorCollection).GetMethod("GetTypedQueue", BindingFlags.Static | BindingFlags.NonPublic);
 
         private ExecutionContext counted_invoked;
@@ -195,6 +213,8 @@ namespace SLThree
             => ToStack(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
         private static Queue<T> GetTypedQueue<T>(IEnumerable<BaseExpression> expressions, Queue<T> target, ExecutionContext context)
             => ToQueue(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
+        private static HashSet<T> GetTypedSet<T>(IEnumerable<BaseExpression> expressions, HashSet<T> target, ExecutionContext context)
+            => ToHashSet(expressions.Select(x => x.GetValue(context)), target, context.ForbidImplicit);
 #pragma warning restore IDE0051 // Удалите неиспользуемые закрытые члены
 
         public override object Clone()

@@ -195,6 +195,7 @@ namespace SLThree.sys
         public static List<object> to_list(IEnumerable<object> objects) => objects.ToList();
         public static ITuple to_tuple(IEnumerable<object> objects) => CreatorTuple.Create(objects.ToArray());
         public static object[] to_array(IEnumerable<object> objects) => objects.ToArray();
+        public static HashSet<object> to_set(IEnumerable<object> objects) => new HashSet<object>(objects);
         public static IEnumerable<object> to_enumerable(System.Collections.IEnumerable enumerable)
         {
             foreach (var x in enumerable)

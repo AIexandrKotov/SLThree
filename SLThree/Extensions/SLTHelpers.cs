@@ -196,6 +196,7 @@ namespace SLThree.Extensions
             if (t == type_list) return "list";
             if (t == type_dict) return "dict";
             if (t == type_array) return "array";
+            if (t == type_set) return "set";
             if (t.IsArray)
                 return t.GetArrayRank() == 1 ? $"array<{t.GetElementType().GetTypeString()}>" : $"array{t.GetArrayRank()}<{t.GetElementType().GetTypeString()}>";
             if (t.IsGenericTypeDefinition)
@@ -211,6 +212,7 @@ namespace SLThree.Extensions
                 else if (generic_def == type_generic_dict) name = "dict";
                 else if (generic_def == type_generic_stack) name = "stack";
                 else if (generic_def == type_generic_queue) name = "queue";
+                else if (generic_def == type_generic_set) name = "set";
                 else if (t.Name.StartsWith("ValueTuple")) name = "tuple";
                 else if (t.FullName != null) name = t.FullName.Substring(0, t.FullName.IndexOf('`')).Split('.').Last();
                 else name = t.Name.Substring(0, t.Name.IndexOf('`')).Split('.').Last();
@@ -250,6 +252,10 @@ namespace SLThree.Extensions
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_queue;
         }
+        public static bool IsSet(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == type_generic_set;
+        }
         private static Dictionary<Type, bool> is_tuple_cache = new Dictionary<Type, bool>()
         {
             { typeof(ITuple), true },
@@ -261,6 +267,7 @@ namespace SLThree.Extensions
         private static Type type_generic_list = typeof(List<>);
         private static Type type_generic_stack = typeof(Stack<>);
         private static Type type_generic_queue = typeof(Queue<>);
+        private static Type type_generic_set = typeof(HashSet<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
         private static Type type_void = typeof(void);
         public static Type ToType(this string s, bool throwError = false)
@@ -288,6 +295,8 @@ namespace SLThree.Extensions
                 case "stack`1": return type_generic_stack;
                 case "queue": return type_queue;
                 case "queue`1": return type_generic_queue;
+                case "set": return type_set;
+                case "set`1": return type_generic_set;
                 case "dict": return type_dict;
                 case "dict`2": return type_generic_dict;
                 case "tuple`1": return typeof(ValueTuple<>);
@@ -353,6 +362,7 @@ namespace SLThree.Extensions
 
             type_array = typeof(object[]),
             type_list = typeof(List<object>),
+            type_set = typeof(HashSet<object>),
             type_dict = typeof(Dictionary<object, object>),
             type_stack = typeof(Stack<object>),
             type_queue = typeof(Queue<object>),
