@@ -196,10 +196,10 @@ binary_1 <BaseExpression> -memoize
 
 binary_0 <BaseExpression> -memoize
     = left:binary_0 _ "as" _required_ right:typename { new CastExpression(left, right, _(state)) }
-    / "^*" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)), t, _(state)) }
+    / "^:" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)), t, _(state)) }
     / "^" _ "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)), _(state)) }
     / "<" _ t:typename _ ">" _ lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, t, GetOptional(excl) == null, _(state)) }
-    / "^*" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)), null, _(state)) }
+    / "^:" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryGetChooser(new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)), null, _(state)) }
     / "^" _ lower:unary _ ".." excl:"="? _ upper:unary { new UnaryChoose(new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)), _(state)) }
     / lower:unary _ ".." excl:"="? _ upper:unary { new CreatorRange(lower, upper, GetOptional(excl) == null, _(state)) }
     / left:binary_0 _ "::" _ right:name 
@@ -221,8 +221,8 @@ unary <BaseExpression>
     / "-" _ left:binary_min { new UnaryRem(left, _(state)) }
     / "~" _ left:binary_min { new UnaryBitNot(left, _(state)) }
     / "!" _ left:binary_min { new UnaryNot(left, _(state)) }
-    / "^*" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, _(state)) }
-    / "^*" _ left:binary_min { new UnaryGetChooser(left, null, _(state)) }
+    / "^:" _ "<" _ arg:typename _ ">" _ left:binary_min { new UnaryGetChooser(left, arg, _(state)) }
+    / "^:" _ left:binary_min { new UnaryGetChooser(left, null, _(state)) }
     / "^" _ left:binary_min { new UnaryChoose(left, _(state)) }
     / "@@" _ left:typename { new UnaryStaticReflection(left, _(state)) }
     / "@" _ left:typename { new UnaryReflection(left, _(state)) }

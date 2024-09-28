@@ -6,7 +6,7 @@ namespace SLThree
 {
     public class UnaryGetChooser : UnaryOperator
     {
-        public override string Operator => "*";
+        public override string Operator => "^:";
         public TypenameExpression Typename;
         public UnaryGetChooser(BaseExpression left, TypenameExpression typename, ISourceContext context, bool priority = false) : base(left, context, priority)
         {
