@@ -3,7 +3,7 @@
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public class slt : DefualtLanguageHelper<SLThree.Metadata.Metadata>
+    public class @slt : DefualtLanguageHelper<SLThree.Metadata.Metadata>
     {
 
     }

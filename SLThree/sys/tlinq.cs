@@ -8,7 +8,7 @@ namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
     //Typed linq
-    public static class tlinq
+    public static class @tlinq
     {
         internal static class sum_helper
         {

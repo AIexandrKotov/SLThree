@@ -39,12 +39,10 @@ namespace slt
         {
             { "-s", "--specfile" },
             { "-v", "--version" },
-            { "-d", "--diff" },
             { "-h", "--help" },
             { "-r", "--repl" },
             { "-e", "--encoding" },
-            { "-V", "--repl-version" },
-            { "-D", "--repl-diff" },
+            { "-V", "--changelog" },
         };
         private static string[] RunArguments;
         private static Dictionary<string, Encoding> EncodingAliases
@@ -61,12 +59,10 @@ namespace slt
 
         internal static Plugin SLThreePlugin;
         internal static Plugin SLThreeREPLPlugin;
-        internal static Plugin SLThreeLanguagePlugin;
         internal static void InitPlugins()
         {
             SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
             SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
-            //Plugin.CollectPlugins();
         }
 
         internal static Assembly SLThreeAssembly, REPLAssembly;
@@ -131,6 +127,19 @@ namespace slt
             => arguments.TryGetArgument(arg, out var value, null, shorts) ? value : null;
 
         #region Outs
+        public static void OutChangelog()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(SLThreePlugin.Description?.ChangeLog);
+            Console.ResetColor();
+        }
+        public static void OutREPLChangelog()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(SLThreeREPLPlugin.Description?.ChangeLog);
+            Console.ResetColor();
+        }
+
         public static void OutCurrentVersion()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -564,9 +573,7 @@ namespace slt
         public static Dictionary<string, string> ShortREPLCommands = new Dictionary<string, string>()
         {
             { "-v", "--version" },
-            { "-d", "--difference" },
-            { "-V", "--repl-version" },
-            { "-D", "--repl-difference" },
+            { "-V", "--changelog" },
 
             { "-h", "--help" },
             { "-q", "--quit" },
@@ -751,12 +758,7 @@ namespace slt
                 }
             }
 
-            if (wrds.TryGetArgument("-v", out var version, null, ShortREPLCommands))
-            {
-                OutVersion(version);
-                any_executed = true;
-            }
-            else if (wrds.HasArgument("-v", ShortREPLCommands))
+            if (wrds.HasArgument("-v", ShortREPLCommands))
             {
                 OutCurrentVersion();
                 any_executed = true;
@@ -768,11 +770,10 @@ namespace slt
                 else OutAsException(string.Format(Locale.Current["REPL_LocaleNotFound"], locale_name));
                 any_executed = true;
             }
-            if (wrds.TryGetArgument("-V", out var repl_version, null, ShortREPLCommands))
+            if (wrds.HasArgument("-V", ShortREPLCommands))
             {
-                //todo out last
-                //OutREPLVersion(repl_version);
-                //any_executed = true;
+                OutChangelog();
+                any_executed = true;
             }
 
             foreach (var x in REPLCommands)
@@ -958,9 +959,8 @@ namespace slt
                 else InvokeFile(args[0], null, encoding, true);
             }
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
-            if (TryGetArgument("-v", out var version)) OutVersion(version);
-            else if (HasArgument("-v")) OutCurrentVersion();
-            //if (TryGetArgument("-V", out var repl_version)) OutREPLVersion(repl_version);
+            if (HasArgument("-v")) OutCurrentVersion();
+            if (HasArgument("-V")) OutChangelog();
             if (HasArgument("-h")) OutHelp();
         }
     }

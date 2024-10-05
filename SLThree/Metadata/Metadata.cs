@@ -17,7 +17,7 @@ namespace SLThree.Metadata
         public string Edition => "Massive Update";
         public IParser Parser => new Parser();
         public IRestorator Restorator => new Restorator();
-        public string Description => "";
+        public string Description => Name;
         public string ChangeLog => SLTHelpers.GetStringFromAssembly(typeof(Metadata).Assembly, "SLThree.docs.versions.last");
     }
 }

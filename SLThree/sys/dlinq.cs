@@ -8,7 +8,7 @@ namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
     //Typed linq with delegates
-    public class dlinq
+    public class @dlinq
     {
         public static T sum<T>(IEnumerable<T> objects)
             => tlinq.sum_helper<T>.Sum(objects);

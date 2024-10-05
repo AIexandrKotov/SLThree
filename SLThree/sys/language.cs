@@ -9,7 +9,7 @@ using System.Reflection;
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public static class language
+    public static class @language
     {
         public static Assembly SLThree = typeof(language).Assembly;
         public static IEnumerable<Type> GetAncestors(Type type)

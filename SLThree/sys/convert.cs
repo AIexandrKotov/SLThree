@@ -3,7 +3,7 @@
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public static class convert
+    public static class @convert
     {
         public static string bin(long num) => $"0b{Convert.ToString(num, 2)}";
         public static string oct(long num) => $"0o{Convert.ToString(num, 8)}";

@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public static class jit
+    public static class @jit
     {
         static AssemblyName Name = new AssemblyName("SLThree.JIT");
         static AssemblyBuilder Assembly;

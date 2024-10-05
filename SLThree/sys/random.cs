@@ -5,7 +5,7 @@ using System.Collections;
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public class random
+    public class @random
     {
         public static object choose(IChooser chooser) => SLTHelpers.random.choose(chooser);
         public static object to_chooser(object o) => SLTHelpers.random.to_chooser(o);

@@ -3,7 +3,7 @@
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public static class console
+    public static class @console
     {
         public static ContextWrap color = typeof(ConsoleColor).StaticWrap().wrap;
         public static string readln() => Console.ReadLine();

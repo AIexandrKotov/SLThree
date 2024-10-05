@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace SLThree.sys
 {
 #pragma warning disable IDE1006 // Стили именования
-    public static class linq
+    public static class @linq
     {
 
         internal static ClassAccess LinqAccess = new ClassAccess(typeof(linq));

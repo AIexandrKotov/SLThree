@@ -4,9 +4,4 @@
 
     -r --repl or 0 args    - {StartREPL}
     -v --version           - {Version}
-    -v --version <V>       - {VersionX}
-    -d --diff <INT>        - {DiffI}
-    -d --diff <STR>        - {DiffS}
-    -V --repl-version <V>  - {ReplVersionX}
-    -D --repl-diff <INT>   - {ReplDiffI}
-    -D --repl-diff <STR>   - {ReplDiffS}
+    -V --changelog         - {Changelog}
