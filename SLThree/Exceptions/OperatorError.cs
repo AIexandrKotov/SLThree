@@ -14,4 +14,9 @@ namespace SLThree
         public OperatorError(string binary, Type left, Type right, ISourceContext context)
             : base(string.Format(Locale.Current["ERR_OPBinary"], binary, left?.GetTypeString() ?? "null", right?.GetTypeString() ?? "null"), context) { }
     }
+    public class DotnetSupportError : RuntimeError
+    {
+        public DotnetSupportError(string element, string start, ISourceContext context)
+            : base(string.Format(Locale.Current["ERR_DotnetSupport"], element, start), context) { }
+    }
 }

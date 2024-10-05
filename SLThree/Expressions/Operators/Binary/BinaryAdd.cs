@@ -38,6 +38,8 @@ namespace SLThree
                 if (right is ulong u2) return u1 + u2;
                 if (right is double d2) return u1 + d2;
             }
+            if (left is string & right is string)
+                return (left as string) + (right as string);
             throw new OperatorError(this, left?.GetType(), right?.GetType());
         }
 

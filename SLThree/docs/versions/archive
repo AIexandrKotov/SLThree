@@ -1,0 +1,175 @@
+------ 0.8.1 Patch ------ [22.06.24]
+Bugfixes:
+    - Restored if without else statement (#127)
+
+------ 0.8.0 Binding&Naming Update ------ [21.06.24]
+Language:
+    - New method definition syntax
+      `[modifs][Name][<T>](args) {...}`
+      `[modifs][Name][<T>](args) => value`
+    - You can now implements contexts with ":" in the following cases:
+      - New initializers:       // [] - optional
+         `new T [Name][: Ancestors][{...}]`
+      - New context creators:
+         `context [Name][: Ancestors] {...}`
+         `new context [Name][: Ancestors]`
+    - Statement-like notation (without `;`) for expressions with body:
+        condition, match, context, new, methods
+    - Constructor method that creates new contexts
+       `context TBase { constructor = (f) => this.f = f; };`
+       `T1 = TBase(5); T2 = TBase(10);`
+    - The right side of the nested context initializer
+      assignations now always refers to the self context
+       `x = 1; context A { context B { x = x; }}`
+    - Parent keyword in constructed contexts
+       `T1.parent == TBase;`
+    - Abstract methods (withoud body)
+    - Static expression (will be executed only once) `static x`
+    - Condition statement is now expression
+    - Using statement is now expression
+    - Strong method binding
+    - Changed context syntax:
+       `new context Name: T {...}` -> `new T Name {...}`
+       `new context: T {...}` -> `new T {...}`
+       `new context Name: T` -> `new T Name`
+       `new context: T` -> `new T`
+       `new context Name {...}` -> `context Name {...}`
+       `new context {...}` -> `context {...}`
+Optimization:
+    - Executing method performance has been increased by ~10%
+    - Wrappers refactoring, minumum 3x faster wrapping
+      minimum 20x faster unwrapping
+Bugfixes:
+    - Fixed object invokation (#125)
+
+------ 0.7.1 Patch ------ [01.06.24]
+Bugfixes:
+    - Add support for generic dict creators <T, T>{} (#121)
+
+------ 0.7.0 Typing Update ------ [24.04.24]
+Language:
+    - Supporting .NET platform (.NET Standard 2.1+)
+    - Generic methods `<T>(...) => ...`
+    - Type annotations `T x = y`, `(T x, T y) = (1, 2)`, `(T a): T => a`,
+      `foreach (T x in ...)`
+    - Generic invokation `x<T>(a, b)`, sys.tlinq (typed linq)
+    - Match expression `match (x) { y ==> 1; z ==> { return; }; }`
+    - Typed creators `<T>[x, y]`, `<TK, TV>{x: y}`, `<T>x..y`
+    - Tuples get specific types right away `(1, ) is tuple<i64>`
+    - Array creator `-[x, y]`, `<T>-[x, y]`
+    - Non-conflict null-conditionals: `x?()` => `x.?()`, `x?[]` => `x.?[]`
+    - Operator is with assign `a is i64 b`
+    - Dot notation `d.x = y` for dictionaries`
+    - private context
+    - Getting ConstructorInfo with `@T::new(...)`
+    - Removed `switch` statement
+    - Supporting unicode names
+Bugfixes:
+    - `continue;` is working correctly now (#112)
+    - fixed re-calling functions with `new T`, `as T`, etc.; (#113)
+    - fixed names starting with special names (#114)
+    - fixed negative numeric literals (#118)
+    - fixed unexpected symbols in using (#119)
+
+------ 0.6.0 Functionalization Update ------ [22.01.24]
+Language:
+    - Pipe operator `x |> y()`
+    - try-catch-finally statement, throw statement
+    - Null conditional operators `x?.y`, `x?[y]`, `x?()`
+    - Null coalescing operator `a ?? b`
+    - Safe expression `err -? a`
+    - Range expression `x..y`
+    - New choosers syntax `^x..y`, `*[x, y]`
+    - Array constructor `new T[size]`
+    - Last `,` ignoring in creators `[1, ]`, `(1, )`
+    - Similarity of new context and context statement
+    - Typing refactoring (similar `T`s in `new T`, `as T`, `is T`, etc.)
+    - Foreach expression now supports `x[y]`, `(x, y)`, `x.y`
+    - Indexators for context `self["varname"]`, IEnumerable implementation
+    - `upper`->`super`, new special context `upper` (previous context)
+    - single statements `if/while/etc. (...) statement;` (including else if)
+Bugfixes:
+    - Returning contextes and tuples from methods now works
+    - Fixed lazy of ternary operator
+    - Fixed raws of string and char
+    - Fixed `x.y(a, b)(c, d)` case where x is class access
+
+------ 0.5.2 Patch ------ [09.12.23]
+Bugfixes:
+    - Correct behaviour of comments
+    - x as typeof(T), x as @T
+
+------ 0.5.1 Patch ------ [19.11.23]
+Bugfixes:
+    - Now reflection expression works correctly with using names
+
+------ 0.5.0 No Native November ------ [18.11.23]
+Language:
+    - reflection expression (@)
+    - generics in typeof and using
+    - is operator (type checking), ?= operator (naming by right)
+    - power up of invokation (() => 2)()
+    - Tuple assign, Tuple -> ValueTuple
+    - linq without context.unwrap()
+    - unwrapping context with as
+    - Changed priorities of as, \ and new context
+    - x1.5 speed up of type cast
+Embedding:
+    - Script Layout with assemblies referencing
+
+------ 0.4.0 Armavir update ------ [13.11.23]
+Language:
+    - Creating own contextes
+    - Operator \ (random choose, including with chances)
+    - used types in type cast
+    - Commentaries is working now
+    - Supporting recursive methods, naming and cloning methods by assign
+    - `self` is wrapped context now
+    - sys.linq (sys.* classes) class instead `linq` keywords
+    - fixed lazy of && and ||
+    - Octal num literals
+Embedding
+    - Added NonGenericWrapper
+
+------ 0.3.0 Third time is lucky ------ [06.11.23]
+Language:
+    - Foreach loop
+    - linq context (linq.range, linq.max etc.)
+    - list, tuples and dictionary initializers
+    - Indexators
+    - Logical operators (&&, ||) and binary bit operators (&, |, ^)
+    - Ternary operator
+    - Hexadecimal and binary literals, suppoting _ in nums
+Embedding:
+    - Wrapping classes in context, wrapping static members and classes
+    - Safe unwrapping 
+Optimization:
+    - >40% (collatz_conjecture 14 s => 8 s)
+
+------ 0.2.0 Unwrap the wrap ------ [27.10.23]
+Language:
+    - Anonymous methods, Calling expressions
+    - Getting instance and static members of any type and object
+    - Using statement, typeof(T) expression, switch statement
+    - Optional implicit type-casting, cast expression, new expression
+    - Return, break, continue statements
+    - Interpolated strings and string literals with escapes
+    - All-bits numeric literals and char literal
+    - self and global keywords for getting context
+Embedding:
+    - Wrapper for cast SLThree in any type
+    - Ñompatibility with REPL 1.0.0
+Optimization:
+    - >65% (collatz_conjecture 48 s => 14 s)
+
+------ 0.1.1 ------ [23.10.23]
+The REPL was changed here, but now REPL changelogs are in a different place
+
+------ 0.1.0 Lovely 64 bits ------ [22.10.23]
+New:
+    Local variables
+    Supporting types: long, ulong, double
+    Unary operators: +, -, ~, !
+    Binary operators: +, -, *, /, %, ==, !=, >=, <=, >, <, =
+    ExtendedAssigns: +=, -=, *=, /=, %=
+    Statements: Condition, WhileCycle

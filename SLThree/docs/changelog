@@ -1,3 +1,0 @@
-Starting from now, SLThree is divided into
-- SLThree (interpreter and AST)
-- SLThree.Language (language parser)

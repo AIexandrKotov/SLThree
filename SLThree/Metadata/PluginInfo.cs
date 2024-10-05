@@ -20,6 +20,12 @@ namespace SLThree.Metadata
         bool Insert { get; }
     }
 
+    public interface IDescription
+    {
+        string Description { get; }
+        string ChangeLog { get; }
+    }
+
     public interface ILanguageProvider
     {
         /// <summary>
@@ -77,9 +83,10 @@ namespace SLThree.Metadata
         public enum PluginType
         {
             None = 0,
-            Localization = 0x1,
-            Language = 0x2,
-            API = 0x4,
+            Description = 0x1,
+            Localization = 0x2,
+            Language = 0x4,
+            API = 0x8,
         }
 
         public string Name { get; private set; }
@@ -88,6 +95,8 @@ namespace SLThree.Metadata
         public PluginType Type { get; private set; }
         public string Version { get; private set; }
 
+        public bool HasDescription => Type.HasFlag(PluginType.Description);
+        public IDescription Description { get; private set; }
         public bool IsLocalization => Type.HasFlag(PluginType.Localization);
         public ILocalizationPlugin Localization { get; private set; }
         public bool IsLanguage => Type.HasFlag(PluginType.Language);
@@ -146,6 +155,12 @@ namespace SLThree.Metadata
                 Version = version,
                 Assembly = assembly,
             };
+
+            if (pluginInfo is IDescription description)
+            {
+                plugin.Description = description;
+                plugin.Type |= PluginType.Description;
+            }
 
             if (pluginInfo is ILocalizationPlugin localization)
             {

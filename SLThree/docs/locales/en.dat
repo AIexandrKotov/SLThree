@@ -21,6 +21,7 @@ ERR_OPUnary=Operator {0} not allow for {1}
 ERR_OPBinary=Operator {0} not allow for {1} and {2}
 ERR_OPTernary=Operator {0} not allow for {1}
 
+ERR_DotnetSupport=Element "{0}" is not available in .NET before {1}
 ERR_AbstractInvokation=Trying to invoke abstract method
 ERR_T_Make=It is impossible to make generic {0} in {1}
 ERR_T_MakeParamName=It is impossible to make generic {0} for {1} parameter name

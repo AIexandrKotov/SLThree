@@ -64,6 +64,7 @@ Language:
       As right operand of `.`: `self.1`, `self."Var Name"`
       And also in invokations: `"Var Name"(a, b)`
     - Null-coalescing augmented assign operator `??=`
+    - Shift operators: `<<`, `>>`, `>>>`
     - Now you can define variables in the method from the outside
       via 'funcname.inside` and `funcname.defaults` contexts
     - Dividing ranges into `..` and `..=` (including last)

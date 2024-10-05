@@ -10,9 +10,7 @@ namespace SLThree
 
         public override object GetValue(ExecutionContext context)
         {
-            var left = Left.GetValue(context);
-            if (left == null) return Right.GetValue(context);
-            return left;
+            return Left.GetValue(context) ?? Right.GetValue(context);
         }
 
         public override object Clone()

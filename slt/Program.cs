@@ -65,13 +65,11 @@ namespace slt
         internal static void InitPlugins()
         {
             SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
-            SLThreeLanguagePlugin = Plugin.AddOrGetPlugin(typeof(SLThree.Language.Metadata).Assembly.Location);
             SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
             //Plugin.CollectPlugins();
         }
 
         internal static Assembly SLThreeAssembly, REPLAssembly;
-        private static SLTVersion.Reflected SLThreeVersion;
         private static REPLVersion.Reflected SLTREPLVersion;
         private static SortedDictionary<string, string[]> SLThreeVersions;
         private static bool HasArgument(string arg)
@@ -83,10 +81,7 @@ namespace slt
         {
             SLThreeAssembly = Assembly.GetAssembly(typeof(Parser));
             REPLAssembly = Assembly.GetAssembly(typeof(Program));
-            SLThreeVersion = new SLTVersion.Reflected();
             SLTREPLVersion = new REPLVersion.Reflected();
-            var sltver = SLThreeAssembly.GetType("SLTVersion");
-            SLThreeVersions = sltver.GetProperty("VersionsData").GetValue(null).Cast<SortedDictionary<string, string[]>>();
         }
 
 
@@ -145,90 +140,23 @@ namespace slt
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(SLTVersion.Name);
+            Console.Write(SLThreePlugin.Name);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($" {GetVersionOfLanguage()} ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"{SLTVersion.Edition} ");
+            Console.WriteLine($"{SLThreePlugin.Language.Edition} ");
             Console.ResetColor();
         }
 
         public static void OutVersion(string version)
         {
-            if (SLThreeVersions.TryGetValue(version.Replace("last", SLThreeVersion.VersionWithoutRevision), out var data))
+            if (SLThreeVersions.TryGetValue(version.Replace("last", SLThreePlugin.Version), out var data))
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(data.JoinIntoString("\n"));
                 Console.ResetColor();
             }
             else OutAsWarning($"Version {version} not found");
-        }
-
-        public static void OutREPLVersion(string version)
-        {
-            if (DocsIntergration.REPLVersionsData.TryGetValue(version.Replace("last", SLTREPLVersion.VersionWithoutRevision), out var data))
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(data.JoinIntoString("\n"));
-                Console.ResetColor();
-            }
-            else OutAsWarning($"REPL version {version} not found");
-        }
-
-        public static void OutDifference(int count)
-        {
-            var lv = count >= 0 ? SLThreeVersions.Count - count : 0;
-            if (lv < 0) lv = 0;
-            var i = SLThreeVersions.Count - 1;
-            foreach (var entry in SLThreeVersions.Reverse())
-            {
-                if (i < lv) break;
-                Console.WriteLine($"==> {entry.Key}");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(entry.Value.JoinIntoString("\n"));
-                Console.ResetColor();
-                i--;
-            }
-        }
-
-        public static void OutDifferenceBy(string version)
-        {
-            foreach (var entry in SLThreeVersions.Reverse())
-            {
-                if (entry.Key.StartsWith(version)) return;
-                Console.WriteLine($"==> {entry.Key}");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(entry.Value.JoinIntoString("\n"));
-                Console.ResetColor();
-            }
-        }
-
-        public static void OutREPLDifference(int count)
-        {
-            var lv = count >= 0 ? DocsIntergration.REPLVersionsData.Count - count : 0;
-            if (lv < 0) lv = 0;
-            var i = DocsIntergration.REPLVersionsData.Count - 1;
-            foreach (var entry in DocsIntergration.REPLVersionsData.Reverse())
-            {
-                if (i < lv) break;
-                Console.WriteLine($"==> {entry.Key}");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(entry.Value.JoinIntoString("\n"));
-                Console.ResetColor();
-                i--;
-            }
-        }
-
-        public static void OutREPLDifferenceBy(string version)
-        {
-            foreach (var entry in DocsIntergration.REPLVersionsData.Reverse())
-            {
-                if (entry.Key.StartsWith(version)) return;
-                Console.WriteLine($"==> {entry.Key}");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(entry.Value.JoinIntoString("\n"));
-                Console.ResetColor();
-            }
         }
 
         private static string LocaleHelpTemplate(string locale_name, Dictionary<string, string> helps, string prefix, string[] get_doc)
@@ -746,7 +674,7 @@ namespace slt
                     wrds.HasArgument("--global")
                     ? ExecutionContext.global.Context
                         : (wrds.TryGetArgument("--context", out var vname)
-                            ? SLThree.Language.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
+                            ? SLThree.sys.slt.eval(vname).TryCastRef<ContextWrap>()?.Context ?? REPLContext
                             : REPLContext)
                         ;
                 if (wrds.TryGetArgument("--table", out var tablestr, () => (-2).ToString()) && int.TryParse(tablestr, out var table))
@@ -780,7 +708,7 @@ namespace slt
                 var context = default(ExecutionContext);
                 if (wrds.TryGetArgument("--in", out var runfile_incontext, () => "self"))
                 {
-                    var ocontext = SLThree.Language.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
+                    var ocontext = SLThree.sys.slt.eval(new ContextWrap(REPLContext), runfile_incontext);
                     switch (ocontext)
                     {
                         case ExecutionContext cc:
@@ -842,20 +770,9 @@ namespace slt
             }
             if (wrds.TryGetArgument("-V", out var repl_version, null, ShortREPLCommands))
             {
-                OutREPLVersion(repl_version);
-                any_executed = true;
-            }
-            if (wrds.TryGetArgument("-d", out var last_versions, () => int.MaxValue.ToString(), ShortREPLCommands))
-            {
-                if (int.TryParse(last_versions, out var lasts)) OutDifference(lasts);
-                else OutDifferenceBy(last_versions);
-                any_executed = true;
-            }
-            if (wrds.TryGetArgument("-D", out var last_repl_versions, () => int.MaxValue.ToString(), ShortREPLCommands))
-            {
-                if (int.TryParse(last_repl_versions, out var lasts)) OutREPLDifference(lasts);
-                else OutREPLDifferenceBy(last_repl_versions);
-                any_executed = true;
+                //todo out last
+                //OutREPLVersion(repl_version);
+                //any_executed = true;
             }
 
             foreach (var x in REPLCommands)
@@ -879,7 +796,7 @@ namespace slt
 
         private static string VersionGetted = null;
         private static string REPLVersionGetted = null;
-        private static string GetVersionOfLanguage() => SLThreeLanguagePlugin.Version;
+        private static string GetVersionOfLanguage() => SLThreePlugin.Version;
         private static string GetVersionOfREPL() => SLThreeREPLPlugin.Version;
 
         public static void REPLShortVersion()
@@ -1043,17 +960,7 @@ namespace slt
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
             if (TryGetArgument("-v", out var version)) OutVersion(version);
             else if (HasArgument("-v")) OutCurrentVersion();
-            if (TryGetArgument("-V", out var repl_version)) OutREPLVersion(repl_version);
-            if (TryGetArgument("-d", out var last_versions, () => int.MaxValue.ToString()))
-            {
-                if (int.TryParse(last_versions, out var lasts)) OutDifference(lasts);
-                else OutDifferenceBy(last_versions);
-            }
-            if (TryGetArgument("-D", out var last_repl_versions, () => int.MaxValue.ToString()))
-            {
-                if (int.TryParse(last_repl_versions, out var lasts)) OutREPLDifference(lasts);
-                else OutREPLDifferenceBy(last_repl_versions);
-            }
+            //if (TryGetArgument("-V", out var repl_version)) OutREPLVersion(repl_version);
             if (HasArgument("-h")) OutHelp();
         }
     }

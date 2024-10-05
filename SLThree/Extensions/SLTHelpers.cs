@@ -59,6 +59,11 @@ namespace SLThree.Extensions
         }
 #pragma warning restore IDE1006 // Стили именования
 
+        public static string GetStringFromAssembly(Assembly assembly, string resource)
+        {
+            using (var stream = assembly.GetManifestResourceStream(resource))
+                return stream.ReadString();
+        }
         public static Dictionary<string, Type> GetTypesFromAssemblySYS(Assembly assembly, string fullName = "SLThree.sys.")
         {
             return assembly
