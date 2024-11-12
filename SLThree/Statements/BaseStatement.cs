@@ -2,7 +2,7 @@
 
 namespace SLThree
 {
-    [DebuggerDisplay("{ToString()}        ([{GetType().Name}] at {IISourceContext})")]
+    [DebuggerDisplay("{ToString()}        ([{GetType().Name}] at {SourceContext})")]
     public abstract class BaseStatement : ExecutionContext.IExecutable
     {
         public ISourceContext SourceContext { get; set; }

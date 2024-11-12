@@ -204,7 +204,7 @@ namespace SLThree.Metadata
             typeof(BaseExpression).Assembly,
         };
 
-        public override string ToString() => $"{Name} {Type}";
+        public override string ToString() => $"{Name} ({Type})";
 
         /// <summary>
         /// Добавить плагин-сборку по пути файла. Версия будет соответствовать версии файла.
