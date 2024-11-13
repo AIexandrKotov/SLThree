@@ -132,7 +132,7 @@ binary_9 <BaseExpression> -memoize
     / "*" _ left:block_expression { new DereferenceExpression(left, _(state)) }
     / "&" _ left:block_expression { new ReferenceExpression(left, _(state)) }
     / "?" _ "=" _ right:binary_9 { new BinaryAssignUnknown(right, _(state)) }
-    / left:(<BaseExpression>req_arg_name/binary_7) _ "=" _ right:binary_9 { new BinaryAssign(left, right, _(state)) }
+    / left:(<BaseExpression>req_arg_name/literals_as_name/binary_7) _ "=" _ right:binary_9 { new BinaryAssign(left, right, _(state)) }
     / left:(<BaseExpression>literals_as_name/binary_7) _ "+=" _ right:binary_9 { new BinaryAssign(left, new BinaryAdd(left, right, _(state)), _(state)) }
     / left:(<BaseExpression>literals_as_name/binary_7) _ "-=" _ right:binary_9 { new BinaryAssign(left, new BinaryRem(left, right, _(state)), _(state)) }
     / left:(<BaseExpression>literals_as_name/binary_7) _ "*=" _ right:binary_9 { new BinaryAssign(left, new BinaryMultiply(left, right, _(state)), _(state)) }
