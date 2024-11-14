@@ -813,6 +813,9 @@ namespace slt
 #if NETFRAMEWORK
             Console.WriteLine(".NET Framework 4.7.1");
 #else
+#if NET9_0_OR_GREATER
+            Console.WriteLine(".NET 9.0");
+#else
 #if NET8_0_OR_GREATER
             Console.WriteLine(".NET 8.0");
 #else
@@ -821,6 +824,7 @@ namespace slt
 #else
 #if NET6_0_OR_GREATER
             Console.WriteLine(".NET 6.0");
+#endif
 #endif
 #endif
 #endif
