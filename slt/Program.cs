@@ -328,6 +328,71 @@ namespace slt
             }
             return executionContext;
         }
+
+        public static ExecutionContext InvokeDirectory(string path, string entry_file, bool non_recursive, ExecutionContext context = null, Encoding encoding = null, bool show_result = true)
+        {
+            var parser = new SLThree.Language.Parser();
+            var executionContext = context ?? GetNewREPLContext();
+
+            var files = Directory.GetFiles(Path.GetFullPath(path), "*.slt", non_recursive ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories).ToList();
+            if (entry_file != null)
+            {
+                entry_file = Path.GetFullPath(entry_file);
+                files.Remove(entry_file);
+            }
+            else
+            {
+                OutAsException("For now, auto detect entry file is not available");
+            }
+
+            var project = new BaseStatement[files.Count];
+
+            var i = 0;
+            foreach (var file in files)
+            {
+                try
+                {
+                    project[i] = parser.ParseScript(File.ReadAllText(file, encoding ?? Encoding.UTF8), file);
+                }
+                catch (Exception e)
+                {
+                    OutAsException($"Parse error in {file}");
+                    OutException(e);
+                }
+                finally
+                {
+                    i += 1;
+                }
+            }
+
+            foreach (var st in project)
+            {
+                try
+                {
+                    var o = st?.GetValue(executionContext);
+                }
+                catch (Exception e)
+                {
+                    OutAsException($"Execution error in {st.SourceContext.Filename}");
+                    OutException(e);
+                }
+            }
+
+            try
+            {
+                var st = parser.ParseScript(File.ReadAllText(entry_file, encoding ?? Encoding.UTF8), entry_file);
+                var o = st.GetValue(executionContext);
+                if (show_result) OutAsOutput(o, st);
+            }
+            catch (UnauthorizedAccessException) when (Directory.Exists(entry_file)) { OutAsException(string.Format(Locale.Current["REPL_DirsNotSupported"], entry_file)); }
+            catch (FileNotFoundException) { OutAsException(string.Format(Locale.Current["REPL_FileNotFound"], entry_file)); }
+            catch (Exception e)
+            {
+                OutException(e);
+            }
+            return executionContext;
+
+        }
         #endregion
 
         #region REPL
@@ -955,12 +1020,24 @@ namespace slt
             if (args.Length > 0 && !args[0].StartsWith("-"))
             {
                 var encoding = GetEncoding(GetArgument("-e"));
-                if (HasArgument("-r"))
+                var context = default(ExecutionContext);
+                if (HasArgument("--project"))
                 {
-                    var context = InvokeFile(args[0], null, encoding, true);
-                    StartREPL(context);
+                    if (Directory.Exists(args[0]) && TryGetArgument(args, "--entry", out var entry_file))
+                    {
+                        context = InvokeDirectory(args[0], entry_file, HasArgument("--nonrecursive"), null, encoding, true);
+                    }
+                    else if (File.Exists(args[0]))
+                    {
+                        context = InvokeDirectory(Path.GetDirectoryName(Path.GetFullPath(args[0])), args[0], HasArgument("--nonrecursive"), null, encoding, true);
+                    }
+                    else OutException(new FileNotFoundException(null, args[0]));
                 }
                 else InvokeFile(args[0], null, encoding, true);
+                if (HasArgument("-r"))
+                {
+                    StartREPL(context);
+                }
             }
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
             if (HasArgument("-v")) OutCurrentVersion();
