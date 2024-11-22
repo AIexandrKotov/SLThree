@@ -38,6 +38,7 @@ namespace SLThree
                         }
                     }
                     variable_index = context.LocalVariables.SetValue(nl.Name, right);
+                    if (nl.Const) context.LocalVariables.MakeConstant(variable_index);
                     is_name_expr = true;
                     counted_invoked = context;
                     return right;
@@ -63,7 +64,8 @@ namespace SLThree
                         right = mth;
                     }
                 }
-                context.LocalVariables.SetValue(nl.Name, right);
+                var ind = context.LocalVariables.SetValue(nl.Name, right);
+                if (nl.Const) context.LocalVariables.MakeConstant(ind);
                 return right;
             }
             else if (Left is MemberAccess memberAccess)
@@ -111,6 +113,7 @@ namespace SLThree
                     }
                 }
                 variable_index = context.LocalVariables.SetValue(nl.Name, right);
+                if (nl.Const) context.LocalVariables.MakeConstant(variable_index);
                 is_name_expr = true;
                 counted_invoked = context;
                 return right;

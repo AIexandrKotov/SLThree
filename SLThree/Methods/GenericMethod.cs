@@ -320,7 +320,7 @@ namespace SLThree
             }
         }
 
-        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values)
+        public GenericMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, bool[] constants, NameExpression[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values, constants)
         {
             Generics = generics;
             OriginalStatements = Statements.CloneCast();
@@ -367,14 +367,14 @@ namespace SLThree
 
         public override Method CloneWithNewName(string name)
         {
-            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), Generics.CloneArray())
+            return new GenericMethod(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy(), Generics.CloneArray())
             {
                 Abstract = Abstract
             };
         }
         public Method CreateMethod()
         {
-            return new Method(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray())
+            return new Method(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy())
             {
                 Abstract = Abstract
             };

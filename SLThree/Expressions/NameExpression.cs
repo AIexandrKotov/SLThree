@@ -5,17 +5,19 @@ namespace SLThree
 
     public class NameExpression : BaseExpression
     {
+        public bool Const;
         public TypenameExpression TypeHint;
         public string Name;
         public NameExpression() : base() { }
-        public NameExpression(string name, ISourceContext context) : this(name, null, context) { }
-        public NameExpression(string name, TypenameExpression typehint, ISourceContext context) : base(context)
+        public NameExpression(string name, ISourceContext context) : this(name, null, false, context) { }
+        public NameExpression(string name, TypenameExpression typehint, bool @const, ISourceContext context) : base(context)
         {
             Name = name;
             TypeHint = typehint;
+            Const = @const;
         }
 
-        public override string ExpressionToString() => $"{(TypeHint == null?"":TypeHint.ToString())}{Name}";
+        public override string ExpressionToString() => $"{(Const?"const ":"")}{(TypeHint == null?"":TypeHint.ToString())}{Name}";
 
         private ExecutionContext counted;
         private int variable_index;
@@ -35,6 +37,12 @@ namespace SLThree
             }
         }
 
+        public NameExpression Constant(bool @const)
+        {
+            Const = @const;
+            return this;
+        }
+
         public NameExpression Hint(TypenameExpression typehint)
         {
             TypeHint = typehint;
@@ -43,7 +51,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new NameExpression(Name.CloneCast(), TypeHint.CloneCast(), SourceContext = SourceContext.CloneCast());
+            return new NameExpression(Name.CloneCast(), TypeHint.CloneCast(), Const.Copy(), SourceContext = SourceContext.CloneCast());
         }
     }
 }

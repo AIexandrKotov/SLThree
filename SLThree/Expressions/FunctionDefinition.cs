@@ -114,7 +114,8 @@ namespace SLThree
                     !Modificators.Contains("explicit"),
                     Modificators.Contains("recursive"),
                     !@params,
-                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray());
+                    Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
+                    Arguments.Select(x => x.Name.Const).ToArray());
                 else
                     method = new GenericMethod(
                         FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
@@ -127,6 +128,7 @@ namespace SLThree
                         Modificators.Contains("recursive"),
                         !@params,
                         Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
+                        Arguments.Select(x => x.Name.Const).ToArray(),
                         GenericArguments.ConvertAll(x => x.Item1));
             }
             else
@@ -142,6 +144,7 @@ namespace SLThree
                 Modificators.Contains("recursive"),
                 !@params,
                 Arguments.Select(x => x.DefaultValue.CloneCast()).Where(x => x != null).ToArray(),
+                Arguments.Select(x => x.Name.Const).ToArray(),
                 GenericArguments.Select(x => (x.Item1.CloneCast(), x.Item2?.GetConstraint(x.Item1.Name, context) ?? new TemplateMethod.AnyConstraint(x.Item1.SourceContext))).ToArray());
             }
             method.Abstract = is_abstract;

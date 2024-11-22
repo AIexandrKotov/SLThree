@@ -26,6 +26,8 @@ Language:
       `params f(args) => args;`
       `args(1, 2, 3); //[1, 2, 3]`
     - Calling methods with a variable number of arguments
+    - Constant variables and parameters
+      `const x = 2; f(const x) => x += 1;`
     - Accord expression `accord (x, y) { (i64, i64) => true; }`
       Syntax sugar for type-matching
     - Dictionary initializers new syntax:

@@ -14,7 +14,7 @@ namespace SLThree
         }
         public FunctionArgument(NameExpression name, ISourceContext context) : this(name, null, context) { }
 
-        public override string ExpressionToString() => $"{Name}{(DefaultValue == null ? "" : $" = {DefaultValue}")}";
+        public override string ExpressionToString() => $"{(Name.Const?"const ":"")}{Name}{(DefaultValue == null ? "" : $" = {DefaultValue}")}";
 
         public override object GetValue(ExecutionContext context)
         {

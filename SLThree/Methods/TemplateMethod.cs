@@ -115,7 +115,7 @@ namespace SLThree
             public override Constraint GetConstraint(string current_template, ExecutionContext context)
             {
                 var st = Statement.CloneCast();
-                return new FunctionConstraint(new Method("constraint", new string[1] { current_template }, new StatementList(new BaseStatement[1] { st }, st.SourceContext), new TypenameExpression[1], null, context.wrap, true, false, true, new BaseExpression[0]), SourceContext.CloneCast());
+                return new FunctionConstraint(new Method("constraint", new string[1] { current_template }, new StatementList(new BaseStatement[1] { st }, st.SourceContext), new TypenameExpression[1], null, context.wrap, true, false, true, new BaseExpression[0], new bool[1]), SourceContext.CloneCast());
             }
 
             public override string ExpressionToString() => $"=> {Statement}";
@@ -3508,7 +3508,7 @@ namespace SLThree
             return GenericMaking.AsValue;
         }
 
-        public TemplateMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, (NameExpression, Constraint)[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values)
+        public TemplateMethod(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, bool[] constants, (NameExpression, Constraint)[] generics) : base(name, paramNames, statements, paramTypes, returnType, definitionPlace, @implicit, recursive, without_params, default_values, constants)
         {
             Generics = generics;
             OriginalParamNames = ParamNames.CloneArray();
@@ -3570,14 +3570,14 @@ namespace SLThree
 
         public override Method CloneWithNewName(string name)
         {
-            return new TemplateMethod(name, ParamNames?.CloneArray(), OriginalStatements.CloneCast(), OriginalParamTypes.CloneArray(), OriginalReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, OriginalDefaultValues.CloneArray(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
+            return new TemplateMethod(name, ParamNames?.CloneArray(), OriginalStatements.CloneCast(), OriginalParamTypes.CloneArray(), OriginalReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, OriginalDefaultValues.CloneArray(), ContantsParams.Copy(), Generics.ConvertAll(x => (x.Item1.CloneCast(), x.Item2.CloneCast())))
             {
                 Abstract = Abstract
             };
         }
         public Method CreateMethod()
         {
-            return new Method(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray())
+            return new Method(Name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy())
             {
                 Abstract = Abstract
             };

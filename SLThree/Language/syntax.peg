@@ -760,9 +760,11 @@ arg_name <NameExpression>
     / name
     / literals_as_name
 
-req_arg_name <NameExpression>
-    = t:typename _ n:name { n.Hint(t) }
-    / t:typename _ n:literals_as_name { n.Hint(t) }
+req_arg_name <NameExpression> //todo подумать, может быть лучше константы обрабатывать визитором и добавлять const на все вложенные имена
+    = c:("const" _required_)? t:typename _ n:name { n.Hint(t).Constant(GetOptional(c) != null) }
+    / c:("const" _required_)? t:typename _ n:literals_as_name { n.Hint(t).Constant(GetOptional(c) != null) }
+    / "const" _required_ n:name { n.Constant(true) }
+    / "const" _required_ n:literals_as_name { n.Constant(true) }
 
 name_literal <BaseExpression>
     = b:("true"/"false") { new BoolLiteral(bool.Parse(b), _(state)) }

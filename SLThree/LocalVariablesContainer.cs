@@ -9,6 +9,7 @@ namespace SLThree
         public LocalVariablesContainer(int default_size = 8, Dictionary<string, int> names = null)
         {
             Variables = new object[default_size];
+            Constants = new bool[default_size];
             NamedIdentificators = names ?? new Dictionary<string, int>();
             current = NamedIdentificators.Count;
         }
@@ -17,7 +18,9 @@ namespace SLThree
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Advanced)]
         public object[] Variables;
         public Dictionary<string, int> NamedIdentificators;
+        public bool[] Constants;
 
+        public HashSet<string> GetConstants() => new HashSet<string>(NamedIdentificators.Where(x => Constants[x.Value]).Select(x => x.Key));
         public Dictionary<string, object> GetAsDictionary() => NamedIdentificators.ToDictionary(x => x.Key, x => Variables[x.Value]);
         public static LocalVariablesContainer GetFromDictionary(IDictionary<string, object> objs)
         {
@@ -37,14 +40,22 @@ namespace SLThree
             var nw = new object[Variables.Length * 2];
             Variables.CopyTo(nw, 0);
             Variables = nw;
+            var nc = new bool[nw.Length];
+            Constants.CopyTo(nc, 0);
+            Constants = nc;
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void FillArguments(Method method, object[] args)
+        public void FillArguments(Method method, object[] args, bool[] consts)
         {
-            if (Variables.Length <= args.Length) Variables = new object[8 + args.Length + Variables.Length];
+            if (Variables.Length <= args.Length)
+            {
+                Variables = new object[8 + args.Length + Variables.Length];
+                Constants = new bool[8 + args.Length + Constants.Length];
+            }
             if (current <= args.Length) current = args.Length;
             args.CopyTo(Variables, 0);
+            consts.CopyTo(Constants, 0);
             for (var i = 0; i < args.Length; i++)
                 NamedIdentificators[method.ParamNames[i]] = i;
         }
@@ -59,7 +70,8 @@ namespace SLThree
         {
             if (NamedIdentificators.TryGetValue(name, out var id))
             {
-                Variables[id] = value;
+                if (!Constants[id])
+                    Variables[id] = value;
                 return id;
             }
             else
@@ -73,7 +85,8 @@ namespace SLThree
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetValue(int index, object value)
         {
-            Variables[index] = value;
+            if (!Constants[index])
+                Variables[index] = value;
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,6 +102,16 @@ namespace SLThree
         public object GetValue(int index)
         {
             return Variables[index];
+        }
+
+        public void MakeConstant(int index)
+        {
+            Constants[index] = true;
+        }
+        public void MakeConstant(int[] indices)
+        {
+            for (var i = 0; i < indices.Length; i++)
+                Constants[indices[i]] = true;
         }
     }
 }

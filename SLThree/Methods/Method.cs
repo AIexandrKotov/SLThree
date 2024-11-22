@@ -23,6 +23,7 @@ namespace SLThree
         public readonly bool WithoutParams;
         public readonly bool WithoutDefaults;
         public readonly int ParamsPlace;
+        public readonly bool[] ContantsParams;
         public readonly BaseExpression[] DefaultValues;
         public readonly int RequiredArguments;
         public readonly int MaximumArguments;
@@ -70,7 +71,7 @@ namespace SLThree
         }
 
         internal protected Method() { }
-        internal Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values)
+        internal Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, bool[] contants)
         {
             Name = name;
             ParamNames = paramNames;
@@ -86,6 +87,7 @@ namespace SLThree
             WithoutDefaults = DefaultValues.Length == 0;
             MaximumArguments = WithoutParams ? ParamNames.Length : int.MaxValue;
             RequiredArguments = ParamNames.Length - DefaultValues.Length;
+            ContantsParams = contants;
             if (!WithoutDefaults) default_values_invk_context = new ExecutionContext(false, false);
             if (!without_params && RequiredArguments > 0) RequiredArguments -= 1;
         }
@@ -121,7 +123,7 @@ namespace SLThree
                 ret = new ExecutionContext(false, false);
                 ret.Name = contextName;
                 ret.PreviousContext = super_context?.wrap;
-                ret.LocalVariables.FillArguments(this, arguments);
+                ret.LocalVariables.FillArguments(this, arguments, ContantsParams);
                 ret.@this = definitionplace;
                 ret.ForbidImplicit = !Implicit;
                 return ret;
@@ -144,7 +146,7 @@ namespace SLThree
                 }
                 ret.Name = contextName;
                 ret.PreviousContext = super_context?.wrap;
-                ret.LocalVariables.FillArguments(this, arguments);
+                ret.LocalVariables.FillArguments(this, arguments, ContantsParams);
                 ret.ForbidImplicit = !Implicit;
             }
             return ret;
@@ -331,7 +333,7 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray())
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy())
             {
                 Abstract = Abstract
             };
