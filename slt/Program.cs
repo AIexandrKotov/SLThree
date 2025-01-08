@@ -1033,7 +1033,7 @@ namespace slt
                     }
                     else OutException(new FileNotFoundException(null, args[0]));
                 }
-                else InvokeFile(args[0], null, encoding, true);
+                else context = InvokeFile(args[0], null, encoding, true);
                 if (HasArgument("-r"))
                 {
                     StartREPL(context);
