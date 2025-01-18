@@ -1,0 +1,1 @@
+explicit func_name<T1: i64 | i32, T2: i64 | i32>(T1 a = 1, T2 b = 2): i64 => a + b;

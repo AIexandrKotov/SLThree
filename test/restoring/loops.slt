@@ -1,0 +1,9 @@
+options() => context { AllowLineStatement = false; };
+while (true) {
+    a = 1;
+}
+do {
+    a = 1;
+} while (true);
+foreach (i64 x in new array<i64>(1, 2, 3))
+    x = x + x * x;
