@@ -16,9 +16,9 @@ namespace SLThree.Language
         public override void VisitExpression(TernaryOperator expression)
         {
             VisitExpression(expression.Condition);
-            WritePlainText(" ? ");
+            Writer.WritePlainText(" ? ");
             VisitExpression(expression.Left);
-            WritePlainText(" : ");
+            Writer.WritePlainText(" : ");
             VisitExpression(expression.Right);
         }
 
@@ -26,16 +26,16 @@ namespace SLThree.Language
         {
             foreach (var x in statement.Statements)
             {
-                WriteTab();
+                Writer.WriteTab();
                 VisitStatement(x);
-                Writeln();
+                Writer.Writeln();
             }
         }
 
         public override void VisitExpression(CastExpression expression)
         {
             VisitExpression(expression.Left);
-            WriteExpressionKeyword(" as ");
+            Writer.WriteExpressionKeyword(" as ");
             VisitExpression(expression.Type);
         }
 
@@ -45,17 +45,17 @@ namespace SLThree.Language
             if (!(statement.Expression is BlockExpression
                 || statement.Expression is AccordExpression
                 || statement.Expression is MatchExpression
-                || statement.Expression is BaseInstanceCreator)) WritePlainText(";");
+                || statement.Expression is BaseInstanceCreator)) Writer.WritePlainText(";");
         }
 
         public override void VisitExpression(TypenameExpression expression)
         {
-            WriteTypeText(expression.Typename.ToString());
+            Writer.WriteTypeText(expression.Typename.ToString());
             if (expression.Generics != null)
             {
-                WritePlainText("<");
-                expression.Generics.ForeachAndBetween(VisitExpression, x => WritePlainText(", "));
-                WritePlainText(">");
+                Writer.WritePlainText("<");
+                expression.Generics.ForeachAndBetween(VisitExpression, x => Writer.WritePlainText(", "));
+                Writer.WritePlainText(">");
             }
         }
 
@@ -63,35 +63,35 @@ namespace SLThree.Language
         public bool CollectionCarriage { get; set; } = false;
         public override void VisitExpression(CreatorCollection expression)
         {
-            WriteExpressionKeyword("new ");
+            Writer.WriteExpressionKeyword("new ");
             VisitExpression(expression.Type);
             if (expression.Arguments.Length > 0)
             {
-                WritePlainText("(");
-                expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => WritePlainText(", "));
-                WritePlainText(")");
+                Writer.WritePlainText("(");
+                expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                Writer.WritePlainText(")");
             }
 
             void CarriageBody()
             {
-                WritePlainText(" {");
-                Writeln();
-                Level += 1;
+                Writer.WritePlainText(" {");
+                Writer.Writeln();
+                Writer.Level += 1;
                 expression.Body.ForeachAndBetween(x =>
                 {
-                    WriteTab();
+                    Writer.WriteTab();
                     VisitExpression(x);
-                }, x => WritelnPlainText(","));
-                Level -= 1;
-                Writeln();
-                WritePlainText("}");
+                }, x => Writer.WritelnPlainText(","));
+                Writer.Level -= 1;
+                Writer.Writeln();
+                Writer.WritePlainText("}");
             }
 
             void LineBody()
             {
-                WritePlainText(" { ");
-                expression.Body.ForeachAndBetween(x => VisitExpression(x), x => WritePlainText(", "));
-                WritePlainText(" }");
+                Writer.WritePlainText(" { ");
+                expression.Body.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                Writer.WritePlainText(" }");
             }
 
             if (CollectionCarriage) CarriageBody();
@@ -105,23 +105,23 @@ namespace SLThree.Language
         {
             void CarriageArgs()
             {
-                WritePlainText("(");
-                Writeln();
-                Level += 1;
+                Writer.WritePlainText("(");
+                Writer.Writeln();
+                Writer.Level += 1;
                 expression.Expressions.ForeachAndBetween(x =>
                 {
-                    WriteTab();
+                    Writer.WriteTab();
                     VisitExpression(x);
-                }, x => WritelnPlainText(","));
-                Level -= 1;
-                Writeln();
-                WritePlainText(")");
+                }, x => Writer.WritelnPlainText(","));
+                Writer.Level -= 1;
+                Writer.Writeln();
+                Writer.WritePlainText(")");
             }
             void LineArgs()
             {
-                WritePlainText("(");
-                expression.Expressions.ForeachAndBetween(x => VisitExpression(x), x => WritePlainText(", "));
-                WritePlainText(")");
+                Writer.WritePlainText("(");
+                expression.Expressions.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                Writer.WritePlainText(")");
             }
 
             if (CollectionCarriage) CarriageArgs();
@@ -135,14 +135,14 @@ namespace SLThree.Language
             {
                 case MemberAccess memberAccess:
                     VisitExpression(memberAccess.Left);
-                    WritePlainText(".");
-                    WriteCallText(memberAccess.Right.ToString());
+                    Writer.WritePlainText(".");
+                    Writer.WriteCallText(memberAccess.Right.ToString());
                     break;
                 case NameExpression nameExpression:
-                    WriteCallText(nameExpression.Name);
+                    Writer.WriteCallText(nameExpression.Name);
                     break;
                 case Special nameExpression:
-                    WriteCallText(nameExpression.ToString());
+                    Writer.WriteCallText(nameExpression.ToString());
                     break;
                 default:
                     VisitExpression(left);
@@ -153,9 +153,9 @@ namespace SLThree.Language
         public override void VisitExpression(InvokeExpression expression)
         {
             GetLeftFromInvoke(expression.Left);
-            WritePlainText("(");
-            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => WritePlainText(", "));
-            WritePlainText(")");
+            Writer.WritePlainText("(");
+            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+            Writer.WritePlainText(")");
         }
         public bool AllowLineStatement { get; set; } = true;
 
@@ -164,11 +164,11 @@ namespace SLThree.Language
         {
             if (statements.Count == 1 && AllowLineStatement)
             {
-                Level += 1;
-                Writeln();
-                WriteTab();
+                Writer.Level += 1;
+                Writer.Writeln();
+                Writer.WriteTab();
                 VisitStatement(statements[0]);
-                Level -= 1;
+                Writer.Level -= 1;
                 return false;
             }
             else
@@ -179,65 +179,65 @@ namespace SLThree.Language
         }
         public void OutStatements(IList<BaseStatement> statements)
         {
-            WritelnPlainText(" {");
-            Level += 1;
+            Writer.WritelnPlainText(" {");
+            Writer.Level += 1;
             foreach (var x in statements)
             {
-                WriteTab();
+                Writer.WriteTab();
                 VisitStatement(x);
-                Writeln();
+                Writer.Writeln();
             }
-            Level -= 1;
-            WriteTab();
-            WritePlainText("}");
+            Writer.Level -= 1;
+            Writer.WriteTab();
+            Writer.WritePlainText("}");
         }
 
         public override void VisitStatement(WhileLoopStatement statement)
         {
-            WriteStatementKeyword("while");
-            WritePlainText(" (");
+            Writer.WriteStatementKeyword("while");
+            Writer.WritePlainText(" (");
             VisitExpression(statement.Condition);
-            WritePlainText(")");
+            Writer.WritePlainText(")");
             OutStatement(statement.LoopBody);
         }
 
         public override void VisitStatement(DoWhileLoopStatement statement)
         {
-            WriteStatementKeyword("do");
+            Writer.WriteStatementKeyword("do");
             var outs = OutStatement(statement.LoopBody);
             if (!outs)
             {
-                Writeln();
-                WriteTab();
-                WriteStatementKeyword("while");
+                Writer.Writeln();
+                Writer.WriteTab();
+                Writer.WriteStatementKeyword("while");
             }
             else
             {
-                WriteStatementKeyword(" while");
+                Writer.WriteStatementKeyword(" while");
             }
-            WritePlainText(" (");
+            Writer.WritePlainText(" (");
             VisitExpression(statement.Condition);
-            WritePlainText(");");
+            Writer.WritePlainText(");");
         }
 
         public override void VisitStatement(ForeachLoopStatement statement)
         {
-            WriteStatementKeyword("foreach");
-            WritePlainText(" (");
+            Writer.WriteStatementKeyword("foreach");
+            Writer.WritePlainText(" (");
             VisitExpression(statement.Left);
-            WritePlainText(" in ");
+            Writer.WritePlainText(" in ");
             VisitExpression(statement.Iterator);
-            WritePlainText(")");
+            Writer.WritePlainText(")");
             OutStatement(statement.LoopBody);
         }
 
         public override void VisitExpression(UsingExpression expression)
         {
-            WriteStatementKeyword("using ");
+            Writer.WriteStatementKeyword("using ");
             VisitExpression(expression.Using.Type);
             if (expression.Alias != null)
             {
-                WriteExpressionKeyword(" as ");
+                Writer.WriteExpressionKeyword(" as ");
                 VisitExpression(expression.Alias);
             }
         }
@@ -250,9 +250,9 @@ namespace SLThree.Language
             if (expression.TypeHint != null)
             {
                 VisitExpression(expression.TypeHint);
-                WritePlainText(" ");
+                Writer.WritePlainText(" ");
             }
-            WritePlainText(expression.Name);
+            Writer.WritePlainText(expression.Name);
         }
 
         public override void VisitExpression(FunctionArgument expression)
@@ -260,30 +260,30 @@ namespace SLThree.Language
             VisitExpression(expression.Name);
             if (expression.DefaultValue != null)
             {
-                WritePlainText(" = ");
+                Writer.WritePlainText(" = ");
                 VisitExpression(expression.DefaultValue);
             }
         }
 
         public override void VisitExpression(FunctionDefinition expression)
         {
-            expression.Modificators.ForeachAndBetween(WriteExpressionKeyword, x => WritePlainText(" "));
-            if (expression.Modificators.Any()) WritePlainText(" ");
+            expression.Modificators.ForeachAndBetween(Writer.WriteExpressionKeyword, x => Writer.WritePlainText(" "));
+            if (expression.Modificators.Any()) Writer.WritePlainText(" ");
             if (expression.FunctionName != null)
                 GetLeftFromInvoke(expression.FunctionName);
             if (expression.GenericArguments.Any())
             {
-                WritePlainText("<");
+                Writer.WritePlainText("<");
                 expression.GenericArguments.ForeachAndBetween(generic =>
                 {
-                    WriteTypeText(generic.Item1.Name);
+                    Writer.WriteTypeText(generic.Item1.Name);
                     if (generic.Item2 != null)
                     {
-                        WritePlainText(": ");
+                        Writer.WritePlainText(": ");
                         VisitConstraint(generic.Item2);
                     }
-                }, _ => WritePlainText(", "));
-                WritePlainText(">");
+                }, _ => Writer.WritePlainText(", "));
+                Writer.WritePlainText(">");
             }
 
 
@@ -293,17 +293,17 @@ namespace SLThree.Language
             }
             else
             {
-                WritePlainText("(");
+                Writer.WritePlainText("(");
                 expression.Arguments.ForeachAndBetween(
                     VisitExpression,
-                    _ => WritePlainText(", ")
+                    _ => Writer.WritePlainText(", ")
                 );
-                WritePlainText(")");
+                Writer.WritePlainText(")");
             }
 
             if (expression.ReturnTypeHint != null)
             {
-                WritePlainText(": ");
+                Writer.WritePlainText(": ");
                 VisitExpression(expression.ReturnTypeHint);
             }
 
@@ -311,7 +311,7 @@ namespace SLThree.Language
             {
                 if (AllowArrowFunctions && expression.FunctionBody.Statements.Length == 1 && expression.FunctionBody.Statements[0] is ReturnStatement)
                 {
-                    WritePlainText(" => ");
+                    Writer.WritePlainText(" => ");
                     VisitExpression((expression.FunctionBody.Statements[0] as ReturnStatement).Expression);
                 }
                 else
@@ -319,6 +319,18 @@ namespace SLThree.Language
                     OutStatements(expression.FunctionBody.Statements);
                 }
             }
+        }
+
+        public bool AllowAugmentedAssignment { get; set; } = true;
+        public override void VisitExpression(BinaryOperator expression)
+        {
+            if (AllowAugmentedAssignment && expression is BinaryAssign assign && expression.Right is BinaryOperator bo2 && assign.Left.ToString() == bo2.Left.ToString())
+            {
+                VisitExpression(assign.Left);
+                Writer.WritePlainText($" {bo2.Operator}= ");
+                VisitExpression(bo2.Right);
+            }
+            else base.VisitExpression(expression);
         }
     }
 }
