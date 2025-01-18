@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace TestSuite
 {
@@ -158,6 +159,72 @@ namespace TestSuite
             }
         }
 
+        public static ExecutionContext GetOptionsFromStatements(BaseStatement statement)
+        {
+            if (statement is StatementList sl)
+            {
+                var optExpr = sl.Statements.FirstOrDefault(x => x is ExpressionStatement est && est.Expression is FunctionDefinition fd && fd.FunctionName is NameExpression fn && fn.Name == "options");
+
+                if (optExpr == null) return null;
+
+                var optFunc = ((optExpr as ExpressionStatement).Expression as FunctionDefinition);
+
+                return optFunc?.GetValue(new ExecutionContext()) as ExecutionContext;
+            }
+            return null;
+        }
+
+        public static string GetDiff(string[] left, string[] right)
+        {
+            var sb = new StringBuilder();
+
+            var table_height = left.Length + right.Length;
+
+            var carriage_left = 0;
+            var carriage_right = 0;
+
+            while (carriage_left < left.Length && carriage_right < right.Length)
+            {
+                if (left[carriage_left] != right[carriage_right])
+                    sb.AppendLine($"{carriage_left+1,4}: {left[carriage_left++].Length,4}/{right[carriage_right++].Length,4}");
+            }
+            sb.AppendLine("OUTPUT\n" + right.JoinIntoString("\n"));
+
+            return sb.ToString();
+        }
+
+        public static bool RestoreTest(string filename)
+        {
+            try
+            {
+                var input_lines = File.ReadAllLines(filename);
+                var input_code = input_lines.JoinIntoString("\n");
+                var parsed = Parser.This.ParseScript(input_code, filename);
+                var restored_code = DefaultRestorator.GetRestorator<Restorator>().Restore(parsed, GetOptionsFromStatements(parsed));
+                var restored_lines = restored_code.Split('\n');
+
+                var result = input_code == restored_code;
+                if (!result)
+                {
+                    ErrorLog.Add($"diffrence in {filename}:\n{GetDiff(input_lines, restored_lines)}\n");
+                }
+                return result;
+            }
+            catch (SLTException e)
+            {
+                global_assert = false;
+                ErrorLog.Add(e.ToString());
+                return false;
+            }
+            catch (Exception e)
+            {
+                global_assert = false;
+                ErrorLog.Add($"with {filename}: ");
+                ErrorLog.Add(e.ToString());
+                return false;
+            }
+        }
+
         static string GetPath(string path) => from_solution ? path : Path.Combine("..\\..\\..", path);
         static readonly string removable_parsing = Path.GetFullPath(from_solution ? "test\\parsing\\" : "..\\..\\..\\test\\parsing\\");
         public static void ParsingTests()
@@ -205,6 +272,31 @@ namespace TestSuite
                 Console.WriteLine("------------------------------------");
             }
         }
+        static readonly string removable_restoring = Path.GetFullPath(from_solution ? "test\\restoring\\" : "..\\..\\..\\test\\restoring\\");
+        public static void RestoringTests()
+        {
+            Console.WriteLine(">>> Restoring Tests");
+            foreach (var filename in Directory.GetFiles(from_solution ? "test\\restoring\\" : "..\\..\\..\\test\\restoring", "*.slt", SearchOption.AllDirectories))
+            {
+                Console.WriteLine($">>> {Path.GetFullPath(filename).Replace(removable_restoring, "")}");
+                if (RestoreTest(filename))
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("result  ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"SUCCESS ");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("result  ");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($" FAILED ");
+                }
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("------------------------------------");
+            }
+        }
 
         public static void ErrorsTests()
         {
@@ -225,6 +317,7 @@ namespace TestSuite
             DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             ExecutingTests();
+            RestoringTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());
             return global_assert ? 0 : 1;
         }

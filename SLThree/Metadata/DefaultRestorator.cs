@@ -14,16 +14,28 @@ namespace SLThree.Metadata
         public static string Restore<T>(BaseStatement statement, ExecutionContext context) where T: DefaultRestorator, new()
         {
             var restorator = GetRestorator<T>(context);
-            restorator.VisitStatement(statement);
-            restorator.RemoveEndNewlines();
-            return restorator.sb.ToString();
+            return restorator.Restore(statement);
         }
         public static string Restore<T>(BaseExpression expression, ExecutionContext context) where T : DefaultRestorator, new()
         {
             var restorator = GetRestorator<T>(context);
-            restorator.VisitExpression(expression);
-            restorator.RemoveEndNewlines();
-            return restorator.sb.ToString();
+            return restorator.Restore(expression);
+        }
+        public string Restore(BaseStatement statement)
+        {
+            Level = 0;
+            sb.Clear();
+            VisitStatement(statement);
+            RemoveEndNewlines();
+            return sb.ToString();
+        }
+        public string Restore(BaseExpression expression)
+        {
+            Level = 0;
+            sb.Clear();
+            VisitExpression(expression);
+            RemoveEndNewlines();
+            return sb.ToString();
         }
 
         private void RemoveEndNewlines()
