@@ -22,6 +22,9 @@ namespace SLThree
         public BaseExpression Name { get; set; }
         public BaseExpression[] Ancestors { get; set; }
         public CreatorContextBody CreatorBody { get; set; }
+        /// <summary>
+        /// Не является частью CreateInstance
+        /// </summary>
         public bool IsFreeCreator { get; set; }
         public bool GeneratePrivate { get; set; }
 
@@ -72,7 +75,10 @@ namespace SLThree
         {
             var ret = new ExecutionContext(target, GeneratePrivate);
             for (var i = 0; i < Ancestors.Length; i++)
-                ret.implement(Ancestors[i].GetValue(target).Cast<ContextWrap>().Context);
+            {
+                var ancestor = Ancestors[i].GetValue(target).Cast<ContextWrap>() ?? throw new System.Exception("Null inheritance");
+                ret.implement(ancestor.Context);
+            }
             CreatorBody?.GetValue(ret, context);
             var wrap = ret.wrap;
             if (HasName)

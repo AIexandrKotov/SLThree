@@ -194,7 +194,7 @@ namespace TestSuite
                 }
                 carriage_left += 1; carriage_right += 1;
             }
-            sb.AppendLine("OUTPUT\n" + right.JoinIntoString("\n"));
+            sb.AppendLine("=====OUTPUT\n" + right.JoinIntoString("\n") + "\n=====END OUTPUT");
 
             return (ret, sb.ToString());
         }
@@ -213,7 +213,7 @@ namespace TestSuite
                 var (result, errorLog) = GetDiff(input_lines, restored_lines);
                 if (!result)
                 {
-                    ErrorLog.Add($"diffrence in {filename}:\n{errorLog}\n");
+                    ErrorLog.Add($"!!!DIFFERENCE in {filename}:\n{errorLog}\n");
                 }
                 return result;
             }
@@ -319,7 +319,8 @@ namespace TestSuite
             DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
             RestoringTests();
-            ExecutingTests();
+            if (!args.Contains("--skip-exec"))
+                ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());
             return global_assert ? 0 : 1;
         }

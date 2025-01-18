@@ -21,12 +21,14 @@ namespace SLThree.Metadata
             void WritelnPlainText(string s);
             void WritePlainText(string s);
             void WriteStatementKeyword(string s);
+            void WriteStringText(string s);
             void WriteTab();
             void WriteTypeText(string s);
+            void WriteErrorText(string s);
             void Clear();
             string GetString();
+            void WriteDigitText(string s);
         }
-
         public class DefaultRestoratorWriter : IRestoratorWriter
         {
             public virtual int Tabulation { get; set; } = 4;
@@ -36,6 +38,9 @@ namespace SLThree.Metadata
             public virtual void WriteCallText(string s) => Sb.Append(s);
             public virtual void WriteExpressionKeyword(string s) => Sb.Append(s);
             public virtual void WriteStatementKeyword(string s) => Sb.Append(s);
+            public virtual void WriteStringText(string s) => Sb.Append(s);
+            public virtual void WriteErrorText(string s) => Sb.Append(s);
+            public virtual void WriteDigitText(string s) => Sb.Append(s);
             public virtual void WritelnPlainText(string s) => Sb.AppendLine(s);
             public virtual void Writeln() => Sb.AppendLine();
             public virtual string Unsupported(object o) => $"\"!{o.GetType().FullName}!\"";
@@ -66,15 +71,18 @@ namespace SLThree.Metadata
             public Dictionary<string, ConsoleColor> Colors { get; set; } = new Dictionary<string, ConsoleColor>()
             {
                 { "Plain", ConsoleColor.Black },
-                { "Type", ConsoleColor.Cyan },
+                { "Type", ConsoleColor.DarkCyan },
                 { "Call", ConsoleColor.DarkYellow },
                 { "ExpressionKeyword", ConsoleColor.Blue },
                 { "StatementKeyword", ConsoleColor.DarkMagenta },
+                { "String", ConsoleColor.DarkRed },
+                { "Error", ConsoleColor.Red },
+                { "Digit", ConsoleColor.DarkGreen },
             };
             public virtual void WritePlainText(string s)
             {
                 Console.ForegroundColor = Colors["Plain"];
-                Console.Write(s);
+                Console.Write(s.Replace("\r", ""));
             }
             public virtual void WriteTypeText(string s)
             {
@@ -99,8 +107,24 @@ namespace SLThree.Metadata
             public virtual void WritelnPlainText(string s)
             {
                 Console.ForegroundColor = Colors["Plain"];
-                Console.WriteLine(s);
+                Console.Write(s + "\n");
             }
+            public virtual void WriteStringText(string s)
+            {
+                Console.ForegroundColor = Colors["String"];
+                Console.Write(s);
+            }
+            public virtual void WriteErrorText(string s)
+            {
+                Console.ForegroundColor = Colors["Error"];
+                Console.Write(s);
+            }
+            public virtual void WriteDigitText(string s)
+            {
+                Console.ForegroundColor = Colors["Digit"];
+                Console.Write(s);
+            }
+
             public virtual void Writeln() => Console.WriteLine();
             public virtual string Unsupported(object o) => $"\"!{o.GetType().FullName}!\"";
 
