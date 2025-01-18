@@ -380,10 +380,6 @@ arg_name <NameExpression>
 req_arg_name <NameExpression>
     = n:name _ ":" _ t:typename { n.Hint(t) }
 
-name_literal <BaseExpression>
-    = b:("true"/"false") { new BoolLiteral(bool.Parse(b), _(state)) }
-    / "null" { new NullLiteral(_(state)) }
-
 special <BaseExpression>
     = n:name { GetSpecialName(n) }
 

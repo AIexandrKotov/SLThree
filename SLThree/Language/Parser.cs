@@ -65,7 +65,7 @@ namespace SLThree.Language
                 case "private": return new PrivateLiteral(expression.SourceContext);
                 case "true":
                 case "false":
-                    return new BoolLiteral(bool.Parse(expression.Name), expression.SourceContext);
+                    return new BoolLiteral(bool.Parse(expression.Name), expression.Name, expression.SourceContext);
                 case "null":
                     return new NullLiteral(expression.SourceContext);
             }

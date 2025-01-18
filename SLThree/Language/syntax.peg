@@ -766,10 +766,6 @@ req_arg_name <NameExpression> //todo подумать, может быть лу�
     / "const" _required_ n:name { n.Constant(true) }
     / "const" _required_ n:literals_as_name { n.Constant(true) }
 
-name_literal <BaseExpression>
-    = b:("true"/"false") { new BoolLiteral(bool.Parse(b), _(state)) }
-    / "null" { new NullLiteral(_(state)) }
-
 special <BaseExpression>
     = n:name { GetSpecialName(n) }
 
