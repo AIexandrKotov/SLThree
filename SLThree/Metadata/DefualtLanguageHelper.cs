@@ -23,6 +23,14 @@ namespace SLThree.Metadata
                 return LanguageInfo.Restorator.Restore(code, context?.Context);
             throw new ArgumentException(nameof(executable));
         }
+        public static void conrestore(ExecutionContext.IExecutable executable, ContextWrap context)
+        {
+            var c = new ExecutionContext();
+            context?.Context.copy(c);
+            c.@this["Writer"] = new DefaultRestorator.ConsoleWriter();
+            restore(executable, c.@this);
+            Console.WriteLine();
+        }
 
         public static object clone(ICloneable clone) => clone.Clone();
 
