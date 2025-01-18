@@ -169,7 +169,7 @@ namespace TestSuite
 
                 var optFunc = ((optExpr as ExpressionStatement).Expression as FunctionDefinition);
 
-                return optFunc?.GetValue(new ExecutionContext()) as ExecutionContext;
+                return ((optFunc?.GetValue(new ExecutionContext()) as Method)?.GetValue(new object[0]) as ContextWrap).Context;
             }
             return null;
         }
@@ -200,7 +200,8 @@ namespace TestSuite
                 var input_lines = File.ReadAllLines(filename);
                 var input_code = input_lines.JoinIntoString("\n");
                 var parsed = Parser.This.ParseScript(input_code, filename);
-                var restored_code = DefaultRestorator.GetRestorator<Restorator>().Restore(parsed, GetOptionsFromStatements(parsed));
+                var options = GetOptionsFromStatements(parsed);
+                var restored_code = DefaultRestorator.GetRestorator<Restorator>().Restore(parsed, options);
                 var restored_lines = restored_code.Split('\n');
 
                 var result = input_code == restored_code;
