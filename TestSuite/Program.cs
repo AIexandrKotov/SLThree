@@ -174,7 +174,7 @@ namespace TestSuite
             return null;
         }
 
-        public static string GetDiff(string[] left, string[] right)
+        public static (bool, string) GetDiff(string[] left, string[] right)
         {
             var sb = new StringBuilder();
 
@@ -183,14 +183,20 @@ namespace TestSuite
             var carriage_left = 0;
             var carriage_right = 0;
 
+            var ret = true;
+
             while (carriage_left < left.Length && carriage_right < right.Length)
             {
                 if (left[carriage_left] != right[carriage_right])
-                    sb.AppendLine($"{carriage_left+1,4}: {left[carriage_left++].Length,4}/{right[carriage_right++].Length,4}");
+                {
+                    sb.AppendLine($"{carriage_left + 1,4}: {left[carriage_left].Length,4}/{right[carriage_right].Length,4}");
+                    ret = false;
+                }
+                carriage_left += 1; carriage_right += 1;
             }
             sb.AppendLine("OUTPUT\n" + right.JoinIntoString("\n"));
 
-            return sb.ToString();
+            return (ret, sb.ToString());
         }
 
         public static bool RestoreTest(string filename)
@@ -202,12 +208,12 @@ namespace TestSuite
                 var parsed = Parser.This.ParseScript(input_code, filename);
                 var options = GetOptionsFromStatements(parsed);
                 var restored_code = DefaultRestorator.GetRestorator<Restorator>().Restore(parsed, options);
-                var restored_lines = restored_code.Split('\n');
+                var restored_lines = restored_code.Replace("\r", "").Split('\n');
 
-                var result = input_code == restored_code;
+                var (result, errorLog) = GetDiff(input_lines, restored_lines);
                 if (!result)
                 {
-                    ErrorLog.Add($"diffrence in {filename}:\n{GetDiff(input_lines, restored_lines)}\n");
+                    ErrorLog.Add($"diffrence in {filename}:\n{errorLog}\n");
                 }
                 return result;
             }
@@ -279,23 +285,18 @@ namespace TestSuite
             Console.WriteLine(">>> Restoring Tests");
             foreach (var filename in Directory.GetFiles(from_solution ? "test\\restoring\\" : "..\\..\\..\\test\\restoring", "*.slt", SearchOption.AllDirectories))
             {
-                Console.WriteLine($">>> {Path.GetFullPath(filename).Replace(removable_restoring, "")}");
                 if (RestoreTest(filename))
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("result  ");
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"SUCCESS ");
+                    Console.Write($"SUCCESS ");
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("result  ");
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($" FAILED ");
+                    Console.Write($" FAILED ");
                 }
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("------------------------------------");
+                Console.WriteLine(Path.GetFullPath(filename).Replace(removable_restoring, ""));
             }
         }
 
@@ -317,8 +318,8 @@ namespace TestSuite
                 from_solution = true;
             DotnetEnvironment.RegistredAssemblies.Add(typeof(Program).Assembly);
             ParsingTests();
-            ExecutingTests();
             RestoringTests();
+            ExecutingTests();
             File.WriteAllLines("testsuite.log", ErrorLog.ToArray());
             return global_assert ? 0 : 1;
         }
