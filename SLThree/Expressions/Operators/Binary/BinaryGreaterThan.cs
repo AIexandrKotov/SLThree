@@ -7,7 +7,7 @@ namespace SLThree
     public class BinaryGreaterThan : BinaryOperator
     {
         public override string Operator => ">";
-        public BinaryGreaterThan(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryGreaterThan(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryGreaterThan() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -46,7 +46,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryGreaterThan(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryGreaterThan(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

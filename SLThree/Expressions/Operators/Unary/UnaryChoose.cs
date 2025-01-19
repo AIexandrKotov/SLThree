@@ -7,7 +7,7 @@ namespace SLThree
     public class UnaryChoose : UnaryOperator
     {
         public override string Operator => "^";
-        public UnaryChoose(BaseExpression left, ISourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryChoose(BaseExpression left, ISourceContext context) : base(left, context) { }
         public UnaryChoose() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -16,7 +16,7 @@ namespace SLThree
         }
         public override object Clone()
         {
-            return new UnaryChoose(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryChoose(Left.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

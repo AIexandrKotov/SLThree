@@ -7,7 +7,7 @@ namespace SLThree
     public class BinaryLessThanEquals : BinaryOperator
     {
         public override string Operator => "<=";
-        public BinaryLessThanEquals(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryLessThanEquals(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryLessThanEquals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -46,7 +46,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryLessThanEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryLessThanEquals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

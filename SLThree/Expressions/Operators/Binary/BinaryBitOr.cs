@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryBitOr : BinaryOperator
     {
         public override string Operator => "|";
-        public BinaryBitOr(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryBitOr(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
 
         public BinaryBitOr() : base() { }
 
@@ -39,7 +39,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryBitOr(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

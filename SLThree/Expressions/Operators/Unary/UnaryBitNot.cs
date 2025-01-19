@@ -6,7 +6,7 @@ namespace SLThree
     public class UnaryBitNot : UnaryOperator
     {
         public override string Operator => "~";
-        public UnaryBitNot(BaseExpression left, ISourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryBitNot(BaseExpression left, ISourceContext context) : base(left, context) { }
         public UnaryBitNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -29,7 +29,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new UnaryBitNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryBitNot(Left.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

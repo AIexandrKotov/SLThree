@@ -7,10 +7,6 @@
         {
             Left = left;
         }
-        public UnaryOperator(BaseExpression left, ISourceContext context, bool priority) : base(priority, context)
-        {
-            Left = left;
-        }
         public UnaryOperator() : base() { }
 
         public abstract string Operator { get; }

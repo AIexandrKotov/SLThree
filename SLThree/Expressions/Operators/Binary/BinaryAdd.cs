@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryAdd : BinaryOperator
     {
         public override string Operator => "+";
-        public BinaryAdd(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryAdd(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryAdd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -45,7 +45,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryAdd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryAdd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

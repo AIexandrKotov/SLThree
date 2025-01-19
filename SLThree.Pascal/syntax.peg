@@ -166,7 +166,7 @@ primary <BaseExpression> -memoize
     / left:primary _ "." _ "?" _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), true, _(state)) }
     / left:primary _ "."? _ "[" _ args:expression<1,,_ "," _> _ "]" { new IndexExpression(left, args.ToArray(), false, _(state)) }
     / left:primary _ conditional:"?"? _ "." _ right:access_right { new MemberAccess(left, right, conditional.Count == 1, _(state)) }
-    / "(" _ x:expression _ ")" { x.RaisePriority() }
+    / "(" _ x:expression _ ")" { x }
     / "new" _required_ "using" _required_ u: using { u }
     / using_expression
     / instance_expression

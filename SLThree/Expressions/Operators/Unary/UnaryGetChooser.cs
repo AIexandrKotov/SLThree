@@ -8,7 +8,7 @@ namespace SLThree
     {
         public override string Operator => "^:";
         public TypenameExpression Typename;
-        public UnaryGetChooser(BaseExpression left, TypenameExpression typename, ISourceContext context, bool priority = false) : base(left, context, priority)
+        public UnaryGetChooser(BaseExpression left, TypenameExpression typename, ISourceContext context) : base(left, context)
         {
             Typename = typename;
         }
@@ -21,7 +21,7 @@ namespace SLThree
         }
         public override object Clone()
         {
-            return new UnaryGetChooser(Left.CloneCast(), Typename.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryGetChooser(Left.CloneCast(), Typename.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

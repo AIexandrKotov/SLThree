@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryMod : BinaryOperator
     {
         public override string Operator => "%";
-        public BinaryMod(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryMod(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryMod() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -43,7 +43,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryMod(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

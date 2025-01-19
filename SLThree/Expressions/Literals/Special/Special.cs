@@ -9,9 +9,5 @@
         public Special(ISourceContext context) : base(context)
         {
         }
-
-        public Special(bool priority, ISourceContext context) : base(priority, context)
-        {
-        }
     }
 }

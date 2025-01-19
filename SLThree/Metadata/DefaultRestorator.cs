@@ -188,12 +188,6 @@ namespace SLThree.Metadata
             Writer.WritelnPlainText(Writer.Unsupported(statement));
             Writer.Level -= 1;
         }
-        public override void VisitExpression(BaseExpression expression)
-        {
-            if (expression.PrioriryRaised) Writer.WritePlainText("(");
-            base.VisitExpression(expression);
-            if (expression.PrioriryRaised) Writer.WritePlainText(")");
-        }
         public override void VisitExpression(Literal expression)
         {
             if (expression is NullLiteral || expression is BoolLiteral)

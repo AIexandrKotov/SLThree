@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryUnequals : BinaryOperator
     {
         public override string Operator => "!=";
-        public BinaryUnequals(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryUnequals(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryUnequals() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -43,7 +43,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryUnequals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryUnequals(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

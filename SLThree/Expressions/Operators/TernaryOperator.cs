@@ -10,7 +10,7 @@ namespace SLThree
         public BaseExpression Left;
         public BaseExpression Right;
 
-        public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(priority, context)
+        public TernaryOperator(BaseExpression cond, BaseExpression left, BaseExpression right, ISourceContext context) : base(context)
         {
             Condition = cond;
             Left = left;
@@ -27,7 +27,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new TernaryOperator(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new TernaryOperator(Condition.CloneCast(), Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

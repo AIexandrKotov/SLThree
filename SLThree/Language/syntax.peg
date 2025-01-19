@@ -371,7 +371,7 @@ constraint_unary <TemplateMethod.ConstraintDefinition> -memoize
     / constraint_primary
 
 constraint_primary <TemplateMethod.ConstraintDefinition>
-    = "(" _ cnstr:constraint _ ")" { (TemplateMethod.ConstraintDefinition)cnstr.RaisePriority() }
+    = "(" _ cnstr:constraint _ ")" { (TemplateMethod.ConstraintDefinition)cnstr }
     / "=>" _ func:binary_8 { new TemplateMethod.FunctionConstraintDefinition(
         new ReturnStatement(func, _(state)), _(state)
     ) }

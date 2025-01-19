@@ -10,11 +10,6 @@
             Left = left;
             Right = right;
         }
-        public BinaryOperator(BaseExpression left, BaseExpression right, ISourceContext context, bool priority) : base(priority, context)
-        {
-            Left = left;
-            Right = right;
-        }
         public BinaryOperator() : base() { }
 
         public abstract string Operator { get; }

@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryLeftShift : BinaryOperator
     {
         public override string Operator => "<<";
-        public BinaryLeftShift(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryLeftShift(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryLeftShift() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -35,7 +35,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryLeftShift(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryLeftShift(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

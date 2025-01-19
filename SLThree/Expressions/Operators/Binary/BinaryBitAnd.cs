@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryBitAnd : BinaryOperator
     {
         public override string Operator => "&";
-        public BinaryBitAnd(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryBitAnd(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryBitAnd() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -36,7 +36,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryBitAnd(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

@@ -6,7 +6,7 @@ namespace SLThree
     public class BinaryBitXor : BinaryOperator
     {
         public override string Operator => "^";
-        public BinaryBitXor(BaseExpression left, BaseExpression right, ISourceContext context, bool priority = false) : base(left, right, context, priority) { }
+        public BinaryBitXor(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
 
         public BinaryBitXor() : base() { }
         public override object GetValue(ExecutionContext context)
@@ -37,7 +37,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new BinaryBitXor(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new BinaryBitXor(Left.CloneCast(), Right.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

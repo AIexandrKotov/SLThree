@@ -6,7 +6,7 @@ namespace SLThree
     public class UnaryNot : UnaryOperator
     {
         public override string Operator => "!";
-        public UnaryNot(BaseExpression left, ISourceContext context, bool priority = false) : base(left, context, priority) { }
+        public UnaryNot(BaseExpression left, ISourceContext context) : base(left, context) { }
         public UnaryNot() : base() { }
         public override object GetValue(ExecutionContext context)
         {
@@ -28,7 +28,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new UnaryNot(Left.CloneCast(), SourceContext.CloneCast(), PrioriryRaised);
+            return new UnaryNot(Left.CloneCast(), SourceContext.CloneCast());
         }
     }
 }

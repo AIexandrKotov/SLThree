@@ -373,18 +373,6 @@ namespace SLThree.Extensions
             type_queue = typeof(Queue<object>),
             type_tuple = typeof(ITuple);
 
-        public static BaseExpression RaisePriority(this BaseExpression expression)
-        {
-            expression.PrioriryRaised = true;
-            return expression;
-        }
-
-        public static BaseExpression DropPriority(this BaseExpression expression)
-        {
-            expression.PrioriryRaised = false;
-            return expression;
-        }
-
         public static T CastToType<T>(this object o)
         {
             return (T)o.CastToType(typeof(T));
