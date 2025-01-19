@@ -160,11 +160,14 @@ namespace SLThree
             if (args.Length > (ParamNames.Length - RequiredArguments)) return args;
             var ret = new object[ParamNames.Length];
             Array.Copy(args, ret, args.Length);
-            var i = args.Length - RequiredArguments;
-            var j = Math.Min(args.Length, DefaultValues.Length);
+
+            //Заполнение результирующего массива с конца
             var count = Math.Max(ret.Length - args.Length, 0);
+            var i = args.Length - RequiredArguments + count;
+            var j = Math.Min(args.Length, DefaultValues.Length) + count;
             for (var id = 0; id < count; id++)
-                ret[j++] = DefaultValues[i++].GetValue(default_values_invk_context);
+                ret[--j] = DefaultValues[--i].GetValue(default_values_invk_context);
+
             return ret;
         }
 
@@ -205,12 +208,14 @@ namespace SLThree
             return null;
         }
 
+#pragma warning disable IDE1006 // Стили именования
         public Method identity(ContextWrap context)
         {
             @this = context;
             Binded = true;
             return this;
         }
+#pragma warning restore IDE1006 // Стили именования
 
         #region Invoke [auto-generated]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
