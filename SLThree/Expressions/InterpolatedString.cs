@@ -10,16 +10,20 @@ namespace SLThree
     {
         public string Value;
         public BaseExpression[] Expressions;
+        public string[] RawRepresentation;
 
         public InterpolatedString() : base() { }
         public InterpolatedString(string value, IList<(BaseExpression, string)> other, ISourceContext context) : base(context)
         {
             var sb = new StringBuilder();
             Expressions = new BaseExpression[other.Count];
+            RawRepresentation = new string[other.Count + 1];
+            RawRepresentation[0] = value;
             sb.Append(value);
             for (var i = 0; i < other.Count; i++)
             {
                 Expressions[i] = other[i].Item1;
+                RawRepresentation[i + 1] = other[i].Item2;
                 sb.Append($"{{{i}}}");
                 sb.Append(other[i].Item2);
             }
@@ -35,7 +39,7 @@ namespace SLThree
 
         public override object Clone()
         {
-            return new InterpolatedString() { Value = Value.CloneCast(), Expressions = Expressions.CloneArray(), SourceContext = SourceContext.CloneCast() };
+            return new InterpolatedString() { Value = Value.CloneCast(), Expressions = Expressions.CloneArray(), RawRepresentation = RawRepresentation.CloneArray(), SourceContext = SourceContext.CloneCast() };
         }
     }
 }

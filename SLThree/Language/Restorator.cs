@@ -42,15 +42,16 @@ namespace SLThree.Language
         public override void VisitStatement(ExpressionStatement statement)
         {
             VisitExpression(statement.Expression);
-            if (!IsSplittedExpression(statement.Expression)) Writer.WritePlainText(";");
+            if (!IsStatementLikeExpression(statement.Expression)) Writer.WritePlainText(";");
         }
 
-        private static bool IsSplittedExpression(BaseExpression statement)
+        private static bool IsStatementLikeExpression(BaseExpression statement)
         {
             return (statement is BlockExpression
                 || statement is AccordExpression
                 || statement is MatchExpression
-                || statement is BaseInstanceCreator
+                || (statement is CreatorCollection cc && cc.Arguments.Length > 0)
+                || (statement is CreatorContext creatorContext && creatorContext.CreatorBody != null)
                 || statement is ConditionExpression);
         }
 
@@ -77,7 +78,7 @@ namespace SLThree.Language
             if (expression.Arguments.Length > 0)
             {
                 Writer.WritePlainText("(");
-                expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                OutFunctionArguments(expression.Arguments);
                 Writer.WritePlainText(")");
             }
 
@@ -138,6 +139,80 @@ namespace SLThree.Language
             else LineArgs();
         }
 
+
+        public int DictionaryLineLimit { get; set; } = DefaultMultiLimit;
+        public bool DictionaryCarriage { get; set; } = DefaultCarriage;
+        public override void VisitExpression(CreatorDictionary expression)
+        {
+            void CarriageArgs()
+            {
+                Writer.WritePlainText("{");
+                Writer.Writeln();
+                Writer.Level += 1;
+                expression.Body.ForeachAndBetween(x =>
+                {
+                    Writer.WriteTab();
+                    VisitExpression(x);
+                }, x => Writer.WritelnPlainText(","));
+                Writer.Level -= 1;
+                Writer.Writeln();
+                Writer.WritePlainText("}");
+            }
+            void LineArgs()
+            {
+                Writer.WritePlainText("{");
+                expression.Body.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                Writer.WritePlainText("}");
+            }
+
+            Writer.WriteExpressionKeyword("new ");
+            VisitExpression(expression.Type);
+            if (expression.Arguments.Length > 0)
+            {
+                Writer.WritePlainText("(");
+                OutFunctionArguments(expression.Arguments);
+                Writer.WritePlainText(") ");
+            }
+
+            if (DictionaryCarriage) CarriageArgs();
+            else if (DictionaryLineLimit != -1 && expression.Body.Length > DictionaryLineLimit) CarriageArgs();
+            else LineArgs();
+        }
+
+        public override void VisitExpression(CreatorDictionary.DictionaryEntry expression)
+        {
+            VisitExpression(expression.Key);
+            Writer.WritePlainText(": ");
+            VisitExpression(expression.Value);
+        }
+
+        public void OutFunctionArguments(IList<BaseExpression> arguments)
+        {
+            void CarriageArgs()
+            {
+                Writer.Writeln();
+                Writer.Level += 1;
+                arguments.ForeachAndBetween(x =>
+                {
+                    Writer.WriteTab();
+                    VisitExpression(x);
+                }, x => Writer.WritelnPlainText(","));
+                Writer.Level -= 1;
+                Writer.Writeln();
+            }
+            void LineArgs()
+            {
+                arguments.ForeachAndBetween(
+                    VisitExpression,
+                    _ => Writer.WritePlainText(", ")
+                );
+            }
+
+            if (FunctionArgumentCarriage) CarriageArgs();
+            else if (FunctionArgumentLineLimit != -1 && arguments.Count > FunctionArgumentLineLimit) CarriageArgs();
+            else LineArgs();
+        }
+
         private void GetLeftFromInvoke(BaseExpression left)
         {
             switch (left)
@@ -172,7 +247,7 @@ namespace SLThree.Language
         /// <returns>Multiline flag</returns>
         public bool OutStatement(IList<BaseStatement> statements)
         {
-            if (statements.Count == 1 && AllowLineStatement && (!LineStatementOnlyForExpression || (statements[0] is ExpressionStatement exs && !IsSplittedExpression(exs.Expression))))
+            if (statements.Count == 1 && AllowLineStatement && (!LineStatementOnlyForExpression || (statements[0] is ExpressionStatement exs && !IsStatementLikeExpression(exs.Expression))))
             {
                 Writer.Level += 1;
                 Writer.Writeln();
@@ -248,6 +323,18 @@ namespace SLThree.Language
             Writer.WritePlainText(";");
         }
 
+        public override void VisitStatement(BreakStatement statement)
+        {
+            Writer.WriteStatementKeyword("break");
+            Writer.WritePlainText(";");
+        }
+
+        public override void VisitStatement(ContinueStatement statement)
+        {
+            Writer.WriteStatementKeyword("continue");
+            Writer.WritePlainText(";");
+        }
+
         public override void VisitStatement(ReturnStatement statement)
         {
             if (statement.VoidReturn)
@@ -301,8 +388,8 @@ namespace SLThree.Language
         {
             if (expression is StringLiteral stringLiteral)
             {
-                var quotation = (stringLiteral.Value as string).Contains("\n") ? "\"\"\"" : "\"";
-                Writer.WriteStringText($"{quotation}{expression.Value}{quotation}");
+                var quotation = (NewLineEscaping && (stringLiteral.Value as string).Contains('\n')) ? "\"\"\"" : "\"";
+                Writer.WriteStringText($"{quotation}{ReplaceEscapes(expression.Value as string, NewLineEscaping)}{quotation}");
             }
             else if (expression is AtomLiteral || expression is ByteLiteral || expression is SByteLiteral || expression is ShortLiteral || expression is UShortLiteral || expression is IntLiteral || expression is UIntLiteral || expression is LongLiteral || expression is ULongLiteral)
             {
@@ -317,38 +404,46 @@ namespace SLThree.Language
             VisitExpression(expression.Type);
             if (expression.Arguments.Length > 0)
             {
-                void CarriageArgs()
-                {
-                    Writer.WritePlainText("(");
-                    Writer.Writeln();
-                    Writer.Level += 1;
-                    expression.Arguments.ForeachAndBetween(x =>
-                    {
-                        Writer.WriteTab();
-                        VisitExpression(x);
-                    }, x => Writer.WritelnPlainText(","));
-                    Writer.Level -= 1;
-                    Writer.Writeln();
-                    Writer.WritePlainText(")");
-                }
-                void LineArgs()
-                {
-                    Writer.WritePlainText("(");
-                    expression.Arguments.ForeachAndBetween(
-                        VisitExpression,
-                        _ => Writer.WritePlainText(", ")
-                    );
-                    Writer.WritePlainText(")");
-                }
-
-                if (FunctionArgumentCarriage) CarriageArgs();
-                else if (FunctionArgumentLineLimit != -1 && expression.Arguments.Length > FunctionArgumentLineLimit) CarriageArgs();
-                else LineArgs();
+                Writer.WritePlainText("(");
+                OutFunctionArguments(expression.Arguments);
+                Writer.WritePlainText(")");
             }
             if (expression.Name != null)
             {
                 Writer.WritePlainText(" ");
                 VisitExpression(expression.Name);
+            }
+            if (expression.CreatorContext != null)
+            {
+                if (expression.CreatorContext.Ancestors.Length > 0)
+                {
+                    Writer.WritePlainText(": ");
+                    void CarriageArgs()
+                    {
+                        Writer.Writeln();
+                        Writer.Level += 1;
+                        expression.CreatorContext.Ancestors.ForeachAndBetween(x =>
+                        {
+                            Writer.WriteTab();
+                            VisitExpression(x);
+                        }, x => Writer.WritelnPlainText(","));
+                        Writer.Level -= 1;
+                        Writer.Writeln();
+                    }
+                    void LineArgs()
+                    {
+                        expression.CreatorContext.Ancestors.ForeachAndBetween(
+                            VisitExpression,
+                            _ => Writer.WritePlainText(", ")
+                        );
+                    }
+
+                    if (AncestorCarriage) CarriageArgs();
+                    else if (AncestorLineLimit != -1 && expression.CreatorContext.Ancestors.Length > AncestorLineLimit) CarriageArgs();
+                    else LineArgs();
+                }
+                if (expression.CreatorContext.CreatorBody != null)
+                    OutStatement(expression.CreatorContext.CreatorBody.Statements);
             }
         }
 
@@ -382,7 +477,6 @@ namespace SLThree.Language
                 Writer.WritePlainText(": ");
                 void CarriageArgs()
                 {
-                    Writer.WritePlainText("(");
                     Writer.Writeln();
                     Writer.Level += 1;
                     expression.Ancestors.ForeachAndBetween(x =>
@@ -392,16 +486,13 @@ namespace SLThree.Language
                     }, x => Writer.WritelnPlainText(","));
                     Writer.Level -= 1;
                     Writer.Writeln();
-                    Writer.WritePlainText(")");
                 }
                 void LineArgs()
                 {
-                    Writer.WritePlainText("(");
                     expression.Ancestors.ForeachAndBetween(
                         VisitExpression,
                         _ => Writer.WritePlainText(", ")
                     );
-                    Writer.WritePlainText(")");
                 }
 
                 if (AncestorCarriage) CarriageArgs();
@@ -590,6 +681,143 @@ namespace SLThree.Language
                 VisitExpression(bo2.Right);
             }
             else base.VisitExpression(expression);
+        }
+
+        public bool NewLineEscaping { get; set; } = true;
+
+        private string ReplaceEscapes(string str, bool force_to_replace_newlines, bool is_interpolated = false)
+        {
+            var ret = str
+                .Replace("\r", "\\r")
+                .Replace("\"", "\\\"")
+                .Replace("\\", "\\\\")
+                .Replace("\t", "\\t")
+                .Replace("\n", "\\n");
+
+            if (is_interpolated)
+            {
+                ret = ret.Replace("{", "{{").Replace("}", "}}");
+            }
+
+            return ret;
+        }
+
+        public override void VisitExpression(InterpolatedString expression)
+        {
+            var quotation = NewLineEscaping && expression.RawRepresentation.Any(x => x.Contains('\n')) ? "\"\"\"" : "\"";
+            Writer.WriteStringText($"${quotation}");
+            for (var i = 0; i < expression.RawRepresentation.Length; i++)
+            {
+                Writer.WriteStringText(ReplaceEscapes(expression.RawRepresentation[i], NewLineEscaping, true));
+                if (i < expression.RawRepresentation.Length - 1)
+                {
+                    Writer.WritePlainText("{");
+                    VisitExpression(expression.Expressions[i]);
+                    Writer.WritePlainText("}");
+                }
+            }
+            Writer.WriteStringText($"{quotation}");
+        }
+
+        public bool IsLowPriorityExpressionInMatch(BaseExpression expression)
+        {
+            return expression is BlockExpression || expression is BinaryAssign || expression is BinaryAssignUnknown || expression is StaticExpression || expression is ConditionExpression || expression is FunctionDefinition || expression is MatchExpression || (expression is ReferenceExpression refexpr && refexpr.Expression is BlockExpression || expression is DereferenceExpression drefexpr && drefexpr.Expression is BlockExpression);
+        }
+
+        public IList<BaseStatement> GetStatements(BaseStatement statement)
+        {
+            if (statement is StatementList stl)
+                return stl.Statements;
+            return new BaseStatement[1] { statement };
+        }
+
+        public override void VisitExpression(MatchExpression expression)
+        {
+            Writer.WriteStatementKeyword("match ");
+            Writer.WritePlainText("(");
+            VisitExpression(expression.Matching);
+            Writer.WritelnPlainText(") {");
+            Writer.Level += 1;
+
+            void visitMatchExpr(BaseExpression x)
+            {
+                if (IsLowPriorityExpressionInMatch(x))
+                {
+                    Writer.WritePlainText("(");
+                    VisitExpression(x);
+                    Writer.WritePlainText(")");
+                }
+                else
+                {
+                    VisitExpression(x);
+                }
+            }
+
+            expression.Matches.Select((x, i) => (expression.Matches[i], expression.Cases[i])).ForeachAndBetween(x =>
+            {
+                Writer.WriteTab();
+                if (x.Item1.Length > 1)
+                {
+                    x.Item1.ForeachAndBetween(visitMatchExpr, _ => Writer.WritePlainText(", "));
+                }
+                else
+                {
+                    visitMatchExpr(x.Item1[0]);
+                }
+                if (x.Item2 is ExpressionStatement expr)
+                {
+                    Writer.WritePlainText(" => ");
+                    VisitExpression(expr.Expression);
+                }
+                else
+                {
+                    Writer.WritePlainText(" =>");
+                    OutStatement(GetStatements(x.Item2));
+                }
+            }, x =>
+            {
+                if (x.Item2 is ExpressionStatement expr)
+                {
+                    Writer.WritelnPlainText(";");
+                }
+                else
+                {
+                    Writer.Writeln();
+                }
+            });
+            if (expression.Cases[expression.Cases.Length - 1] is ExpressionStatement)
+                Writer.WritePlainText(";");
+
+            if (expression.InDefault != null)
+            {
+                Writer.WriteTab();
+                if (expression.InDefault is ExpressionStatement expr)
+                {
+                    Writer.WritePlainText("() => ");
+                    VisitExpression(expr.Expression);
+                    Writer.WritelnPlainText(";");
+                }
+                else
+                {
+                    Writer.WritePlainText("() =>");
+                    OutStatement(GetStatements(expression.InDefault));
+                    Writer.Writeln();
+                }
+            }
+
+            Writer.Level -= 1;
+            Writer.Writeln();
+            Writer.WriteTab();
+            Writer.WritePlainText("}");
+        }
+
+        public override void VisitExpression(CreatorNewArray expression)
+        {
+            Writer.WriteExpressionKeyword("new ");
+            VisitExpression(expression.ArrayType);
+            Writer.WritePlainText("[");
+            VisitExpression(expression.Size);
+            Writer.WritePlainText("]");
         }
     }
 }

@@ -64,8 +64,7 @@ namespace SLThree
         private string GetName() => GetLastName(Name);
         public static string GetLastName(BaseExpression name)
         {
-            name.PrioriryRaised = false;
-            var n = name.ToString();
+            var n = name.ExpressionToString();
             var index = n.LastIndexOf('.');
             if (index == -1) return n;
             else return n.Substring(index + 1);
