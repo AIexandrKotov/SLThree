@@ -298,7 +298,6 @@ primary <BaseExpression> -memoize
     / "&" _ left:(primary/block_expression) { new ReferenceExpression(left, _(state)) }
     / "$" x:block_statement { new MacrosDefinition(x, _(state)) }
     / "$(" _ x:expression _ ")" { new MacrosDefinition(x, _(state)) }
-    / "(" _ x:expression _ ")" { x.RaisePriority() }
     / "new" _required_ "using" _required_ u: using { u }
     / new_context_expression
     / collection_expression
@@ -308,6 +307,7 @@ primary <BaseExpression> -memoize
     / constraint_expression
     / "(" _ args:req_arg_name<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), _(state)) }
     / "(" _ args:expression<1,,_ "," _> _ (_ "," _ )? ")" { new CreatorTuple(args.ToArray(), _(state)) }
+    / "(" _ x:expression _ ")" { x.RaisePriority() }
     / special
     / literal
     / "[" _ x:expression { Panic<BaseExpression>(new SyntaxError(Locale.Current["STX_Unclosed_[]"], _(state))) }
