@@ -3529,7 +3529,7 @@ namespace SLThree
         {
             for (var i = 0; i < Generics.Length; i++)
                 if (!Generics[i].Item2.Applicable(args[i].Item1, args[i].Item2))
-                    throw new RuntimeError(string.Format(Locale.Current["ERR_DoesntFitConstraint"], args[i].Item2.GetType().GetTypeString(), args[i].Item2, Generics[i].Item2), Generics[i].Item2.IISourceContext);
+                    throw new RuntimeError(string.Format(Locale.Current["ERR_DoesntFitConstraint"], args[i].Item2?.GetType().GetTypeString() ?? "null", args[i].Item2, Generics[i].Item2), Generics[i].Item2.IISourceContext);
             var constraints = args.Select((x, i) => x.Item1 == GenericMaking.Constraint ? GetMakingBasedOnConstraint(MakingConstraints[i]) : x.Item1).ToArray();
             foreach (var x in GenericsInfo)
             {
