@@ -200,7 +200,8 @@ namespace SLThree.Visitors
             foreach (var x in expression.GenericArguments)
             {
                 VisitExpression(x.Item1);
-                VisitExpression(x.Item2);
+                if (x.Item2 != null)
+                    VisitConstraint(x.Item2);
             }
             foreach (var x in expression.Arguments)
             {
