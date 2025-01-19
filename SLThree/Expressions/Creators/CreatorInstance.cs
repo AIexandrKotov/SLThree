@@ -75,7 +75,7 @@ namespace SLThree
                 type,
                 null,
                 args,
-                null,
+                new CreatorContext(null, ancestors, null, false, context),
                 context);
         public static CreatorInstance CaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(
@@ -131,7 +131,7 @@ namespace SLThree
                 type,
                 name,
                 args,
-                null,
+                new CreatorContext(name, ancestors, null, false, context),
                 context);
         public static CreatorInstance NamedCaseTypeArgsBodyInheritance(TypenameExpression type, BaseExpression name, BaseExpression[] args, BaseExpression[] ancestors, CreatorContextBody body, ISourceContext context)
             => new CreatorInstance(

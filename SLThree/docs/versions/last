@@ -79,3 +79,4 @@ Bugfixes:
     - Generic cloning policy is now lossless
     - Indentation supporting in $-strings (#133)
     - Whitespace after comma fix (#135)
+    - `new T` with context-ancestors fix (#136)
