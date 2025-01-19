@@ -1,0 +1,12 @@
+new context;
+new context A;
+new context: B;
+new context A: B;
+context {
+}
+context A {
+}
+context: B {
+}
+context A: B {
+}

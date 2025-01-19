@@ -1,0 +1,2 @@
+throw 2;
+throw new System.Exception("234235");

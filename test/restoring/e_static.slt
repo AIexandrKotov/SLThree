@@ -1,0 +1,4 @@
+static a = 2;
+static f(x) => x;
+static new context A;
+static new T X;

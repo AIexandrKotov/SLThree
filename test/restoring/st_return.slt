@@ -1,0 +1,6 @@
+return;
+return 0xFF;
+return context {
+    x = 2;
+};
+return new T;
