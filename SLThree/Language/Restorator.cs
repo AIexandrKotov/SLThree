@@ -275,6 +275,10 @@ namespace SLThree.Language
 
         public override void VisitExpression(NameExpression expression)
         {
+            if (expression.Const)
+            {
+                Writer.WriteExpressionKeyword("const ");
+            }
             if (expression.TypeHint != null)
             {
                 VisitExpression(expression.TypeHint);
