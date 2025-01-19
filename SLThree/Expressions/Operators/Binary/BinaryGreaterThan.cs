@@ -6,6 +6,7 @@ namespace SLThree
 {
     public class BinaryGreaterThan : BinaryOperator
     {
+        public override int Priority => 3;
         public override string Operator => ">";
         public BinaryGreaterThan(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryGreaterThan() : base() { }

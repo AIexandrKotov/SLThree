@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryEquals : BinaryOperator
     {
+        public override int Priority => 4;
         public override string Operator => "==";
         public BinaryEquals(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryEquals() : base() { }

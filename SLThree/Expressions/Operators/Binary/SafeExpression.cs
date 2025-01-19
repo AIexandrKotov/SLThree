@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class SafeExpression : BinaryOperator
     {
+        public override int Priority => 8;
         public override string Operator => "-?";
         public SafeExpression(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public SafeExpression() : base() { }

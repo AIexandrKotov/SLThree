@@ -9,6 +9,7 @@ namespace SLThree
 {
     public class AccordExpression : BaseExpression
     {
+        public override int Priority => 10;
         public BaseExpression[] HeadAccords;
         public (BaseExpression, TemplateMethod.ConstraintDefinition)[][] Accordings;
         public BaseStatement[] Cases;

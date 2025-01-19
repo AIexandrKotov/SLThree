@@ -6,6 +6,7 @@ namespace SLThree
 {
     public class CastExpression : BaseExpression
     {
+        public override int Priority => 0;
         public BaseExpression Left;
         public TypenameExpression Type;
         public bool normal;

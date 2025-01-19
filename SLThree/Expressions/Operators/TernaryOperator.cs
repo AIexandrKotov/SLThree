@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class TernaryOperator : BaseExpression
     {
+        public override int Priority => 9;
         public string Operator => "?:";
 
         public BaseExpression Condition;

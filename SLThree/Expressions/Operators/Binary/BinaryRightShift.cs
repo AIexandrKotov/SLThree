@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryRightShift : BinaryOperator
     {
+        public override int Priority => 5;
         public override string Operator => ">>";
         public BinaryRightShift(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryRightShift() : base() { }

@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class NullCoalescing : BinaryOperator
     {
+        public override int Priority => 8;
         public override string Operator => "??";
         public NullCoalescing(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public NullCoalescing() : base() { }

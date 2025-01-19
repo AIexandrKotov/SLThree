@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class ConditionExpression : BaseExpression
     {
+        public override int Priority => 10;
         public BaseExpression Condition;
         public BaseStatement[] Body;
 

@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class ReferenceExpression : BaseExpression
     {
+        public override int Priority => Expression is BlockExpression ? 10 : int.MinValue;
         public BaseExpression Expression;
 
         public ReferenceExpression(BaseExpression expression, ISourceContext context) : base(context)
@@ -23,6 +24,7 @@ namespace SLThree
 
     public class DereferenceExpression : BaseExpression
     {
+        public override int Priority => Expression is BlockExpression ? 10 : int.MinValue;
         public BaseExpression Expression;
 
         public DereferenceExpression(BaseExpression expression, ISourceContext context) : base(context)

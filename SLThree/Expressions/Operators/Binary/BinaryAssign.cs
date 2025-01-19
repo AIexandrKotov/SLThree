@@ -6,6 +6,7 @@ namespace SLThree
 {
     public class BinaryAssign : BinaryOperator
     {
+        public override int Priority => 10;
         public override string Operator => "=";
         public BinaryAssign(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryAssign() : base() { }

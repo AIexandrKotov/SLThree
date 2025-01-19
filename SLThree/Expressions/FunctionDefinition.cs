@@ -10,6 +10,7 @@ namespace SLThree
 {
     public class FunctionDefinition : BaseExpression
     {
+        public override int Priority => 10;
         /*
         ---Function defines---
         [MODS [Name]]<T>(args)[:TRet] {}

@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class StaticExpression : BaseExpression
     {
+        public override int Priority => 10;
         public BaseExpression Right;
 
         public StaticExpression(BaseExpression right, ISourceContext context) : base(context)

@@ -199,13 +199,37 @@ namespace SLThree.Metadata
         public override void VisitExpression(UnaryOperator expression)
         {
             Writer.WritePlainText($"{expression.Operator}");
+            if (expression.Left.Priority > expression.Priority)
+            {
+                Writer.WritePlainText("(");
+            }
             VisitExpression(expression.Left);
+            if (expression.Left.Priority > expression.Priority)
+            {
+                Writer.WritePlainText(")");
+            }
         }
         public override void VisitExpression(BinaryOperator expression)
         {
+            if (expression.Left.Priority > expression.Priority)
+            {
+                Writer.WritePlainText("(");
+            }
             VisitExpression(expression.Left);
+            if (expression.Left.Priority > expression.Priority)
+            {
+                Writer.WritePlainText(")");
+            }
             Writer.WritePlainText($" {expression.Operator} ");
+            if (expression.Right.Priority > expression.Priority)
+            {
+                Writer.WritePlainText("(");
+            }
             VisitExpression(expression.Right);
+            if (expression.Right.Priority > expression.Priority)
+            {
+                Writer.WritePlainText(")");
+            }
         }
         public override void VisitStatement(ExpressionStatement statement)
         {

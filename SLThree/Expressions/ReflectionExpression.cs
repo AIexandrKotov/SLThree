@@ -7,6 +7,7 @@ namespace SLThree
 {
     public class ReflectionExpression : BaseExpression
     {
+        public override int Priority => 0;
         public BaseExpression Left;
         public NameExpression Right;
         public TypenameExpression[] MethodGenericArguments;

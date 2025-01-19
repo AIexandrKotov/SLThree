@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryBitXor : BinaryOperator
     {
+        public override int Priority => 5;
         public override string Operator => "^";
         public BinaryBitXor(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
 

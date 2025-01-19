@@ -8,6 +8,7 @@ namespace SLThree
 {
     public class MatchExpression : BaseExpression
     {
+        public override int Priority => 10;
         public BaseExpression Matching;
         public BaseExpression[][] Matches;
         public BaseStatement[] Cases;

@@ -9,6 +9,7 @@ namespace SLThree
 {
     public class CreatorRange : BaseExpression
     {
+        public override int Priority => 0;
         public BaseExpression LowerBound;
         public BaseExpression UpperBound;
         public TypenameExpression RangeType;

@@ -6,6 +6,7 @@ namespace SLThree
 {
     public class BinaryIsAssign : BinaryOperator
     {
+        public override int Priority => 4;
         public BaseExpression Variable;
         public BinaryIsAssign(BaseExpression left, BaseExpression right, BaseExpression variable, ISourceContext context) : base(left, right, context)
         {

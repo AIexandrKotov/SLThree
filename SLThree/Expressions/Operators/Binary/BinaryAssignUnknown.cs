@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryAssignUnknown : UnaryOperator
     {
+        public override int Priority => 10;
         public override string Operator => "? =";
         public BinaryAssignUnknown(BaseExpression left, ISourceContext context) : base(left, context) { }
         public BinaryAssignUnknown() : base() { }

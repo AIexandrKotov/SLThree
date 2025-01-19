@@ -6,6 +6,7 @@ namespace SLThree
 {
     public class BlockExpression : BaseExpression
     {
+        public override int Priority => 10;
         public BaseStatement[] Statements;
         private protected int count;
 

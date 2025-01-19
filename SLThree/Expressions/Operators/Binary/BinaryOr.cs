@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class BinaryOr : BinaryOperator
     {
+        public override int Priority => 7;
         public override string Operator => "||";
         public BinaryOr(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryOr() : base() { }

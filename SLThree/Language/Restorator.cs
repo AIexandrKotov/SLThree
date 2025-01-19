@@ -721,7 +721,7 @@ namespace SLThree.Language
 
         public bool IsLowPriorityExpressionInMatch(BaseExpression expression)
         {
-            return expression is BlockExpression || expression is BinaryAssign || expression is BinaryAssignUnknown || expression is StaticExpression || expression is ConditionExpression || expression is FunctionDefinition || expression is MatchExpression || (expression is ReferenceExpression refexpr && refexpr.Expression is BlockExpression || expression is DereferenceExpression drefexpr && drefexpr.Expression is BlockExpression);
+            return expression.Priority > 9;
         }
 
         public IList<BaseStatement> GetStatements(BaseStatement statement)

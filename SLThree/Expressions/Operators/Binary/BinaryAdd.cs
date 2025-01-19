@@ -1,10 +1,12 @@
 ﻿using SLThree.Extensions;
 using SLThree.Extensions.Cloning;
+using System;
 
 namespace SLThree
 {
     public class BinaryAdd : BinaryOperator
     {
+        public override int Priority => 2;
         public override string Operator => "+";
         public BinaryAdd(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryAdd() : base() { }

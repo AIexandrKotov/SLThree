@@ -4,6 +4,7 @@ namespace SLThree
 {
     public class BinaryAnd : BinaryOperator
     {
+        public override int Priority => 6;
         public override string Operator => "&&";
         public BinaryAnd(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryAnd() : base() { }

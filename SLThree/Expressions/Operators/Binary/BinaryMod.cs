@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryMod : BinaryOperator
     {
+        public override int Priority => 1;
         public override string Operator => "%";
         public BinaryMod(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryMod() : base() { }

@@ -5,6 +5,7 @@ namespace SLThree
 {
     public class BinaryDivide : BinaryOperator
     {
+        public override int Priority => 1;
         public override string Operator => "/";
         public BinaryDivide(BaseExpression left, BaseExpression right, ISourceContext context) : base(left, right, context) { }
         public BinaryDivide() : base() { }
