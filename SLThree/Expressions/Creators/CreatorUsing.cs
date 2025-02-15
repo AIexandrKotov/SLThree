@@ -7,6 +7,8 @@ namespace SLThree
 {
     public class CreatorUsing : BaseExpression
     {
+        public override int Priority => -0xFF;
+
         public TypenameExpression Type;
         public ClassAccess system;
 

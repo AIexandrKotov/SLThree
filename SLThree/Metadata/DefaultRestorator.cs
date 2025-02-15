@@ -46,6 +46,7 @@ namespace SLThree.Metadata
             public virtual string Unsupported(object o) => $"\"!{o.GetType().FullName}!\"";
             public void RemoveEndNewlines()
             {
+                if (Sb.Length == 0) return;
                 while (Sb[Sb.Length - 1] == '\n' || Sb[Sb.Length - 1] == '\r')
                     Sb.Remove(Sb.Length - 1, 1);
             }

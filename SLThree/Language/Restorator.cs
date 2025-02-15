@@ -123,6 +123,7 @@ namespace SLThree.Language
                     Writer.WriteTab();
                     VisitExpression(x);
                 }, x => Writer.WritelnPlainText(","));
+                Writer.WritePlainText(", ");
                 Writer.Level -= 1;
                 Writer.Writeln();
                 Writer.WritePlainText(")");
@@ -131,14 +132,26 @@ namespace SLThree.Language
             {
                 Writer.WritePlainText("(");
                 expression.Expressions.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+                if (expression.Expressions.Length == 1)
+                    Writer.WritePlainText(", ");
                 Writer.WritePlainText(")");
             }
 
-            if (CollectionCarriage) CarriageArgs();
-            else if (CollectionLineLimit != -1 && expression.Expressions.Length > CollectionLineLimit) CarriageArgs();
+            if (TupleCarriage) CarriageArgs();
+            else if (TupleLineLimit != -1 && expression.Expressions.Length > TupleLineLimit) CarriageArgs();
             else LineArgs();
         }
 
+        public void WrapInBracketsIf(bool condition, Action action)
+        {
+            if (condition)
+                Writer.WritePlainText("(");
+
+            action();
+
+            if (condition)
+                Writer.WritePlainText(")");
+        }
 
         public int DictionaryLineLimit { get; set; } = DefaultMultiLimit;
         public bool DictionaryCarriage { get; set; } = DefaultCarriage;
@@ -181,9 +194,12 @@ namespace SLThree.Language
 
         public override void VisitExpression(CreatorDictionary.DictionaryEntry expression)
         {
-            VisitExpression(expression.Key);
+            var keyPriority = expression.Key.Priority;
+            var valuePriority = expression.Value.Priority;
+
+            WrapInBracketsIf(expression.Key.Priority > int.MinValue, () => VisitExpression(expression.Key));
             Writer.WritePlainText(": ");
-            VisitExpression(expression.Value);
+            WrapInBracketsIf(expression.Value.Priority > int.MinValue, () => VisitExpression(expression.Value));
         }
 
         public void OutFunctionArguments(IList<BaseExpression> arguments)
@@ -237,6 +253,16 @@ namespace SLThree.Language
         public override void VisitExpression(InvokeExpression expression)
         {
             GetLeftFromInvoke(expression.Left);
+            Writer.WritePlainText("(");
+            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+            Writer.WritePlainText(")");
+        }
+        public override void VisitExpression(InvokeGenericExpression expression)
+        {
+            GetLeftFromInvoke(expression.Left);
+            Writer.WritePlainText("<");
+            expression.GenericArguments.ForeachAndBetween(VisitExpression, x => Writer.WritePlainText(", "));
+            Writer.WritePlainText(">");
             Writer.WritePlainText("(");
             expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
             Writer.WritePlainText(")");
@@ -501,7 +527,7 @@ namespace SLThree.Language
             }
             if (expression.CreatorBody != null)
             {
-                OutStatement(expression.CreatorBody.Statements);
+                OutStatements(expression.CreatorBody.Statements);
             }
         }
 
@@ -514,7 +540,6 @@ namespace SLThree.Language
 
         public override void VisitExpression(FunctionDefinition expression)
         {
-
             expression.Modificators.ForeachAndBetween(Writer.WriteExpressionKeyword, x => Writer.WritePlainText(" "));
             if (expression.Modificators.Any()) Writer.WritePlainText(" ");
             if (expression.FunctionName != null)
@@ -563,7 +588,7 @@ namespace SLThree.Language
             }
 
 
-            if (AllowFunctionDefinitionWithoutBrackets && expression.FunctionName == null && expression.Arguments.Length == 1)
+            if (AllowFunctionDefinitionWithoutBrackets && expression.Modificators.Length == 0 && expression.FunctionName == null && expression.Arguments.Length == 1 && expression.FunctionBody.Statements.Length == 1 && expression.FunctionBody.Statements[0] is ReturnStatement)
             {
                 VisitExpression(expression.Arguments[0]);
             }
@@ -790,18 +815,18 @@ namespace SLThree.Language
 
             if (expression.InDefault != null)
             {
+                Writer.Writeln();
                 Writer.WriteTab();
                 if (expression.InDefault is ExpressionStatement expr)
                 {
                     Writer.WritePlainText("() => ");
                     VisitExpression(expr.Expression);
-                    Writer.WritelnPlainText(";");
+                    Writer.WritePlainText(";");
                 }
                 else
                 {
                     Writer.WritePlainText("() =>");
                     OutStatement(GetStatements(expression.InDefault));
-                    Writer.Writeln();
                 }
             }
 
@@ -818,6 +843,25 @@ namespace SLThree.Language
             Writer.WritePlainText("[");
             VisitExpression(expression.Size);
             Writer.WritePlainText("]");
+        }
+
+        public override void VisitExpression(CreatorRange expression)
+        {
+            if (expression.RangeType != null)
+            {
+                Writer.WritePlainText("<");
+                VisitExpression(expression.RangeType);
+                Writer.WritePlainText(">");
+            }
+            WrapInBracketsIf(expression.LowerBound.Priority > int.MinValue, () => VisitExpression(expression.LowerBound));
+            Writer.WritePlainText(expression.Excluding ? ".." : "..=");
+            WrapInBracketsIf(expression.UpperBound.Priority > int.MinValue, () => VisitExpression(expression.UpperBound));
+        }
+
+        public override void VisitExpression(CreatorUsing expression)
+        {
+            Writer.WriteExpressionKeyword("new using ");
+            VisitExpression(expression.Type);
         }
     }
 }

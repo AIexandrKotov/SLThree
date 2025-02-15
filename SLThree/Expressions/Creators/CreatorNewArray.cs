@@ -7,6 +7,8 @@ namespace SLThree
 {
     public class CreatorNewArray : BaseExpression
     {
+        public override int Priority => -0xFF;
+
         public TypenameExpression ArrayType;
         public BaseExpression Size;
 

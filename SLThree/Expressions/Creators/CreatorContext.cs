@@ -6,6 +6,8 @@ namespace SLThree
 {
     public class CreatorContext : BaseExpression
     {
+        public override int Priority => -0xFF;
+
         /*
         ---Creating instances---
         new context Name: TBase
