@@ -66,63 +66,72 @@ namespace SLThree.Metadata
         }
         public class ConsoleWriter : IRestoratorWriter
         {
+            private const string Plain = "Plain";
+            private const string Type = "Type";
+            private const string Call = "Call";
+            private const string ExpressionKeyword = "ExpressionKeyword";
+            private const string StatementKeyword = "StatementKeyword";
+            private const string String = "String";
+            private const string Error = "Error";
+            private const string Digit = "Digit";
+
             public virtual int Tabulation { get; set; } = 4;
             public virtual void WriteTab() => Console.Write(new string(' ', Tabulation * Level));
             public ConsoleColor BackColor { get; set; } = ConsoleColor.White;
             public Dictionary<string, ConsoleColor> Colors { get; set; } = new Dictionary<string, ConsoleColor>()
             {
-                { "Plain", ConsoleColor.Black },
-                { "Type", ConsoleColor.DarkCyan },
-                { "Call", ConsoleColor.DarkYellow },
-                { "ExpressionKeyword", ConsoleColor.Blue },
-                { "StatementKeyword", ConsoleColor.DarkMagenta },
-                { "String", ConsoleColor.DarkRed },
-                { "Error", ConsoleColor.Red },
-                { "Digit", ConsoleColor.DarkGreen },
+                { Plain, ConsoleColor.Black },
+                { Type, ConsoleColor.DarkCyan },
+                { Call, ConsoleColor.DarkYellow },
+                { ExpressionKeyword, ConsoleColor.Blue },
+                { StatementKeyword, ConsoleColor.DarkMagenta },
+                { String, ConsoleColor.DarkRed },
+                { Error, ConsoleColor.Red },
+                { Digit, ConsoleColor.DarkGreen },
             };
             public virtual void WritePlainText(string s)
             {
-                Console.ForegroundColor = Colors["Plain"];
+                Console.ForegroundColor = Colors[Plain];
                 Console.Write(s.Replace("\r", ""));
             }
             public virtual void WriteTypeText(string s)
             {
-                Console.ForegroundColor = Colors["Type"];
+                Console.ForegroundColor = Colors[Type];
                 Console.Write(s);
             }
             public virtual void WriteCallText(string s)
             {
-                Console.ForegroundColor = Colors["Call"];
+                Console.ForegroundColor = Colors[Call];
                 Console.Write(s);
             }
             public virtual void WriteExpressionKeyword(string s)
             {
-                Console.ForegroundColor = Colors["ExpressionKeyword"];
+                Console.ForegroundColor = Colors[ExpressionKeyword];
                 Console.Write(s);
             }
             public virtual void WriteStatementKeyword(string s)
             {
-                Console.ForegroundColor = Colors["StatementKeyword"];
+                Console.ForegroundColor = Colors[StatementKeyword];
                 Console.Write(s);
             }
             public virtual void WritelnPlainText(string s)
             {
-                Console.ForegroundColor = Colors["Plain"];
+                Console.ForegroundColor = Colors[Plain];
                 Console.Write(s + "\n");
             }
             public virtual void WriteStringText(string s)
             {
-                Console.ForegroundColor = Colors["String"];
+                Console.ForegroundColor = Colors[String];
                 Console.Write(s);
             }
             public virtual void WriteErrorText(string s)
             {
-                Console.ForegroundColor = Colors["Error"];
+                Console.ForegroundColor = Colors[Error];
                 Console.Write(s);
             }
             public virtual void WriteDigitText(string s)
             {
-                Console.ForegroundColor = Colors["Digit"];
+                Console.ForegroundColor = Colors[Digit];
                 Console.Write(s);
             }
 
