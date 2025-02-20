@@ -254,7 +254,7 @@ namespace SLThree.Language
         {
             GetLeftFromInvoke(expression.Left);
             Writer.WritePlainText("(");
-            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+            OutFunctionArguments(expression.Arguments);
             Writer.WritePlainText(")");
         }
         public override void VisitExpression(InvokeGenericExpression expression)
@@ -264,7 +264,7 @@ namespace SLThree.Language
             expression.GenericArguments.ForeachAndBetween(VisitExpression, x => Writer.WritePlainText(", "));
             Writer.WritePlainText(">");
             Writer.WritePlainText("(");
-            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+            OutFunctionArguments(expression.Arguments);
             Writer.WritePlainText(")");
         }
         public bool AllowLineStatement { get; set; } = true;
@@ -862,6 +862,26 @@ namespace SLThree.Language
         {
             Writer.WriteExpressionKeyword("new using ");
             VisitExpression(expression.Type);
+        }
+
+        public override void VisitExpression(IndexExpression expression)
+        {
+            GetLeftFromInvoke(expression.Expression);
+            Writer.WritePlainText("[");
+            expression.Arguments.ForeachAndBetween(x => VisitExpression(x), x => Writer.WritePlainText(", "));
+            Writer.WritePlainText("]");
+        }
+
+        public override void VisitExpression(ReferenceExpression expression)
+        {
+            Writer.WritePlainText("&");
+            VisitExpression(expression.Expression);
+        }
+
+        public override void VisitExpression(DereferenceExpression expression)
+        {
+            Writer.WritePlainText("*");
+            VisitExpression(expression.Expression);
         }
     }
 }
