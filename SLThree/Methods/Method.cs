@@ -179,7 +179,7 @@ namespace SLThree
                 var ret = new object[ParamsPlace + 1];
                 Array.Copy(args, ret, ParamsPlace);
                 object[] rest;
-                if (args.Length > ParamsPlace && args[ParamsPlace] is object[] direct_params)
+                if (args.Length == ParamsPlace + 1 && args[ParamsPlace] is object[] direct_params)
                 {
                     rest = direct_params;
                 }
