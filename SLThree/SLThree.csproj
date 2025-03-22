@@ -11,7 +11,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>language;ast;scripts;script-lang;commands</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.9.0-alpha.1019</Version>
+    <Version>0.9.0-alpha.1022</Version>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/docs/versions/last"))</PackageReleaseNotes>
     <PackageReadmeFile>nugetreadme.md</PackageReadmeFile>
     <PackageIcon>nugetlogo.png</PackageIcon>
