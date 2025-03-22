@@ -779,6 +779,7 @@ literals_as_name <NameExpression>
     / l:octal_num_literal { new NameExpression(l.RawRepresentation, _(state)) }
     / l:hex_num_literal { new NameExpression(l.RawRepresentation, _(state)) }
     / l:num_literal { new NameExpression(l.RawRepresentation, _(state)) }
+    / l:multiline_string_literal { new NameExpression(l.Value.ToString(), _(state)) }
     / l:string_literal { new NameExpression(l.Value.ToString(), _(state)) }
 
 literal <BaseExpression>
