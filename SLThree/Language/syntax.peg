@@ -235,7 +235,7 @@ unary <BaseExpression>
 
 using_expression <UsingExpression>
     = "using" _required_ u:using  
-    using_alias:(<BaseExpression> _required_ "as" _required_ name:primary {name})? {
+    using_alias:(<BaseExpression> _required_ "as" _required_ name:(<BaseExpression>literals_as_name/primary) {name})? {
         new UsingExpression(GetOptional(using_alias), u, _(state))
     }
 
@@ -315,8 +315,8 @@ primary <BaseExpression> -memoize
 
 constraint_expression <ConstraintExpression>
     = "constraint" _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, null, c, _(state)) }
-    / "constraint" _required_ n:primary  _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, n, c, _(state)) }
-    / "constraint" _required_ n:primary _ ":" _ c:constraint { new ConstraintExpression(n, c, _(state)) }
+    / "constraint" _required_ n:(<BaseExpression>literals_as_name/primary)  _required_ "on" _required_ x:name _ ":" _ c:constraint { new ConstraintExpression(x, n, c, _(state)) }
+    / "constraint" _required_ n:(<BaseExpression>literals_as_name/primary) _ ":" _ c:constraint { new ConstraintExpression(n, c, _(state)) }
     / "constraint" _ ":" _ c:constraint { new ConstraintExpression(null, c, _(state)) }
 
 generic_invokation <ValueTuple<BaseExpression, BaseExpression>>
@@ -356,7 +356,7 @@ block_or_primary <BaseExpression>
     = block_expression / primary
 
 generic_making <BaseExpression>
-    = "as" _required_ maki:primary { new InvokeTemplateExpression.GenericMakingDefinition(maki, _(state)) }
+    = "as" _required_ maki:(<BaseExpression>literals_as_name/primary) { new InvokeTemplateExpression.GenericMakingDefinition(maki, _(state)) }
 
 constraint <TemplateMethod.ConstraintDefinition> -memoize
     = left:constraint _ "+" _ right:constraint { new TemplateMethod.CombineConstraintDefinition(left, right, _(state)) }
@@ -381,12 +381,12 @@ constraint_primary <TemplateMethod.ConstraintDefinition>
 new_context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context Name: TBase
-    = "new" _required_ "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> { 
+    = "new" _required_ "context" _required_ name:(<BaseExpression>literals_as_name/primary) _ ":" _ ancestors:primary<1,,_ "," _> { 
         new CreatorContext(name, ancestors.ToArray(), _(state))
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        new context Name
-    / "new" _required_ "context" _required_ name:primary { 
+    / "new" _required_ "context" _required_ name:(<BaseExpression>literals_as_name/primary) { 
         new CreatorContext(name, _(state))
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
@@ -403,13 +403,13 @@ new_context_expression <BaseExpression>
 context_expression <BaseExpression>
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        context Name: TBase {}
-    = "context" _required_ name:primary _ ":" _ ancestors:primary<1,,_ "," _> 
+    = "context" _required_ name:(<BaseExpression>literals_as_name/primary) _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         new CreatorContext(name, ancestors.ToArray(), body, _(state))
     }
 //--------CREATOR--CONTEXT-------------------------------------------------
 //        context Name {}
-    / "context" _required_ name:primary
+    / "context" _required_ name:(<BaseExpression>literals_as_name/primary)
     _ body:context_body { 
         new CreatorContext(name, body, _(state))
     }
@@ -494,14 +494,14 @@ dictionary_entry <CreatorDictionary.DictionaryEntry>
 instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase {};
-    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase;
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.NamedCaseTypeArgsInheritance(t, name, args.ToArray(), ancestors.ToArray(), _(state))
     }
@@ -520,14 +520,14 @@ instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase {}; 
-    / "new" _required_ t:typename _ name:primary
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase;
-    / "new" _required_ t:typename _ name:primary
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> { 
         CreatorInstance.NamedCaseTypeInheritance(t, name, ancestors.ToArray(), _(state))
     }
@@ -546,13 +546,13 @@ instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary)
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name;
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary { 
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary) { 
         CreatorInstance.NamedCaseTypeArgs(t, name, args.ToArray(), _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
@@ -568,13 +568,13 @@ instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name {};
-    / "new" _required_ t:typename _ name:primary
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary)
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBody(t, name, body, _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name;
-    / "new" _required_ t:typename _ name:primary { 
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary) { 
         CreatorInstance.NamedCaseType(t, name, _(state))
     }
 //--------CREATOR--INSTANCE------------------------------------------------
@@ -610,7 +610,7 @@ instance_expression <BaseExpression>
 block_instance_expression <BaseExpression>
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name: TBase {};
-    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    = "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBodyInheritance(t, name, args.ToArray(), ancestors.ToArray(), body, _(state))
@@ -624,7 +624,7 @@ block_instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name: TBase {}; 
-    / "new" _required_ t:typename _ name:primary
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary)
     _ ":" _ ancestors:primary<1,,_ "," _> 
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBodyInheritance(t, name, ancestors.ToArray(), body, _(state))
@@ -638,7 +638,7 @@ block_instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T(args) Name {};
-    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:primary
+    / "new" _required_ t:typename _ "(" _ args:expression<0,,_ "," _> _ ")" _ name:(<BaseExpression>literals_as_name/primary)
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeArgsBody(t, name, args.ToArray(), body, _(state))
     }
@@ -650,7 +650,7 @@ block_instance_expression <BaseExpression>
     }
 //--------CREATOR--INSTANCE------------------------------------------------
 //        new T Name {};
-    / "new" _required_ t:typename _ name:primary
+    / "new" _required_ t:typename _ name:(<BaseExpression>literals_as_name/primary)
     _ body:context_body { 
         CreatorInstance.NamedCaseTypeBody(t, name, body, _(state))
     }
@@ -727,8 +727,8 @@ method_generic_part <IList<ValueTuple<NameExpression, TemplateMethod.ConstraintD
     = "<" _ generic_args:generic_arg<1,,_ "," _> _ ">" _ { generic_args }
 
 generic_arg <ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>>
-    = generic_name:name _ ":" _ cnstr:constraint { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, cnstr) }
-    / generic_name:name { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, null) }
+    = generic_name:(<NameExpression>name/literals_as_name) _ ":" _ cnstr:constraint { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, cnstr) }
+    / generic_name:(<NameExpression>name/literals_as_name) { new ValueTuple<NameExpression, TemplateMethod.ConstraintDefinition>(generic_name, null) }
 
 method_mods_name <Tuple<string[], BaseExpression>>
     = mods:method_modificator<1,,_required_> _required_ name:withoutinvokation_primary _ { new Tuple<string[], BaseExpression>(mods.ToArray(), name) }
@@ -749,7 +749,7 @@ typename <TypenameExpression>
 
 typename_node <BaseExpression> -memoize
     = left:typename_node _ "." _ right:name { new MemberAccess(left, right, _(state)) }
-    / special
+    / literal_as_name
 
 func_arg <FunctionArgument>
     = name:arg_name _ "=" _ expr:expression { new FunctionArgument(name, expr, _(state)) }
