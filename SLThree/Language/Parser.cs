@@ -228,5 +228,36 @@ namespace SLThree.Language
             UncachebleCheck(expression.Right);
             return expression;
         }
+
+        public static string NumericLiteralReplacing(string numeric)
+        {
+            numeric = numeric.Replace("_", "");
+
+            if (numeric.Contains("."))
+            {
+                var k = numeric.Count(x => x == 'k');
+
+                if (k > 0)
+                {
+                    numeric = numeric.Replace("k", "");
+
+                    var dot = numeric.IndexOf(".");
+                    numeric = numeric.Replace(".", "");
+
+                    if (dot + k*3 >= numeric.Length)
+                    {
+                        numeric = numeric.PadRight(dot + k * 3, '0');
+                    }
+                    else
+                    {
+                        numeric = numeric.Substring(0, dot + k * 3) + "." + numeric.Substring(dot + k * 3, numeric.Length - dot - k * 3);
+                    }
+                }
+            }
+
+            numeric = numeric.Replace("k", "000");
+
+            return numeric;
+        }
     }
 }
