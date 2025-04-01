@@ -748,7 +748,8 @@ typename <TypenameExpression>
     / t_node:typename_node { new TypenameExpression(t_node, _(state)) }
 
 typename_node <BaseExpression> -memoize
-    = left:typename_node _ "." _ right:name { new MemberAccess(left, right, _(state)) }
+    = "..." _ right:name { new MemberAccess(new NamespaceLiteral(_(state)), right, _(state)) }
+    / left:typename_node _ "." _ right:name { new MemberAccess(left, right, _(state)) }
     / literal_as_name
 
 func_arg <FunctionArgument>

@@ -12,6 +12,7 @@ namespace SLThree
 
         private string type_str;
         internal bool is_array;
+        private bool auto_namespace;
         public int array_inds = 1;
 
         private bool type_cached;
@@ -25,6 +26,7 @@ namespace SLThree
         {
             Typename = expression;
             Generics = generics;
+            auto_namespace = expression is MemberAccess ma && ma.Left is NamespaceLiteral;
             PullTheType();
         }
 
@@ -36,7 +38,7 @@ namespace SLThree
         public void PullTheType()
         {
             is_array = false;
-            type_str = Typename.ToString() + (Generics == null ? "" : $"`{Generics.Length}");
+            type_str = (auto_namespace ? Typename.ToString().Substring(3) : Typename.ToString()) + (Generics == null ? "" : $"`{Generics.Length}");
             if (type_str.StartsWith("array"))
             {
                 var skipped = type_str.Skip(5).JoinIntoString("").Split('`');
@@ -51,14 +53,14 @@ namespace SLThree
         public override string ExpressionToString()
         {
             var gind = type_str.IndexOf('`');
-            return $"{(gind != -1 ? type_str.Remove(gind) : type_str)}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
+            return $"{(auto_namespace ? "..." : "")}{(gind != -1 ? type_str.Remove(gind) : type_str)}" + (Generics != null ? $"<{Generics.JoinIntoString(", ")}>" : "");
         }
 
         public virtual Type GetStaticValue()
         {
             if (static_type != null)
                 return static_type;
-            static_type = type_str.ToType();
+            static_type = type_str.ToType(false, auto_namespace);
             if (!is_array)
             {
                 if (static_type == null)
@@ -73,7 +75,7 @@ namespace SLThree
         {
             if (!is_array)
             {
-                static_type = type_str.ToType();
+                static_type = type_str.ToType(false, auto_namespace);
                 if (static_type == null)
                     throw new TypeNotFound(type_str, SourceContext);
                 if (Generics == null) return static_type;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace SLThree.Extensions
 {
@@ -275,7 +276,7 @@ namespace SLThree.Extensions
         private static Type type_generic_set = typeof(HashSet<>);
         private static Type type_generic_dict = typeof(Dictionary<,>);
         private static Type type_void = typeof(void);
-        public static Type ToType(this string s, bool throwError = false)
+        public static Type ToType(this string s, bool throwError = false, bool skipNamespace = false)
         {
             switch (s)
             {
@@ -314,30 +315,52 @@ namespace SLThree.Extensions
                 case "tuple`8": return typeof(ValueTuple<,,,,,,,>);
                 case "array": return type_array;
             }
-            return GetTypeFromRegistredAssemblies(s, throwError);
+            return GetTypeFromRegistredAssemblies(s, throwError, skipNamespace);
         }
         private static readonly Dictionary<string, Type> founded_types = new Dictionary<string, Type>();
-        public static Type GetTypeFromRegistredAssemblies(this string s, bool throwError)
+        private static readonly Dictionary<string, Type> founded_denamespaced_types = new Dictionary<string, Type>();
+        public static Type GetTypeFromRegistredAssemblies(this string s, bool throwError, bool skipNamespace)
         {
-            if (founded_types.TryGetValue(s, out var type)) return type;
-            else
+            if (skipNamespace)
             {
-                foreach (var ass in DotnetEnvironment.RegistredAssemblies)
+                if (founded_denamespaced_types.TryGetValue(s, out var type)) return type;
+                else
                 {
-                    var ret = ass.GetType(s, throwError);
-                    if (ret != null) return founded_types[s] = ret;
-                    else
+                    foreach (var assemblyType in DotnetEnvironment.RegistredAssemblies.SelectMany(x => x.GetTypes()))
                     {
+                        if (assemblyType.Name == s) return founded_denamespaced_types[s] = assemblyType;
+                        else
                         foreach (var str in s.NestedVariations())
                         {
-                            ret = ass.GetType(str, throwError);
-                            if (ret != null) return founded_types[s] = ret;
+                            if (assemblyType.Name == str) return founded_denamespaced_types[s] = assemblyType;
                         }
                     }
                 }
+                if (throwError) throw new Exception($"Type ...{s} not found");
+                return null;
             }
-            if (throwError) throw new Exception($"Type {s} not found");
-            return null;
+            else
+            {
+                if (founded_types.TryGetValue(s, out var type)) return type;
+                else
+                {
+                    foreach (var ass in DotnetEnvironment.RegistredAssemblies)
+                    {
+                        var ret = ass.GetType(s, throwError);
+                        if (ret != null) return founded_types[s] = ret;
+                        else
+                        {
+                            foreach (var str in s.NestedVariations())
+                            {
+                                ret = ass.GetType(str, throwError);
+                                if (ret != null) return founded_types[s] = ret;
+                            }
+                        }
+                    }
+                }
+                if (throwError) throw new Exception($"Type {s} not found");
+                return null;
+            }
         }
         private static IEnumerable<string> NestedVariations(this string s)
         {

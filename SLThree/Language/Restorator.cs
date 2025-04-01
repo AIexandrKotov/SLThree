@@ -250,23 +250,87 @@ namespace SLThree.Language
             }
         }
 
+        public override void VisitExpression(MemberAccess expression)
+        {
+            if (expression.Right is InvokeExpression)
+            {
+                VisitExpression(expression.Right as InvokeExpression, expression);
+            }
+            else if (expression.Right is InvokeGenericExpression)
+            {
+                VisitExpression(expression.Right as InvokeGenericExpression, expression);
+            }
+            else base.VisitExpression(expression);
+        }
+
+        /// <summary>
+        /// будет писать вызовы f(x, y) в стиле x |> f(y) если y это метод
+        /// </summary>
+        public bool AllowFunctionalInvoke { get; set; } = true;
+
+        private bool FunctionalInvokeCondition(MemberAccess source, BaseExpression left, BaseExpression[] arguments) => source != null;
+
         public override void VisitExpression(InvokeExpression expression)
         {
-            GetLeftFromInvoke(expression.Left);
-            Writer.WritePlainText("(");
-            OutFunctionArguments(expression.Arguments);
-            Writer.WritePlainText(")");
+            VisitExpression(expression, null);
         }
         public override void VisitExpression(InvokeGenericExpression expression)
         {
+            VisitExpression(expression, null);
+        }
+
+        public void VisitExpression(InvokeExpression expression, MemberAccess source = null)
+        {
+            var arguments = expression.Arguments;
+            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments))
+            {
+                VisitExpression(arguments[0]);
+                Writer.WritePlainText(" |> ");
+                if (source != null)
+                {
+                    VisitExpression(source.Left);
+                    Writer.WritePlainText(".");
+                }
+                arguments = arguments.Skip(1).ToArray();
+            }
+            else if (source != null)
+            {
+                VisitExpression(source.Left);
+                Writer.WritePlainText(".");
+            }
+            GetLeftFromInvoke(expression.Left);
+            Writer.WritePlainText("(");
+            OutFunctionArguments(arguments);
+            Writer.WritePlainText(")");
+        }
+        public void VisitExpression(InvokeGenericExpression expression, MemberAccess source = null)
+        {
+            var arguments = expression.Arguments;
+            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments))
+            {
+                VisitExpression(arguments[0]);
+                Writer.WritePlainText(" |> ");
+                if (source != null)
+                {
+                    VisitExpression(source.Left);
+                    Writer.WritePlainText(".");
+                }
+                arguments = arguments.Skip(1).ToArray();
+            }
+            else if (source != null)
+            {
+                VisitExpression(source.Left);
+                Writer.WritePlainText(".");
+            }
             GetLeftFromInvoke(expression.Left);
             Writer.WritePlainText("<");
             expression.GenericArguments.ForeachAndBetween(VisitExpression, x => Writer.WritePlainText(", "));
             Writer.WritePlainText(">");
             Writer.WritePlainText("(");
-            OutFunctionArguments(expression.Arguments);
+            OutFunctionArguments(arguments);
             Writer.WritePlainText(")");
         }
+
         public bool AllowLineStatement { get; set; } = true;
         public bool LineStatementOnlyForExpression { get; set; } = true;
 
