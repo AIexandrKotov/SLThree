@@ -3416,7 +3416,7 @@ namespace SLThree
                     for (var j = 0; j < method.ParamNames.Length; j++)
                         if (method.ParamNames[j] == Generics[i])
                         {
-                            CheckAllAllow(j, method.ParamTypes[j], GenericMakingConstraint.AllowNames);
+                            CheckAllAllow(i, method.ParamTypes[j], GenericMakingConstraint.AllowNames);
                             Infos.Add(new OwnParameterNameGeneric(i, method, j));
                         }
                     for (var j = 0; j < method.ParamTypes.Length; j++)
@@ -3424,7 +3424,7 @@ namespace SLThree
                         {
                             if (method.ParamTypes[j].Typename is NameExpression paramTypeName && paramTypeName.Name == Generics[i])
                             {
-                                CheckAnyAllow(j, method.ParamTypes[j], GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
+                                CheckAnyAllow(i, method.ParamTypes[j], GenericMakingConstraint.AllowTypes, GenericMakingConstraint.AllowNames);
                                 Infos.Add(new OwnParameterTypeGeneric(i, method, j));
                             }
                         }
