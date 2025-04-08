@@ -43,6 +43,7 @@ namespace slt
             { "-r", "--repl" },
             { "-e", "--encoding" },
             { "-V", "--changelog" },
+            { "-P", "--plugins" },
         };
         private static string[] RunArguments;
         private static Dictionary<string, Encoding> EncodingAliases
@@ -59,10 +60,25 @@ namespace slt
 
         internal static Plugin SLThreePlugin;
         internal static Plugin SLThreeREPLPlugin;
+        internal static List<Exception> PluginLoadErrors = new List<Exception>();
+
         internal static void InitPlugins()
         {
             SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
             SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
+            var plugin_path = Path.Combine(Path.GetDirectoryName(REPLAssembly.Location), "plugins");
+            var dlls = Directory.GetFiles(plugin_path, "*.dll", SearchOption.AllDirectories);
+            foreach (var dll in dlls)
+            {
+                try
+                {
+                    SLThree.sys.slt.plugin(Assembly.LoadFile(dll));
+                }
+                catch (Exception ex)
+                {
+                    PluginLoadErrors.Add(ex);
+                }
+            }
         }
 
         internal static Assembly SLThreeAssembly, REPLAssembly;
@@ -206,6 +222,45 @@ namespace slt
         {
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(GetLocaleHelp());
+            Console.ResetColor();
+        }
+
+        public static void OutPlugins(bool in_detail)
+        {
+            OutAsWarning($"--- {Locale.Current["REPL_PLUGINS"]} ---");
+            var plugins = Plugin.AddedPlugins;
+            var length = plugins.Max(x => x.Name.Length);
+            if (in_detail)
+                length = Math.Max(length, plugins.Max(x => x.Version.Length));
+
+            foreach (var x in plugins)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(x.Name.PadLeft(length));
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(" │ ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(x.Type);
+
+                if (in_detail)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write(x.Version.PadLeft(length));
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write(" │ ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(x.Version.Take(Console.WindowWidth - length - 10).JoinIntoString(""));
+                    if (x.HasDescription)
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write(new string(' ', length) + " | ");
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine(x.Description?.Description.Take(Console.WindowWidth - length - 10).JoinIntoString(""));
+                    }
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(new string('─', length) + "─┼─" + new string('─', Console.WindowWidth - length - 10));
+                }
+            }
             Console.ResetColor();
         }
         #endregion
@@ -649,6 +704,7 @@ namespace slt
             { "-l", "--locals" },
             { "-p", "--perfomance" },
             { "-e", "--exex" },
+            { "-P", "--plugins" },
         };
         public static Dictionary<string, Action> REPLCommands = new Dictionary<string, Action>()
         {
@@ -840,6 +896,11 @@ namespace slt
                 OutChangelog();
                 any_executed = true;
             }
+            if (wrds.HasArgument("-P", ShortREPLCommands))
+            {
+                OutPlugins(wrds.HasArgument("--in-detail"));
+                any_executed = true;
+            }
 
             foreach (var x in REPLCommands)
                 if (wrds.HasArgument(x.Key))
@@ -931,6 +992,16 @@ namespace slt
         public static void StartREPL(ExecutionContext myExecutionContext = null)
         {
             OutREPLInfo();
+
+            if (PluginLoadErrors.Count > 0)
+            {
+                var erros = PluginLoadErrors.ToArray();
+                PluginLoadErrors.Clear();
+                foreach (var erro in erros)
+                {
+                    OutException(erro);
+                }
+            }
 
             REPLParser = new Parser();
             REPLSubparser = new Subparser();
@@ -1040,6 +1111,7 @@ namespace slt
                 }
             }
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
+            if (HasArgument("-P")) OutPlugins(true);
             if (HasArgument("-v")) OutCurrentVersion();
             if (HasArgument("-V")) OutChangelog();
             if (HasArgument("-h")) OutHelp();

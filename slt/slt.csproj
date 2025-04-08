@@ -48,4 +48,10 @@
     <ProjectReference Include="..\SLThree\SLThree.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="plugins\README.MD">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

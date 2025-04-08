@@ -4,6 +4,7 @@ REPL_FileNotFound=Файл "{0}" не найден.
 REPL_CLASSES=КЛАССЫ
 REPL_METHODS=МЕТОДЫ
 REPL_VARS=ПЕРЕМЕННЫЕ
+REPL_PLUGINS=ПЛАГИНЫ
 
 REPL_TURNED_True=включен
 REPL_TURNED_False=выключен
