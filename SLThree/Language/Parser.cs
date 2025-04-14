@@ -259,5 +259,21 @@ namespace SLThree.Language
 
             return numeric;
         }
+
+        private static BaseExpression Constantination(BaseExpression expression)
+        {
+            var target = default(NameExpression);
+
+            if (expression is MemberAccess ma && ma.Right is NameExpression name)
+                target = name;
+
+            if (expression is NameExpression name2)
+                target = name2;
+
+            if (target != null)
+                target.Const = true;
+
+            return expression;
+        }
     }
 }

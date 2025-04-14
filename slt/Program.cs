@@ -29,6 +29,7 @@ namespace slt
                 { "ansi", Encoding.GetEncoding(1250) },
             };
 #endif
+            InitDotnetVersion();
             InitSLThreeAssemblyInfo();
             SupportingFeatures();
             InitPlugins();
@@ -44,6 +45,8 @@ namespace slt
             { "-e", "--encoding" },
             { "-V", "--changelog" },
             { "-P", "--plugins" },
+            { "-a", "--add-plugin" },
+            { "-d", "--delete-plugin" },
         };
         private static string[] RunArguments;
         private static Dictionary<string, Encoding> EncodingAliases
@@ -58,16 +61,48 @@ namespace slt
 #endif
             ;
 
+        internal static string DotnetVersionCode, DotnetDisplayVersion;
+
+        internal static void InitDotnetVersion()
+        {
+#if NETFRAMEWORK
+            DotnetVersionCode = "net471";
+            DotnetDisplayVersion = ".NET Framework 4.7.1";
+#else
+#if NET9_0_OR_GREATER
+            DotnetVersionCode = "net9.0";
+            DotnetDisplayVersion = ".NET 9.0";
+#else
+#if NET8_0_OR_GREATER
+            DotnetVersionCode = "net8.0";
+            DotnetDisplayVersion = ".NET 8.0";
+#else
+#if NET7_0_OR_GREATER
+            DotnetVersionCode = "net7.0";
+            DotnetDisplayVersion = ".NET 7.0";
+#else
+#if NET6_0_OR_GREATER
+            DotnetVersionCode = "net6.0";
+            DotnetDisplayVersion = ".NET 6.0";
+#endif
+#endif
+#endif
+#endif
+#endif
+        }
+
         internal static Plugin SLThreePlugin;
         internal static Plugin SLThreeREPLPlugin;
         internal static List<Exception> PluginLoadErrors = new List<Exception>();
+        internal static string PathForPlugins;
+        
 
         internal static void InitPlugins()
         {
             SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
             SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
-            var plugin_path = Path.Combine(Path.GetDirectoryName(REPLAssembly.Location), "plugins");
-            var dlls = Directory.GetFiles(plugin_path, "*.dll", SearchOption.AllDirectories);
+            PathForPlugins = Path.Combine(Path.GetDirectoryName(REPLAssembly.Location), "plugins");
+            var dlls = Directory.GetFiles(PathForPlugins, "*.dll", SearchOption.AllDirectories);
             foreach (var dll in dlls)
             {
                 try
@@ -902,6 +937,12 @@ namespace slt
                 any_executed = true;
             }
 
+            if (wrds.TryGetArgument("-a", out var adding_plugin, null, ShortREPLCommands))
+            {
+                AddPlugin(adding_plugin);
+                any_executed = true;
+            }
+
             foreach (var x in REPLCommands)
                 if (wrds.HasArgument(x.Key))
                 {
@@ -936,25 +977,7 @@ namespace slt
             Console.ResetColor();
             Console.Write(" | ");
             Console.ForegroundColor = ConsoleColor.Cyan;
-#if NETFRAMEWORK
-            Console.WriteLine(".NET Framework 4.7.1");
-#else
-#if NET9_0_OR_GREATER
-            Console.WriteLine(".NET 9.0");
-#else
-#if NET8_0_OR_GREATER
-            Console.WriteLine(".NET 8.0");
-#else
-#if NET7_0_OR_GREATER
-            Console.WriteLine(".NET 7.0");
-#else
-#if NET6_0_OR_GREATER
-            Console.WriteLine(".NET 6.0");
-#endif
-#endif
-#endif
-#endif
-#endif
+            Console.WriteLine(DotnetDisplayVersion);
             Console.ResetColor();
         }
 
@@ -982,6 +1005,19 @@ namespace slt
             Console.ResetColor();
         }
 
+        public static void CheckPluginsErrors()
+        {
+            if (PluginLoadErrors.Count > 0)
+            {
+                var erros = PluginLoadErrors.ToArray();
+                PluginLoadErrors.Clear();
+                foreach (var erro in erros)
+                {
+                    OutException(erro);
+                }
+            }
+        }
+
         private static IParser REPLParser;
         private static Subparser REPLSubparser;
         private static bool REPLLoop;
@@ -993,15 +1029,7 @@ namespace slt
         {
             OutREPLInfo();
 
-            if (PluginLoadErrors.Count > 0)
-            {
-                var erros = PluginLoadErrors.ToArray();
-                PluginLoadErrors.Clear();
-                foreach (var erro in erros)
-                {
-                    OutException(erro);
-                }
-            }
+            CheckPluginsErrors();
 
             REPLParser = new Parser();
             REPLSubparser = new Subparser();
@@ -1082,7 +1110,28 @@ namespace slt
             }
             Console.CancelKeyPress -= cancelKeyPress;
         }
-#endregion
+        #endregion
+
+        #region Other
+
+        public static void AddPlugin(string packageId)
+        {
+            try
+            {
+                var s = NugetDownloader.DownloadAndExtractLatestPackage(packageId, DotnetVersionCode, PathForPlugins).GetAwaiter().GetResult();
+                if (s != null)
+                {
+                    SLThree.sys.slt.plugin(Assembly.LoadFile(s));
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLoadErrors.Add(ex);
+            }
+            CheckPluginsErrors();
+        }
+
+        #endregion
 
         public static void Main(string[] args)
         {
@@ -1112,6 +1161,7 @@ namespace slt
             }
             else if (HasArgument("-r") || args.Length == 0) StartREPL();
             if (HasArgument("-P")) OutPlugins(true);
+            if (TryGetArgument("-a", out var value)) AddPlugin(value);
             if (HasArgument("-v")) OutCurrentVersion();
             if (HasArgument("-V")) OutChangelog();
             if (HasArgument("-h")) OutHelp();
