@@ -349,7 +349,7 @@ namespace slt
             return value;
         }
 
-        public static void OutAsOutput(object value, BaseStatement statements = null)
+        public static void OutAsOutput(object value, ExecutionContext.IExecutable statements = null)
         {
             if (statements != null && value is ClassAccess)
             {
@@ -1053,7 +1053,17 @@ namespace slt
                     try
                     {
                         if (REPLPerfomance) ParsingStopwatch = Stopwatch.StartNew();
-                        var st = REPLParser.ParseScript(code, null);
+
+                        var st = default(ExecutionContext.IExecutable);
+                        try
+                        {
+                            st = REPLParser.ParseScript(code, null);
+                        }
+                        catch
+                        {
+                            st = REPLParser.ParseExpression(code, null);
+                        }
+
                         if (REPLPerfomance) ParsingStopwatch.Stop();
                         Console.ForegroundColor = ConsoleColor.Cyan;
                         if (REPLPerfomance) ExecutingStopwatch = Stopwatch.StartNew();
