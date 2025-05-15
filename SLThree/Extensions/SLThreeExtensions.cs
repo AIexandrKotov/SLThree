@@ -1,12 +1,14 @@
 ﻿using SLThree.Metadata;
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace SLThree.Extensions
 {
     public static class SLThreeExtensions
     {
-        public static string ToDynamicPercents(this double d)
+        public static string ToDynamicPercents(this double d) => ToDynamicPercents(d, CultureInfo.InvariantCulture);
+        public static string ToDynamicPercents(this double d, IFormatProvider formatProvider)
         {
             var precision = 0;
 
@@ -15,7 +17,7 @@ namespace SLThree.Extensions
 
             if (precision < 2) precision = 2;
 
-            return d.ToString($"P{precision - 2}");
+            return d.ToString($"P{precision - 2}", formatProvider);
         }
 
         public static string ReadString(this Stream stream)
