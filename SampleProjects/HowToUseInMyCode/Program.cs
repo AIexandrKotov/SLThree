@@ -1,6 +1,5 @@
 ﻿using SLThree;
 using SLThree.Intergration;
-using SLThree.Language;
 
 namespace HowToUseInMyCode
 {
@@ -15,7 +14,7 @@ namespace HowToUseInMyCode
         {
             var ret = new Integrator.ScriptBuilder()
                 .WithCode("x = y = 10;")
-                .Compile(new Parser())
+                .Compile(new SLThree.Language.Parser())
                 .Run();
 
             Console.WriteLine(ret.wrap);

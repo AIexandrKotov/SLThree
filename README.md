@@ -40,7 +40,6 @@ dotnet add package SLThree --version 0.9.0-alpha.1090
 ```CSharp
 using SLThree;
 using SLThree.Intergration;
-using SLThree.Language;
 
 namespace HowToUseInMyCode
 {
@@ -55,7 +54,7 @@ namespace HowToUseInMyCode
         {
             var ret = new Integrator.ScriptBuilder()
                 .WithCode("x = y = 10;")
-                .Compile(new Parser())
+                .Compile(new SLThree.Language.Parser())
                 .Run();
 
             Console.WriteLine(ret.wrap);
@@ -127,7 +126,6 @@ namespace HowToUseInMyCode
         }
     }
 }
-
 ```
 ### You can find this project [here](https://github.com/AIexandrKotov/SLThree/tree/master/SampleProjects/HowToUseInMyCode)
 #### In the future, more convenient script execution methods will appear.
