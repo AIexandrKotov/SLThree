@@ -1,12 +1,28 @@
 ﻿using SLThree;
 using SLThree.Intergration;
+using SLThree.Language;
 
 namespace HowToUseInMyCode
 {
     public class Program
     {
         /// <summary>
-        /// Dictionary way
+        /// ScriptBuilder way.
+        /// The easiest way to execute, out of the box, supporting files, directories, resources.
+        /// The order of definition sets the order of execution.
+        /// </summary>
+        public static void BuilderWay()
+        {
+            var ret = new Integrator.ScriptBuilder()
+                .WithCode("x = y = 10;")
+                .Compile(new Parser())
+                .Run();
+
+            Console.WriteLine(ret.wrap);
+        }
+
+        /// <summary>
+        /// Dictionary way.
         /// You can use the variables of the executed script directly
         /// </summary>
         public static void DictionaryWay()
@@ -59,6 +75,8 @@ namespace HowToUseInMyCode
         /// </summary>
         public static void Main()
         {
+            BuilderWay();
+
             DotnetEnvironment.DefaultParser = new SLThree.Language.Parser();
 
             DictionaryWay();

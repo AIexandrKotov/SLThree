@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SLThree" Version="0.9.0-alpha.1090" />
+    <ProjectReference Include="..\..\SLThree\SLThree.csproj" />
   </ItemGroup>
 
 </Project>
