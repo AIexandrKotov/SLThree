@@ -56,7 +56,7 @@ namespace HowToUseInMyCode
         /// <summary>
         /// Uwrapping method.
         /// Any context can be unwrapped into a class by filling in public fields or properties with context variables.<br/>
-        /// If you want to customize this behavior, look at the <see href="https://github.com/AIexandrKotov/SLThree/blob/aea808f82586102e4733b620d55ae489f72974e5/SLThree/Wrapper.cs#L199">
+        /// If you want to customize this behavior, look at the <see href="https://github.com/AIexandrKotov/SLThree/blob/master/SLThree/Wrapper.cs#L199">
         /// existing attributes</see>.
         /// </summary>
         public static void UnwrappingWay()
