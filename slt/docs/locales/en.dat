@@ -17,6 +17,8 @@ REPL_NULLSDELETED={0} nulls deleted from context
 REPL_EmptyCommand=Empty REPL Command
 REPL_DoesNothing=Your request does nothing
 REPL_LocaleNotFound=Locale "{0}" not found
+REPL_VariableNotFound=Variable {0} not found
+REPL_VariableShouldBeType=Variable {0} is not of type {1}
 
 REPL_MadeBy=Made by
 REPL_Using=using

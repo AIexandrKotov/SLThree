@@ -1,0 +1,10 @@
+using slt; using slt2;
+default_parser = slt.lang().Parser
+antlr_parser = slt2.lang().Parser
+default_parser.ParseExpression("2 + 2 * 2", "filename.slt")();
+antlr_parser.ParseExpression("2 + 2 * 2", "filename.slt")();
+>-p
+>--setparser default_parser
+(2 + 2) * 2
+>--setparser antlr_parser
+(2 + 2) * 2

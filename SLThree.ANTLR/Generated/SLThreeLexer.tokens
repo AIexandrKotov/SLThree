@@ -1,0 +1,14 @@
+LPAREN=1
+RPAREN=2
+PLUS=3
+MINUS=4
+MUL=5
+DIV=6
+NUMBER=7
+WS=8
+'('=1
+')'=2
+'+'=3
+'-'=4
+'*'=5
+'/'=6

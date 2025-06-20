@@ -66,6 +66,7 @@ namespace slt
         {
             SLThreePlugin = Plugin.AddOrGetPlugin(typeof(BaseExpression).Assembly.Location);
             SLThreeREPLPlugin = Plugin.AddOrGetPlugin(typeof(Program).Assembly.Location);
+            Plugin.AddOrGetPlugin(typeof(SLThree.ANTLR.Parser).Assembly.Location);
             var plugin_path = Path.Combine(Path.GetDirectoryName(REPLAssembly.Location), "plugins");
             var dlls = Directory.GetFiles(plugin_path, "*.dll", SearchOption.AllDirectories);
             foreach (var dll in dlls)
@@ -891,6 +892,16 @@ namespace slt
                 else OutAsException(string.Format(Locale.Current["REPL_LocaleNotFound"], locale_name));
                 any_executed = true;
             }
+            if (wrds.TryGetArgument("--setparser", out var parser_variable, null))
+            {
+                var parser_value = REPLContext.LocalVariables.GetValue(parser_variable).Item1;
+                if (parser_value == null)
+                    OutAsException(string.Format(Locale.Current["REPL_VariableNotFound"], parser_variable));
+                else if (!(parser_value is IParser parser_value_typed))
+                    OutAsException(string.Format(Locale.Current["REPL_VariableShouldBeType"], parser_variable, typeof(IParser).FullName));
+                else repl.set_parser(parser_value_typed);
+                any_executed = true;
+            }
             if (wrds.HasArgument("-V", ShortREPLCommands))
             {
                 OutChangelog();
@@ -982,7 +993,7 @@ namespace slt
             Console.ResetColor();
         }
 
-        private static IParser REPLParser;
+        public static IParser REPLParser;
         private static Subparser REPLSubparser;
         private static bool REPLLoop;
         internal static ExecutionContext REPLContext;

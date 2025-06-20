@@ -11,6 +11,8 @@ namespace SLThree.Metadata
     {
         private static T LanguageInfo = new T();
 
+        public static T lang() => LanguageInfo;
+
         public static BaseStatement parse(string s) => LanguageInfo.Parser.ParseScript(s, null);
         public static BaseExpression parse_expr(string s) => LanguageInfo.Parser.ParseExpression(s, null);
         public static object eval(string s) => LanguageInfo.Parser.EvalExpression(s);

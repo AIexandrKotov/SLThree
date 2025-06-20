@@ -17,6 +17,8 @@ REPL_NULLSDELETED={0} нулевых ссылок было удалено
 REPL_EmptyCommand=Пустая REPL-команда
 REPL_DoesNothing=Ваша команда ничего не сделала
 REPL_LocaleNotFound=Локализация "{0}" не найдена
+REPL_VariableNotFound=Переменная {0} не найдена
+REPL_VariableShouldBeType=Переменная {0} не типа {1}
 
 REPL_MadeBy=Создал
 REPL_Using=с использованием

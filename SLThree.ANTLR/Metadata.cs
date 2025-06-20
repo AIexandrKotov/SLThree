@@ -14,6 +14,6 @@ namespace SLThree.ANTLR
         public string Edition => "";
         public IParser Parser => new Parser();
         public IRestorator Restorator => new Restorator();
-        public KeyValuePair<string, Type>[] NewTypes => SLTHelpers.GetTypesFromAssemblySYS(typeof(Metadata).Assembly, "SLThree.Pascal.sys.").ToArray();
+        public KeyValuePair<string, Type>[] NewTypes => SLTHelpers.GetTypesFromAssemblySYS(typeof(Metadata).Assembly, "SLThree.ANTLR.sys.").ToArray();
     }
 }

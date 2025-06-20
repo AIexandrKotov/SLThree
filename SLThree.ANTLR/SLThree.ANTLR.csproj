@@ -8,4 +8,18 @@
     <ProjectReference Include="..\SLThree\SLThree.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+  </ItemGroup>
+	
+  <ItemGroup>
+	  <Antlr4 Update="SLThreeParser.g4">
+		  <Listener>false</Listener>
+	  </Antlr4>
+  </ItemGroup>
+
+  <PropertyGroup>
+	  <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
+  </PropertyGroup>
+
 </Project>

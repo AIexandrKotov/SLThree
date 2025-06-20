@@ -1,4 +1,5 @@
 ﻿using SLThree;
+using SLThree.Metadata;
 using System.Text;
 
 namespace slt.sys
@@ -23,6 +24,8 @@ namespace slt.sys
             => new ContextWrap(Program.InvokeFile(file, context.Context, Encoding.UTF8));
         public static ContextWrap run_file_in(string file, Encoding encoding, ContextWrap context)
             => new ContextWrap(Program.InvokeFile(file, context.Context, encoding));
+        public static void set_parser(IParser new_parser)
+            => Program.REPLParser = new_parser;
     }
 #pragma warning restore IDE1006 // Стили именования
 }

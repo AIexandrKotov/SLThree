@@ -45,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SLThree.ANTLR\SLThree.ANTLR.csproj" />
     <ProjectReference Include="..\SLThree\SLThree.csproj" />
   </ItemGroup>
 
