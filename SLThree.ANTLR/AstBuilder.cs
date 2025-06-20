@@ -1,5 +1,4 @@
 using Antlr4.Runtime.Tree;
-using SLThree.Extensions;
 using static SLThreeParser;
 
 namespace SLThree.ANTLR
@@ -17,9 +16,9 @@ namespace SLThree.ANTLR
             var result = Visit(terms[0]);
             for (var i = 1; i < terms.Length; i++)
             {
-                var op = context.GetChild(i * 2 - 1).GetText();
+                var op = context.children[i * 2 - 1] as ITerminalNode;
                 var right = Visit(terms[i]);
-                if (op == "+") result = new BinaryAdd(result, right, null);
+                if (op.Symbol.Type == PLUS) result = new BinaryAdd(result, right, null);
             }
             return result;
         }
@@ -30,9 +29,9 @@ namespace SLThree.ANTLR
             var result = Visit(factors[0]);
             for (var i = 1; i < factors.Length; i++)
             {
-                var op = context.GetChild(i * 2 - 1).GetText();
+                var op = context.children[i * 2 - 1] as ITerminalNode;
                 var right = Visit(factors[i]);
-                if (op == "*") result = new BinaryMultiply(result, right, null);
+                if (op.Symbol.Type == MUL) result = new BinaryMultiply(result, right, null);
             }
             return result;
         }

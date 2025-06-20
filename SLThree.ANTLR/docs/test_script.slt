@@ -5,6 +5,8 @@ default_parser.ParseExpression("2 + 2 * 2", "filename.slt")();
 antlr_parser.ParseExpression("2 + 2 * 2", "filename.slt")();
 >-p
 >--setparser default_parser
+2
 (2 + 2) * 2
 >--setparser antlr_parser
+2
 (2 + 2) * 2

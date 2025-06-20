@@ -1,4 +1,4 @@
-grammar SLThree;
+grammar SLThreeParser;
 
 // PARSER RULES
 // Начальное правило. Мы ожидаем одно выражение и конец файла (EOF).
