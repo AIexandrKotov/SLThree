@@ -25,6 +25,7 @@ namespace SLThree.ANTLR
             tokenStream.SetTokenSource(lexer);
             parser.TokenStream = tokenStream;
 
+            astBuilder.SetSource(fileName);
             var context = parser.parse();
             return astBuilder.Visit(context);
         }
@@ -32,7 +33,7 @@ namespace SLThree.ANTLR
         public BaseStatement ParseScript(string code, string fileName)
         {
             var expression = ParseExpression(code, fileName);
-            return new ExpressionStatement(expression, null);
+            return new ExpressionStatement(expression, expression.SourceContext);
         }
     }
 }
