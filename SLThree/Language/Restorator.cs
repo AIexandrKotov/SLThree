@@ -282,7 +282,7 @@ namespace SLThree.Language
         public void VisitExpression(InvokeExpression expression, MemberAccess source = null)
         {
             var arguments = expression.Arguments;
-            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments))
+            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments) && arguments.Length > 0)
             {
                 VisitExpression(arguments[0]);
                 Writer.WritePlainText(" |> ");
@@ -306,7 +306,7 @@ namespace SLThree.Language
         public void VisitExpression(InvokeGenericExpression expression, MemberAccess source = null)
         {
             var arguments = expression.Arguments;
-            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments))
+            if (AllowFunctionalInvoke && FunctionalInvokeCondition(source, expression, arguments) && arguments.Length > 0)
             {
                 VisitExpression(arguments[0]);
                 Writer.WritePlainText(" |> ");
