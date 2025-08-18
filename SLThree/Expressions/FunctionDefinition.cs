@@ -32,6 +32,7 @@ namespace SLThree
         private bool @params;
         private bool not_native;
         private bool is_abstract;
+        private Method.MethodSemanticSugar? mode;
 
         public FunctionDefinition(string[] modificators, BaseExpression name, (NameExpression, TemplateMethod.ConstraintDefinition)[] generics, FunctionArgument[] args, StatementList body, TypenameExpression typehint, ISourceContext context) : base(context)
         {
@@ -45,6 +46,10 @@ namespace SLThree
             if (many != null) throw new SyntaxError($"Repeated modifier \"{many.First()}\"", context);
             @params = modificators.Contains("params");
             not_template = !modificators.Contains("template");
+            var semanticmods = modificators.Select(x => Enum.TryParse<Method.MethodSemanticSugar>(x, out var result) ? new Method.MethodSemanticSugar?(result) : default).Where(x => x.HasValue).ToArray();
+            if (semanticmods.Length > 1)
+                throw new LogicalError("Only one modifier can be used from the list of async/task/delegate", context);
+            mode = semanticmods.FirstOrDefault();
             if (@params && Arguments.Length < 1) throw new LogicalError("Params method should have at least one parameter", context);
             var defaultid = args.Length;
             for (var i = 0; i < args.Length; i++)
@@ -116,7 +121,8 @@ namespace SLThree
                     Modificators.Contains("recursive"),
                     !@params,
                     Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
-                    Arguments.Select(x => x.Name.Const).ToArray());
+                    Arguments.Select(x => x.Name.Const).ToArray(),
+                    mode);
                 else
                     method = new GenericMethod(
                         FunctionName == null ? Method.DefaultMethodName : CreatorContext.GetLastName(FunctionName),
@@ -130,6 +136,7 @@ namespace SLThree
                         !@params,
                         Arguments.Select(x => x.DefaultValue).Where(x => x != null).ToArray(),
                         Arguments.Select(x => x.Name.Const).ToArray(),
+                        mode,
                         GenericArguments.ConvertAll(x => x.Item1));
             }
             else
@@ -146,6 +153,7 @@ namespace SLThree
                 !@params,
                 Arguments.Select(x => x.DefaultValue.CloneCast()).Where(x => x != null).ToArray(),
                 Arguments.Select(x => x.Name.Const).ToArray(),
+                mode,
                 GenericArguments.Select(x => (x.Item1.CloneCast(), x.Item2?.GetConstraint(x.Item1.Name, context) ?? new TemplateMethod.AnyConstraint(x.Item1.SourceContext))).ToArray());
             }
             method.Abstract = is_abstract;

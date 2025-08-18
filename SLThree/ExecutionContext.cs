@@ -1,5 +1,6 @@
 ﻿using SLThree.Extensions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -36,6 +37,13 @@ namespace SLThree
         public object ReturnedValue;
 
         public static readonly ContextWrap global = new ContextWrap(new ExecutionContext(false) { ForbidImplicit = false, Name = "global" });
+
+        public bool Concurrency => LocalVariables.NamedIdentificators is ConcurrentDictionary<string, int>;
+        public void MakeConcurrent()
+        {
+            if (!Concurrency)
+                LocalVariables.NamedIdentificators = new ConcurrentDictionary<string, int>(LocalVariables.NamedIdentificators);
+        }
 
         static ExecutionContext()
         {

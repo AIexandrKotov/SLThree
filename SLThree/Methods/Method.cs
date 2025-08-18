@@ -5,11 +5,19 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SLThree
 {
     public class Method : ICloneable
     {
+        public enum MethodSemanticSugar
+        {
+            async,
+            task,
+            @delegate
+        }
+
         public const string DefaultMethodName = "$method";
 
         public string Name;
@@ -19,6 +27,7 @@ namespace SLThree
         public readonly bool Recursive = false;
         public bool Abstract = false;
         public bool Binded = false;
+        public MethodSemanticSugar? mode = null;
 
         public readonly bool WithoutParams;
         public readonly bool WithoutDefaults;
@@ -71,7 +80,7 @@ namespace SLThree
         }
 
         internal protected Method() { }
-        internal Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, bool[] contants)
+        internal Method(string name, string[] paramNames, StatementList statements, TypenameExpression[] paramTypes, TypenameExpression returnType, ContextWrap definitionPlace, bool @implicit, bool recursive, bool without_params, BaseExpression[] default_values, bool[] contants, MethodSemanticSugar? sugar)
         {
             Name = name;
             ParamNames = paramNames;
@@ -90,6 +99,7 @@ namespace SLThree
             ContantsParams = contants;
             if (!WithoutDefaults) default_values_invk_context = new ExecutionContext(false, false);
             if (!without_params && RequiredArguments > 0) RequiredArguments -= 1;
+            mode = sugar;
         }
 
         internal void UpdateContextName() => contextName = $"<{Name}>methodcontext";
@@ -196,6 +206,7 @@ namespace SLThree
         public virtual object GetValue(ExecutionContext old_context, object[] args)
         {
             var context = GetExecutionContext(CheckOnParams(CheckOnDefaults(args)), old_context);
+            if (mode.HasValue) return moded(context);
             var i = 0;
             var bs = Statements.Statements;
             var count = bs.Length;
@@ -338,7 +349,7 @@ namespace SLThree
 
         public virtual Method CloneWithNewName(string name)
         {
-            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy())
+            return new Method(name, ParamNames?.CloneArray(), Statements.CloneCast(), ParamTypes?.CloneArray(), ReturnType.CloneCast(), definitionplace, Implicit, Recursive, WithoutParams, DefaultValues.CloneArray(), ContantsParams.Copy(), mode)
             {
                 Abstract = Abstract
             };
@@ -347,6 +358,114 @@ namespace SLThree
         public virtual object Clone()
         {
             return CloneWithNewName(Name);
+        }
+
+        private struct SLTheeMethodAsyncStateMachine : IAsyncStateMachine
+        {
+            public int state;
+            public Method method;
+            public ExecutionContext context;
+            public AsyncTaskMethodBuilder<object> builder;
+            public object[] arguments;
+
+            public void MoveNext()
+            {
+                var result = default(object);
+                try
+                {
+                    var i = 0;
+                    var bs = method.Statements.Statements;
+                    var count = bs.Length;
+                    while (i < count)
+                    {
+                        if (context.Returned)
+                        {
+                            result = context.ReturnedValue;
+                            break;
+                        }
+                        else bs[i++].GetValue(context);
+                    }
+                    if (context.Returned) result = context.ReturnedValue;
+                }
+                catch (Exception ex)
+                {
+                    state = -2;
+                    builder.SetException(ex);
+                    return;
+                }
+                state = -2;
+                builder.SetResult(result);
+            }
+
+            public void SetStateMachine(IAsyncStateMachine stateMachine)
+            {
+                builder.SetStateMachine(stateMachine);
+            }
+        }
+
+        [AsyncStateMachine(typeof(SLTheeMethodAsyncStateMachine))]
+        public Task<object> async(ExecutionContext context)
+        {
+            var ret = new SLTheeMethodAsyncStateMachine();
+            ret.method = this;
+            ret.context = context;
+            ret.state = -1;
+            ret.builder.Start(ref ret);
+            return ret.builder.Task;
+        }
+
+        public Task<object> task(ExecutionContext context)
+        {
+            return new Task<object>(() =>
+            {
+                var i = 0;
+                var bs = Statements.Statements;
+                var count = bs.Length;
+                while (i < count)
+                {
+                    if (context.Returned) return context.ReturnedValue;
+                    else bs[i++].GetValue(context);
+                }
+                if (context.Returned) return context.ReturnedValue;
+                return null;
+            });
+        }
+
+        public Func<object> @delegate(ExecutionContext context)
+        {
+            Func<object> ret = () =>
+            {
+                var i = 0;
+                var bs = Statements.Statements;
+                var count = bs.Length;
+                while (i < count)
+                {
+                    if (context.Returned) return context.ReturnedValue;
+                    else bs[i++].GetValue(context);
+                }
+                if (context.Returned) return context.ReturnedValue;
+                return null;
+            };
+
+            return ret;
+        }
+
+        public object moded(ExecutionContext context)
+        {
+            if (mode.HasValue && (mode.Value == Method.MethodSemanticSugar.async || mode.Value == Method.MethodSemanticSugar.task))
+            {
+                context.MakeConcurrent();
+            }
+            switch (mode)
+            {
+                case MethodSemanticSugar.async:
+                    return async(context);
+                case MethodSemanticSugar.@delegate:
+                    return @delegate(context);
+                case MethodSemanticSugar.task:
+                    return task(context);
+            }
+            throw new NotSupportedException();
         }
     }
 }

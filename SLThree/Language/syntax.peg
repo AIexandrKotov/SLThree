@@ -742,6 +742,9 @@ method_modificator
     / "params"
     / "native"
     / "template"
+    / "async"
+    / "task"
+    / "delegate"
 
 typename <TypenameExpression>
     = t_node:typename_node _ "<" _ t_list:typename<1,,_ "," _> _ ">" { new TypenameExpression(t_node, t_list.ToArray(), _(state)) }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -6,18 +7,18 @@ namespace SLThree
 {
     public class LocalVariablesContainer
     {
-        public LocalVariablesContainer(int default_size = 8, Dictionary<string, int> names = null)
+        public LocalVariablesContainer(int default_size = 8, IDictionary<string, int> names = null, bool async = false)
         {
             Variables = new object[default_size];
             Constants = new bool[default_size];
-            NamedIdentificators = names ?? new Dictionary<string, int>();
+            NamedIdentificators = names ?? (async ? new ConcurrentDictionary<string, int>() as IDictionary<string, int> : new Dictionary<string, int>());
             current = NamedIdentificators.Count;
         }
 
         internal int current = 0;
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Advanced)]
         public object[] Variables;
-        public Dictionary<string, int> NamedIdentificators;
+        public IDictionary<string, int> NamedIdentificators;
         public bool[] Constants;
 
         public HashSet<string> GetConstants() => new HashSet<string>(NamedIdentificators.Where(x => Constants[x.Value]).Select(x => x.Key));
